@@ -19,10 +19,9 @@
 #pragma comment (lib, "d3dx9.lib")
 #endif
 
-#include "DX9MeshBuffer.h"
+#include "../DX9SharedLayer/DX9SharedLayer.h"
 
 LPDIRECT3D9         g_pD3D = NULL; // Used to create the D3DDevice
-LPDIRECT3DDEVICE9   g_pd3dDevice = NULL; // Our rendering device
 float				g_ScreenAspect;
 Vector3				g_CenterPoint;
 
@@ -70,12 +69,12 @@ int WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 void Update( uint32 deltaTime )
 {
 	// Clear the backbuffer and the zbuffer
-	g_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
+	D3DDevice()->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
 						 D3DCOLOR_XRGB( 127, 127, 255 ), 1.0f, 0 );
 
 
 	// Begin the scene
-	if( SUCCEEDED( g_pd3dDevice->BeginScene() ) )
+	if( SUCCEEDED( D3DDevice()->BeginScene() ) )
 	{
 		SetupLights();
 
@@ -84,11 +83,11 @@ void Update( uint32 deltaTime )
 		g_MeshBuffer.Render();
 
 		// End the scene
-		g_pd3dDevice->EndScene();
+		D3DDevice()->EndScene();
 	}
 
 	// Present the backbuffer contents to the display
-	g_pd3dDevice->Present( NULL, NULL, NULL, NULL );
+	D3DDevice()->Present( NULL, NULL, NULL, NULL );
 }
 
 HRESULT InitD3D( HWND hWnd )
@@ -110,13 +109,13 @@ HRESULT InitD3D( HWND hWnd )
 	// Create the D3DDevice
 	if( FAILED( g_pD3D->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
 		D3DCREATE_HARDWARE_VERTEXPROCESSING,
-		&d3dpp, &g_pd3dDevice ) ) )
+		&d3dpp, &D3DDevice() ) ) )
 	{
 		return E_FAIL;
 	}
 
 	// Turn on the zbuffer
-	g_pd3dDevice->SetRenderState( D3DRS_ZENABLE, TRUE );
+	D3DDevice()->SetRenderState( D3DRS_ZENABLE, TRUE );
 
 	return S_OK;
 }
@@ -141,7 +140,7 @@ void SetupLights()
 	mtrl.Diffuse.g = mtrl.Ambient.g = 1.0f;
 	mtrl.Diffuse.b = mtrl.Ambient.b = 1.0f;
 	mtrl.Diffuse.a = mtrl.Ambient.a = 1.0f;
-	g_pd3dDevice->SetMaterial( &mtrl );
+	D3DDevice()->SetMaterial( &mtrl );
 
 	// Set up a white, directional light, with an oscillating direction.
 	// Note that many Lights may be active at a time (but each one slows down
@@ -157,12 +156,12 @@ void SetupLights()
 	vecDir = D3DXVECTOR3( -1.0f, -1.0f, 1.0f );
 	D3DXVec3Normalize( ( D3DXVECTOR3* )&light.Direction, &vecDir );
 	light.Range = 1000.0f;
-	g_pd3dDevice->SetLight( 0, &light );
-	g_pd3dDevice->LightEnable( 0, TRUE );
-	g_pd3dDevice->SetRenderState( D3DRS_LIGHTING, TRUE );
+	D3DDevice()->SetLight( 0, &light );
+	D3DDevice()->LightEnable( 0, TRUE );
+	D3DDevice()->SetRenderState( D3DRS_LIGHTING, TRUE );
 
 	// Finally, turn on some ambient light.
-	g_pd3dDevice->SetRenderState( D3DRS_AMBIENT, 0x00202020 );
+	D3DDevice()->SetRenderState( D3DRS_AMBIENT, 0x00202020 );
 }
 
 void SetupMatrices()
@@ -171,7 +170,7 @@ void SetupMatrices()
 	D3DXMATRIXA16 matWorld;
 	D3DXMatrixIdentity( &matWorld );
 	D3DXMatrixRotationY( &matWorld, (float)Timer::GetElapsedTime() / 1000.0f );
-	g_pd3dDevice->SetTransform( D3DTS_WORLD, &matWorld );
+	D3DDevice()->SetTransform( D3DTS_WORLD, &matWorld );
 
 	D3DXMATRIXA16 mat;
 	D3DXMatrixIdentity(&mat);
@@ -186,7 +185,7 @@ void SetupMatrices()
 	D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
 	D3DXMATRIXA16 matView;
 	D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );
-	g_pd3dDevice->SetTransform( D3DTS_VIEW, &matView );
+	D3DDevice()->SetTransform( D3DTS_VIEW, &matView );
 
 	// For the projection matrix, we set up a perspective transform (which
 	// transforms geometry from 3D view space to 2D viewport space, with
@@ -196,13 +195,13 @@ void SetupMatrices()
 	// what distances geometry should be no longer be rendered).
 	D3DXMATRIXA16 matProj;
 	D3DXMatrixPerspectiveFovLH( &matProj, D3DX_PI / 4, g_ScreenAspect, 1.0f, 100.0f );
-	g_pd3dDevice->SetTransform( D3DTS_PROJECTION, &matProj );
+	D3DDevice()->SetTransform( D3DTS_PROJECTION, &matProj );
 }
 
 void Cleanup()
 {
-	if( g_pd3dDevice != NULL )
-		g_pd3dDevice->Release();
+	if( D3DDevice() != NULL )
+		D3DDevice()->Release();
 
 	if( g_pD3D != NULL )
 		g_pD3D->Release();

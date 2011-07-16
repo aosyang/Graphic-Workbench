@@ -1,5 +1,7 @@
 #include "DX9MeshBuffer.h"
+#include "DX9Device.h"
 #include "../libEmdMesh/EmdMesh.h"
+
 #include <d3dx9.h>
 
 #ifndef V_RETURN
@@ -7,8 +9,6 @@
 #endif
 
 template<typename T> inline void Swap(T& a, T& b) { T t = a; a = b; b = t; }
-
-extern LPDIRECT3DDEVICE9   g_pd3dDevice;
 
 DX9MeshBuffer::DX9MeshBuffer()
 : m_pIBuffer(NULL), m_pDecl(NULL),
@@ -82,7 +82,7 @@ HRESULT DX9MeshBuffer::CreateFromMesh( EmdMesh* mesh )
 	VOID* pData;
 
 	// vertex buffer
-	V_RETURN( g_pd3dDevice->CreateVertexBuffer( m_VertexCount * sizeof( D3DXVECTOR3 ), D3DUSAGE_WRITEONLY,
+	V_RETURN( D3DDevice()->CreateVertexBuffer( m_VertexCount * sizeof( D3DXVECTOR3 ), D3DUSAGE_WRITEONLY,
 		NULL, D3DPOOL_DEFAULT, &m_pVBuffer[ST_VERTEX_POSITION], NULL ) );
 
 	V_RETURN( m_pVBuffer[ST_VERTEX_POSITION]->Lock( 0, sizeof( D3DXVECTOR3 ) * m_VertexCount, (void**)&pData, 0 ) );
@@ -90,7 +90,7 @@ HRESULT DX9MeshBuffer::CreateFromMesh( EmdMesh* mesh )
 	m_pVBuffer[ST_VERTEX_POSITION]->Unlock();
 
 	// normal buffer
-	V_RETURN( g_pd3dDevice->CreateVertexBuffer( m_VertexCount * sizeof( D3DXVECTOR3 ), D3DUSAGE_WRITEONLY,
+	V_RETURN( D3DDevice()->CreateVertexBuffer( m_VertexCount * sizeof( D3DXVECTOR3 ), D3DUSAGE_WRITEONLY,
 		NULL, D3DPOOL_DEFAULT, &m_pVBuffer[ST_VERTEX_NORMAL], NULL ) );
 
 	V_RETURN( m_pVBuffer[ST_VERTEX_NORMAL]->Lock( 0, sizeof( D3DXVECTOR3 ) * m_VertexCount, (void**)&pData, 0 ) );
@@ -98,7 +98,7 @@ HRESULT DX9MeshBuffer::CreateFromMesh( EmdMesh* mesh )
 	m_pVBuffer[ST_VERTEX_NORMAL]->Unlock();
 
 	// texcoord buffer
-	V_RETURN( g_pd3dDevice->CreateVertexBuffer( m_VertexCount * sizeof( D3DXVECTOR2 ), D3DUSAGE_WRITEONLY,
+	V_RETURN( D3DDevice()->CreateVertexBuffer( m_VertexCount * sizeof( D3DXVECTOR2 ), D3DUSAGE_WRITEONLY,
 		NULL, D3DPOOL_DEFAULT, &m_pVBuffer[ST_VERTEX_TEXTUREUV], NULL ) );
 
 	V_RETURN( m_pVBuffer[ST_VERTEX_TEXTUREUV]->Lock( 0, sizeof( D3DXVECTOR2 ) * m_VertexCount, (void**)&pData, 0 ) );
@@ -106,7 +106,7 @@ HRESULT DX9MeshBuffer::CreateFromMesh( EmdMesh* mesh )
 	m_pVBuffer[ST_VERTEX_TEXTUREUV]->Unlock();
 
 	// tangent buffer
-	V_RETURN( g_pd3dDevice->CreateVertexBuffer( m_VertexCount * sizeof( D3DXVECTOR3 ), D3DUSAGE_WRITEONLY,
+	V_RETURN( D3DDevice()->CreateVertexBuffer( m_VertexCount * sizeof( D3DXVECTOR3 ), D3DUSAGE_WRITEONLY,
 		NULL, D3DPOOL_DEFAULT, &m_pVBuffer[ST_VERTEX_TANGENT], NULL ) );
 
 	V_RETURN( m_pVBuffer[ST_VERTEX_TANGENT]->Lock( 0, sizeof( D3DXVECTOR3 ) * m_VertexCount, (void**)&pData, 0 ) );
@@ -114,7 +114,7 @@ HRESULT DX9MeshBuffer::CreateFromMesh( EmdMesh* mesh )
 	m_pVBuffer[ST_VERTEX_TANGENT]->Unlock();
 
 	// binormal buffer
-	V_RETURN( g_pd3dDevice->CreateVertexBuffer( m_VertexCount * sizeof( D3DXVECTOR3 ), D3DUSAGE_WRITEONLY,
+	V_RETURN( D3DDevice()->CreateVertexBuffer( m_VertexCount * sizeof( D3DXVECTOR3 ), D3DUSAGE_WRITEONLY,
 		NULL, D3DPOOL_DEFAULT, &m_pVBuffer[ST_VERTEX_BINORMAL], NULL ) );
 
 	V_RETURN( m_pVBuffer[ST_VERTEX_BINORMAL]->Lock( 0, sizeof( D3DXVECTOR3 ) * m_VertexCount, (void**)&pData, 0 ) );
@@ -137,10 +137,10 @@ HRESULT DX9MeshBuffer::CreateFromMesh( EmdMesh* mesh )
 		{ 4, 0, D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_BINORMAL, 0 },
 		{ 0xFF, 0, D3DDECLTYPE_UNUSED, 0, 0, 0 }
 	};
-	g_pd3dDevice->CreateVertexDeclaration( declDesc, &m_pDecl );
+	D3DDevice()->CreateVertexDeclaration( declDesc, &m_pDecl );
 
 	// Create index buffer
-	V_RETURN( g_pd3dDevice->CreateIndexBuffer( m_IndexCount * sizeof( uint32 ), D3DUSAGE_WRITEONLY,
+	V_RETURN( D3DDevice()->CreateIndexBuffer( m_IndexCount * sizeof( uint32 ), D3DUSAGE_WRITEONLY,
 		D3DFMT_INDEX32, D3DPOOL_DEFAULT, &m_pIBuffer, NULL) );
 
 
@@ -171,12 +171,12 @@ void DX9MeshBuffer::Destroy()
 
 void DX9MeshBuffer::Render()
 {
-	g_pd3dDevice->SetStreamSource( 0, m_pVBuffer[ST_VERTEX_POSITION], 0, sizeof( D3DXVECTOR3 ) );
-	g_pd3dDevice->SetStreamSource( 1, m_pVBuffer[ST_VERTEX_NORMAL], 0, sizeof( D3DXVECTOR3 ) );
-	g_pd3dDevice->SetStreamSource( 2, m_pVBuffer[ST_VERTEX_TEXTUREUV], 0, sizeof( D3DXVECTOR2 ) );
-	g_pd3dDevice->SetStreamSource( 3, m_pVBuffer[ST_VERTEX_TANGENT], 0, sizeof( D3DXVECTOR3 ) );
-	g_pd3dDevice->SetStreamSource( 4, m_pVBuffer[ST_VERTEX_BINORMAL], 0, sizeof( D3DXVECTOR3 ) );
-	g_pd3dDevice->SetVertexDeclaration( m_pDecl );
-	g_pd3dDevice->SetIndices( m_pIBuffer );
-	g_pd3dDevice->DrawIndexedPrimitive( D3DPT_TRIANGLELIST, 0, 0, m_VertexCount, 0, m_IndexCount / 3 );
+	D3DDevice()->SetStreamSource( 0, m_pVBuffer[ST_VERTEX_POSITION], 0, sizeof( D3DXVECTOR3 ) );
+	D3DDevice()->SetStreamSource( 1, m_pVBuffer[ST_VERTEX_NORMAL], 0, sizeof( D3DXVECTOR3 ) );
+	D3DDevice()->SetStreamSource( 2, m_pVBuffer[ST_VERTEX_TEXTUREUV], 0, sizeof( D3DXVECTOR2 ) );
+	D3DDevice()->SetStreamSource( 3, m_pVBuffer[ST_VERTEX_TANGENT], 0, sizeof( D3DXVECTOR3 ) );
+	D3DDevice()->SetStreamSource( 4, m_pVBuffer[ST_VERTEX_BINORMAL], 0, sizeof( D3DXVECTOR3 ) );
+	D3DDevice()->SetVertexDeclaration( m_pDecl );
+	D3DDevice()->SetIndices( m_pIBuffer );
+	D3DDevice()->DrawIndexedPrimitive( D3DPT_TRIANGLELIST, 0, 0, m_VertexCount, 0, m_IndexCount / 3 );
 }
