@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "../GraphicWorkbench/Vectors.h"
 #include "EmdDefine.h"
 #include "EmdTypes.h"
 
@@ -37,6 +38,9 @@ public:
 	uint32 GetIndexCount(uint32 elementIndex) const { return m_IndexCount[elementIndex]; }
 	uint32* GetIndexArray(uint32 elementIndex) const { return m_IndexArray[elementIndex]; }
 
+	Vector3 GetBoundingMin() const;
+	Vector3 GetBoundingMax() const;
+
 protected:
 	std::vector<std::string>	m_MaterialNames;
 
@@ -54,6 +58,10 @@ protected:
 
 	uint32*		m_IndexCount;
 	uint32**	m_IndexArray;
+
+	// Bounding box;
+	float		m_vMin[3];
+	float		m_vMax[3];
 
 private:
 	// Load emd mesh version 0.20

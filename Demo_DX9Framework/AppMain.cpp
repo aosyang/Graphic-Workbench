@@ -24,12 +24,14 @@
 LPDIRECT3D9         g_pD3D = NULL; // Used to create the D3DDevice
 LPDIRECT3DDEVICE9   g_pd3dDevice = NULL; // Our rendering device
 float				g_ScreenAspect;
+Vector3				g_CenterPoint;
 
 DX9MeshBuffer		g_MeshBuffer;
 
 void Update(uint32 deltaTime);
 HRESULT InitD3D(HWND hWnd);
 void LoadMesh();
+void SetupLights();
 void SetupMatrices();
 void Cleanup();
 
@@ -75,6 +77,8 @@ void Update( uint32 deltaTime )
 	// Begin the scene
 	if( SUCCEEDED( g_pd3dDevice->BeginScene() ) )
 	{
+		SetupLights();
+
 		SetupMatrices();
 
 		g_MeshBuffer.Render();
@@ -114,9 +118,6 @@ HRESULT InitD3D( HWND hWnd )
 	// Turn on the zbuffer
 	g_pd3dDevice->SetRenderState( D3DRS_ZENABLE, TRUE );
 
-	// Turn on ambient lighting 
-	g_pd3dDevice->SetRenderState( D3DRS_AMBIENT, 0xffffffff );
-
 	return S_OK;
 }
 
@@ -125,8 +126,43 @@ void LoadMesh()
 	EmdMesh mesh;
 	if (mesh.LoadMesh(L"../Data/Mesh/scene.emd"))
 	{
+		g_CenterPoint = (mesh.GetBoundingMin() + mesh.GetBoundingMax()) * 0.5f;
 		g_MeshBuffer.CreateFromMesh(&mesh);
 	}
+}
+
+void SetupLights()
+{
+	// Set up a material. The material here just has the diffuse and ambient
+	// colors set to yellow. Note that only one material can be used at a time.
+	D3DMATERIAL9 mtrl;
+	ZeroMemory( &mtrl, sizeof( D3DMATERIAL9 ) );
+	mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
+	mtrl.Diffuse.g = mtrl.Ambient.g = 1.0f;
+	mtrl.Diffuse.b = mtrl.Ambient.b = 1.0f;
+	mtrl.Diffuse.a = mtrl.Ambient.a = 1.0f;
+	g_pd3dDevice->SetMaterial( &mtrl );
+
+	// Set up a white, directional light, with an oscillating direction.
+	// Note that many Lights may be active at a time (but each one slows down
+	// the rendering of our scene). However, here we are just using one. Also,
+	// we need to set the D3DRS_LIGHTING renderstate to enable lighting
+	D3DXVECTOR3 vecDir;
+	D3DLIGHT9 light;
+	ZeroMemory( &light, sizeof( D3DLIGHT9 ) );
+	light.Type = D3DLIGHT_DIRECTIONAL;
+	light.Diffuse.r = 1.0f;
+	light.Diffuse.g = 1.0f;
+	light.Diffuse.b = 1.0f;
+	vecDir = D3DXVECTOR3( -1.0f, -1.0f, 1.0f );
+	D3DXVec3Normalize( ( D3DXVECTOR3* )&light.Direction, &vecDir );
+	light.Range = 1000.0f;
+	g_pd3dDevice->SetLight( 0, &light );
+	g_pd3dDevice->LightEnable( 0, TRUE );
+	g_pd3dDevice->SetRenderState( D3DRS_LIGHTING, TRUE );
+
+	// Finally, turn on some ambient light.
+	g_pd3dDevice->SetRenderState( D3DRS_AMBIENT, 0x00202020 );
 }
 
 void SetupMatrices()
@@ -145,8 +181,8 @@ void SetupMatrices()
 	// a point to lookat, and a direction for which way is up. Here, we set the
 	// eye five units back along the z-axis and up three units, look at the
 	// origin, and define "up" to be in the y-direction.
-	D3DXVECTOR3 vEyePt( 0.0f, 3.0f,-5.0f );
-	D3DXVECTOR3 vLookatPt( 0.0f, 0.0f, 0.0f );
+	D3DXVECTOR3 vEyePt( 0.0f, 5.0f,-5.0f );
+	D3DXVECTOR3 vLookatPt( 0.0f, g_CenterPoint.y, 0.0f );
 	D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
 	D3DXMATRIXA16 matView;
 	D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );

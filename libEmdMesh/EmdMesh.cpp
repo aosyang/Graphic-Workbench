@@ -14,6 +14,7 @@ EmdMesh::EmdMesh()
   m_IndexCount(NULL),
   m_IndexArray(NULL)
 {
+	Reset();
 }
 
 EmdMesh::~EmdMesh()
@@ -200,6 +201,17 @@ bool EmdMesh::LoadMeshVer100( std::ifstream& fin )
 			if ( !m_VertexNum ) m_VertexNum = (size_byte >> 2) / 3;
 			m_VertexArray = new float[m_VertexNum * 3];
 			fin.read( (char*)m_VertexArray, size_byte );
+
+			// calculate bounding box
+			for (uint32 i=0; i<m_VertexNum*3; i+=3)
+			{
+				for (uint32 j=0; j<3; j++)
+				{
+					if (m_vMin[j]>m_VertexArray[i+j]) m_vMin[j] = m_VertexArray[i+j];
+					if (m_vMax[j]<m_VertexArray[i+j]) m_vMax[j] = m_VertexArray[i+j];
+				}
+			}
+
 			break;
 
 		case LUMP_VERTEX_NORMAL:
@@ -252,6 +264,12 @@ void EmdMesh::Reset()
 	SAFE_DELETE_ARRAY(m_IndexArray);
 	SAFE_DELETE_ARRAY(m_IndexCount);
 	m_ElementCount = 0;
+
+	for (int i=0; i<3; i++)
+	{
+		m_vMin[i] = 9999999.9f;
+		m_vMax[i] = -9999999.9f;
+	}
 }
 
 bool EmdMesh::GetVertex( uint32 index, float& x, float& y, float &z ) const
@@ -301,4 +319,14 @@ bool EmdMesh::GetBinormal( uint32 index, float& x, float& y, float& z ) const
 	z = m_BinormalArray[index*3 + 2];
 
 	return true;
+}
+
+Vector3 EmdMesh::GetBoundingMin() const
+{
+	return Vector3(m_vMin);
+}
+
+Vector3 EmdMesh::GetBoundingMax() const
+{
+	return Vector3(m_vMax);
 }
