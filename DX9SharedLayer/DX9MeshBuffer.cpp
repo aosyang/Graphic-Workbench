@@ -4,10 +4,6 @@
 
 #include <d3dx9.h>
 
-#ifndef V_RETURN
-#define V_RETURN(x)    { hr = (x); if( FAILED(hr) ) { return hr; } }
-#endif
-
 template<typename T> inline void Swap(T& a, T& b) { T t = a; a = b; b = t; }
 
 DX9MeshBuffer::DX9MeshBuffer()

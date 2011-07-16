@@ -1,10 +1,10 @@
 /********************************************************************
-	created:	2011/07/16
+	created:	2011/07/17
 	filename: 	AppMain.cpp
-	project: 	Demo_DX9Framework
+	project: 	Demo_DX9ShadowMap
 	author:		Mwolf
 	
-	purpose:	A basic framework with dx9 rendering
+	purpose:	Dx9 shadow map demo
 *********************************************************************/
 
 #include "../DX9SharedLayer/DX9SharedLayer.h"
@@ -13,6 +13,7 @@
 #include "../libEmdMesh/EmdMesh.h"
 
 LPDIRECT3D9         g_pD3D = NULL; // Used to create the D3DDevice
+ID3DXEffect*		g_pEffect = NULL;
 float				g_ScreenAspect;
 Vector3				g_CenterPoint;
 
@@ -22,7 +23,6 @@ void Update(uint32 deltaTime);
 HRESULT InitD3D(HWND hWnd, uint32 width, uint32 height);
 void LoadMesh();
 void SetupLights();
-void SetupMatrices();
 void Cleanup();
 
 int WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, __in_opt LPSTR lpCmdLine, __in int nShowCmd )
@@ -59,19 +59,63 @@ int WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 
 void Update( uint32 deltaTime )
 {
+	HRESULT hr;
+
 	// Clear the backbuffer and the zbuffer
 	D3DDevice()->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
 						 D3DCOLOR_XRGB( 127, 127, 255 ), 1.0f, 0 );
 
-
 	// Begin the scene
 	if( SUCCEEDED( D3DDevice()->BeginScene() ) )
 	{
-		SetupLights();
+		// Set up world matrix
+		D3DXMATRIXA16 matWorld;
+		D3DXMatrixIdentity( &matWorld );
+		D3DXMatrixRotationY( &matWorld, (float)Timer::GetElapsedTime() / 1000.0f );
+		D3DDevice()->SetTransform( D3DTS_WORLD, &matWorld );
 
-		SetupMatrices();
+		// Set up our view matrix. A view matrix can be defined given an eye point,
+		// a point to lookat, and a direction for which way is up. Here, we set the
+		// eye five units back along the z-axis and up three units, look at the
+		// origin, and define "up" to be in the y-direction.
+		D3DXVECTOR3 vEyePt( 0.0f, 5.0f,-5.0f );
+		D3DXVECTOR3 vLookatPt( 0.0f, g_CenterPoint.y, 0.0f );
+		D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
+		D3DXMATRIXA16 matView;
+		D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );
+		D3DDevice()->SetTransform( D3DTS_VIEW, &matView );
 
-		g_MeshBuffer.Render();
+		// For the projection matrix, we set up a perspective transform (which
+		// transforms geometry from 3D view space to 2D viewport space, with
+		// a perspective divide making objects smaller in the distance). To build
+		// a perpsective transform, we need the field of view (1/4 pi is common),
+		// the aspect ratio, and the near and far clipping planes (which define at
+		// what distances geometry should be no longer be rendered).
+		D3DXMATRIXA16 matProj;
+		D3DXMatrixPerspectiveFovLH( &matProj, D3DX_PI / 4, g_ScreenAspect, 1.0f, 100.0f );
+		D3DDevice()->SetTransform( D3DTS_PROJECTION, &matProj );
+
+		D3DXMATRIXA16 mWorldViewProjection = matWorld * matView * matProj;
+
+		V( g_pEffect->SetMatrix( "matWorldViewProjection", &mWorldViewProjection ) );
+
+		V( g_pEffect->SetTechnique( "Default" ) );
+
+		UINT iPass, cPasses;
+
+		// Apply the technique contained in the effect 
+		V( g_pEffect->Begin( &cPasses, 0 ) );
+
+		for( iPass = 0; iPass < cPasses; iPass++ )
+		{
+			V( g_pEffect->BeginPass( iPass ) );
+
+			g_MeshBuffer.Render();
+
+			V( g_pEffect->EndPass() );
+		}
+		V( g_pEffect->End() );
+
 
 		// End the scene
 		D3DDevice()->EndScene();
@@ -110,6 +154,15 @@ HRESULT InitD3D( HWND hWnd, uint32 width, uint32 height )
 	// Turn on the zbuffer
 	D3DDevice()->SetRenderState( D3DRS_ZENABLE, TRUE );
 
+
+	LPD3DXBUFFER errorString;
+
+	if ( FAILED( D3DXCreateEffectFromFile( D3DDevice(), L"../Data/Fx/FlatColor.fx", NULL, NULL, NULL, NULL, &g_pEffect, &errorString ) ) )
+	{
+		//char* p = (char*)errorString->GetBufferPointer();
+		OutputDebugStringA( (LPCSTR)errorString->GetBufferPointer() );
+	}
+
 	return S_OK;
 }
 
@@ -121,70 +174,6 @@ void LoadMesh()
 		g_CenterPoint = (mesh.GetBoundingMin() + mesh.GetBoundingMax()) * 0.5f;
 		g_MeshBuffer.CreateFromMesh(&mesh);
 	}
-}
-
-void SetupLights()
-{
-	// Set up a material. The material here just has the diffuse and ambient
-	// colors set to yellow. Note that only one material can be used at a time.
-	D3DMATERIAL9 mtrl;
-	ZeroMemory( &mtrl, sizeof( D3DMATERIAL9 ) );
-	mtrl.Diffuse.r = mtrl.Ambient.r = 1.0f;
-	mtrl.Diffuse.g = mtrl.Ambient.g = 1.0f;
-	mtrl.Diffuse.b = mtrl.Ambient.b = 1.0f;
-	mtrl.Diffuse.a = mtrl.Ambient.a = 1.0f;
-	D3DDevice()->SetMaterial( &mtrl );
-
-	// Set up a white, directional light, with an oscillating direction.
-	// Note that many Lights may be active at a time (but each one slows down
-	// the rendering of our scene). However, here we are just using one. Also,
-	// we need to set the D3DRS_LIGHTING renderstate to enable lighting
-	D3DXVECTOR3 vecDir;
-	D3DLIGHT9 light;
-	ZeroMemory( &light, sizeof( D3DLIGHT9 ) );
-	light.Type = D3DLIGHT_DIRECTIONAL;
-	light.Diffuse.r = 1.0f;
-	light.Diffuse.g = 1.0f;
-	light.Diffuse.b = 1.0f;
-	vecDir = D3DXVECTOR3( -1.0f, -1.0f, 1.0f );
-	D3DXVec3Normalize( ( D3DXVECTOR3* )&light.Direction, &vecDir );
-	light.Range = 1000.0f;
-	D3DDevice()->SetLight( 0, &light );
-	D3DDevice()->LightEnable( 0, TRUE );
-	D3DDevice()->SetRenderState( D3DRS_LIGHTING, TRUE );
-
-	// Finally, turn on some ambient light.
-	D3DDevice()->SetRenderState( D3DRS_AMBIENT, 0x00202020 );
-}
-
-void SetupMatrices()
-{
-	// Set up world matrix
-	D3DXMATRIXA16 matWorld;
-	D3DXMatrixIdentity( &matWorld );
-	D3DXMatrixRotationY( &matWorld, (float)Timer::GetElapsedTime() / 1000.0f );
-	D3DDevice()->SetTransform( D3DTS_WORLD, &matWorld );
-
-	// Set up our view matrix. A view matrix can be defined given an eye point,
-	// a point to lookat, and a direction for which way is up. Here, we set the
-	// eye five units back along the z-axis and up three units, look at the
-	// origin, and define "up" to be in the y-direction.
-	D3DXVECTOR3 vEyePt( 0.0f, 5.0f,-5.0f );
-	D3DXVECTOR3 vLookatPt( 0.0f, g_CenterPoint.y, 0.0f );
-	D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
-	D3DXMATRIXA16 matView;
-	D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );
-	D3DDevice()->SetTransform( D3DTS_VIEW, &matView );
-
-	// For the projection matrix, we set up a perspective transform (which
-	// transforms geometry from 3D view space to 2D viewport space, with
-	// a perspective divide making objects smaller in the distance). To build
-	// a perpsective transform, we need the field of view (1/4 pi is common),
-	// the aspect ratio, and the near and far clipping planes (which define at
-	// what distances geometry should be no longer be rendered).
-	D3DXMATRIXA16 matProj;
-	D3DXMatrixPerspectiveFovLH( &matProj, D3DX_PI / 4, g_ScreenAspect, 1.0f, 100.0f );
-	D3DDevice()->SetTransform( D3DTS_PROJECTION, &matProj );
 }
 
 void Cleanup()
