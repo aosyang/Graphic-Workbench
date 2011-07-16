@@ -28,7 +28,7 @@ Vector3				g_CenterPoint;
 DX9MeshBuffer		g_MeshBuffer;
 
 void Update(uint32 deltaTime);
-HRESULT InitD3D(HWND hWnd);
+HRESULT InitD3D(HWND hWnd, uint32 width, uint32 height);
 void LoadMesh();
 void SetupLights();
 void SetupMatrices();
@@ -39,10 +39,10 @@ int WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 	RenderWindow* rw = new RenderWindow;
 	rw->Create(L"Direct3D 9 Framework - Graphic Workbench", 640, 480, 32, false);
 
-	g_ScreenAspect = 640.f / 480.f;
+	g_ScreenAspect = (float)rw->GetWidth() / rw->GetHeight();
 
 	HWND hWnd = rw->GetWindowHandle()->handle;
-	InitD3D(hWnd);
+	InitD3D(hWnd, rw->GetWidth(), rw->GetHeight());
 	LoadMesh();
 
 	Timer::UpdateElapsedTime();
@@ -90,7 +90,7 @@ void Update( uint32 deltaTime )
 	D3DDevice()->Present( NULL, NULL, NULL, NULL );
 }
 
-HRESULT InitD3D( HWND hWnd )
+HRESULT InitD3D( HWND hWnd, uint32 width, uint32 height )
 {
 	// Create the D3D object.
 	if( NULL == ( g_pD3D = Direct3DCreate9( D3D_SDK_VERSION ) ) )
@@ -103,6 +103,8 @@ HRESULT InitD3D( HWND hWnd )
 	d3dpp.Windowed = TRUE;
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	d3dpp.BackBufferFormat = D3DFMT_UNKNOWN;
+	d3dpp.BackBufferWidth = width;
+	d3dpp.BackBufferHeight = height;
 	d3dpp.EnableAutoDepthStencil = TRUE;
 	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
 
@@ -171,10 +173,6 @@ void SetupMatrices()
 	D3DXMatrixIdentity( &matWorld );
 	D3DXMatrixRotationY( &matWorld, (float)Timer::GetElapsedTime() / 1000.0f );
 	D3DDevice()->SetTransform( D3DTS_WORLD, &matWorld );
-
-	D3DXMATRIXA16 mat;
-	D3DXMatrixIdentity(&mat);
-	D3DXMatrixTranslation(&mat, 10.0f, 10.0f, 15.0f);
 
 	// Set up our view matrix. A view matrix can be defined given an eye point,
 	// a point to lookat, and a direction for which way is up. Here, we set the

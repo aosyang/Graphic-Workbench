@@ -31,6 +31,9 @@ public:
 	bool Create(const GWChar* titleName, uint32 width, uint32 height, uint32 depthBits, bool fullscreen);
 	void Destroy();
 
+	uint32 GetWidth() const;
+	uint32 GetHeight() const;
+
 	RenderWindowParam* GetWindowHandle();
 
 	bool HandleWindowMessage();

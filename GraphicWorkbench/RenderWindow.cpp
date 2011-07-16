@@ -156,6 +156,16 @@ RenderWindowParam* RenderWindow::GetWindowHandle()
 	return &m_RenderWindowParam;
 }
 
+uint32 RenderWindow::GetWidth() const
+{
+	return m_RenderWindowParam.width;
+}
+
+uint32 RenderWindow::GetHeight() const
+{
+	return m_RenderWindowParam.height;
+}
+
 WNDPROC CALLBACK WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
 	switch (uMsg)
