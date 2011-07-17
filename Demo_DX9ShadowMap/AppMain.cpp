@@ -14,6 +14,7 @@
 
 LPDIRECT3D9         g_pD3D = NULL; // Used to create the D3DDevice
 ID3DXEffect*		g_pEffect = NULL;
+ID3DXEffectPool*	g_pEffectPool = NULL;
 float				g_ScreenAspect;
 Vector3				g_CenterPoint;
 
@@ -68,11 +69,6 @@ void Update( uint32 deltaTime )
 	// Begin the scene
 	if( SUCCEEDED( D3DDevice()->BeginScene() ) )
 	{
-		// Set up world matrix
-		D3DXMATRIXA16 matWorld;
-		D3DXMatrixIdentity( &matWorld );
-		D3DXMatrixRotationY( &matWorld, (float)Timer::GetElapsedTime() / 1000.0f );
-		D3DDevice()->SetTransform( D3DTS_WORLD, &matWorld );
 
 		// Set up our view matrix. A view matrix can be defined given an eye point,
 		// a point to lookat, and a direction for which way is up. Here, we set the
@@ -95,7 +91,19 @@ void Update( uint32 deltaTime )
 		D3DXMatrixPerspectiveFovLH( &matProj, D3DX_PI / 4, g_ScreenAspect, 1.0f, 100.0f );
 		D3DDevice()->SetTransform( D3DTS_PROJECTION, &matProj );
 
-		D3DXMATRIXA16 mWorldViewProjection = matWorld * matView * matProj;
+		// Shared parameters for shaders
+		D3DXMATRIXA16 mViewProjection = matView * matProj;
+		V( g_pEffect->SetMatrix( "matView", &matView ) );
+		V( g_pEffect->SetMatrix( "matProjection", &matProj ) );
+		V( g_pEffect->SetMatrix( "matViewProjection", &mViewProjection ) );
+
+		// Set up world matrix
+		D3DXMATRIXA16 matWorld;
+		D3DXMatrixIdentity( &matWorld );
+		D3DXMatrixRotationY( &matWorld, (float)Timer::GetElapsedTime() / 1000.0f );
+		D3DDevice()->SetTransform( D3DTS_WORLD, &matWorld );
+
+		D3DXMATRIXA16 mWorldViewProjection = matWorld * mViewProjection;
 
 		V( g_pEffect->SetMatrix( "matWorldViewProjection", &mWorldViewProjection ) );
 
@@ -116,7 +124,6 @@ void Update( uint32 deltaTime )
 		}
 		V( g_pEffect->End() );
 
-
 		// End the scene
 		D3DDevice()->EndScene();
 	}
@@ -127,6 +134,8 @@ void Update( uint32 deltaTime )
 
 HRESULT InitD3D( HWND hWnd, uint32 width, uint32 height )
 {
+	HRESULT hr;
+
 	// Create the D3D object.
 	if( NULL == ( g_pD3D = Direct3DCreate9( D3D_SDK_VERSION ) ) )
 		return E_FAIL;
@@ -154,10 +163,12 @@ HRESULT InitD3D( HWND hWnd, uint32 width, uint32 height )
 	// Turn on the zbuffer
 	D3DDevice()->SetRenderState( D3DRS_ZENABLE, TRUE );
 
+	V_RETURN ( D3DXCreateEffectPool( &g_pEffectPool ) );
 
 	LPD3DXBUFFER errorString;
 
-	if ( FAILED( D3DXCreateEffectFromFile( D3DDevice(), L"../Data/Fx/FlatColor.fx", NULL, NULL, NULL, NULL, &g_pEffect, &errorString ) ) )
+	if ( FAILED( D3DXCreateEffectFromFile( D3DDevice(), L"../Data/Fx/FlatColor.fx", NULL, NULL, NULL, 
+										   g_pEffectPool, &g_pEffect, &errorString ) ) )
 	{
 		//char* p = (char*)errorString->GetBufferPointer();
 		OutputDebugStringA( (LPCSTR)errorString->GetBufferPointer() );
