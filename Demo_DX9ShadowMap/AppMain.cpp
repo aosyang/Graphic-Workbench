@@ -29,7 +29,7 @@ void Cleanup();
 int WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, __in_opt LPSTR lpCmdLine, __in int nShowCmd )
 {
 	RenderWindow* rw = new RenderWindow;
-	rw->Create(L"Direct3D 9 Framework - Graphic Workbench", 640, 480, 32, false);
+	rw->Create(L"Direct3D 9 Shadow map - Graphic Workbench", 640, 480, 32, false);
 
 	g_ScreenAspect = (float)rw->GetWidth() / rw->GetHeight();
 
@@ -105,7 +105,13 @@ void Update( uint32 deltaTime )
 
 		D3DXMATRIXA16 mWorldViewProjection = matWorld * mViewProjection;
 
+		V( g_pEffect->SetMatrix( "matWorld", &matWorld ) );
 		V( g_pEffect->SetMatrix( "matWorldViewProjection", &mWorldViewProjection ) );
+
+		D3DXVECTOR4 vecDir = D3DXVECTOR4( -1.0f, -1.0f, 1.0f, 0.0f );
+		D3DXVec4Normalize( &vecDir, &vecDir );
+
+		V( g_pEffect->SetVector( "vLightDir", &vecDir ) );
 
 		V( g_pEffect->SetTechnique( "Default" ) );
 
@@ -167,7 +173,7 @@ HRESULT InitD3D( HWND hWnd, uint32 width, uint32 height )
 
 	LPD3DXBUFFER errorString;
 
-	if ( FAILED( D3DXCreateEffectFromFile( D3DDevice(), L"../Data/Fx/FlatColor.fx", NULL, NULL, NULL, 
+	if ( FAILED( D3DXCreateEffectFromFile( D3DDevice(), L"../Data/Fx/SingleLighting.fx", NULL, NULL, NULL, 
 										   g_pEffectPool, &g_pEffect, &errorString ) ) )
 	{
 		//char* p = (char*)errorString->GetBufferPointer();

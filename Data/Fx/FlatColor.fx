@@ -30,3 +30,4 @@ technique Default
 		PixelShader  = compile ps_2_0 FlatColorPS();
 	}
 }
+
