@@ -84,28 +84,37 @@ void Update( uint32 deltaTime )
 		D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
 		D3DXMATRIXA16 matView;
 		D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );
-		D3DDevice()->SetTransform( D3DTS_VIEW, &matView );
 
 		D3DXMATRIXA16 matProj;
-		D3DXMatrixOrthoLH(&matProj, 10.0f, 10.0f, 1.0f, 10.0f);
-		D3DDevice()->SetTransform( D3DTS_PROJECTION, &matProj );
+		D3DXMatrixOrthoLH(&matProj, 5.0f, 5.0f, 1.0f, 10.0f);
 
 		// Shared parameters for shaders
 		D3DXMATRIXA16 mViewProjection = matView * matProj;
-		V( g_pEffect->SetMatrix( "matView", &matView ) );
-		V( g_pEffect->SetMatrix( "matProjection", &matProj ) );
-		V( g_pEffect->SetMatrix( "matViewProjection", &mViewProjection ) );
+		//V( g_pEffect->SetMatrix( "matView", &matView ) );
+		//V( g_pEffect->SetMatrix( "matProjection", &matProj ) );
+		//V( g_pEffect->SetMatrix( "matViewProjection", &mViewProjection ) );
+
 
 		// Set up world matrix
 		D3DXMATRIXA16 matWorld;
 		D3DXMatrixIdentity( &matWorld );
 		D3DXMatrixRotationY( &matWorld, (float)Timer::GetElapsedTime() / 1000.0f );
-		D3DDevice()->SetTransform( D3DTS_WORLD, &matWorld );
 
 		D3DXMATRIXA16 mWorldViewProjection = matWorld * mViewProjection;
 
 		V( g_pEffect->SetMatrix( "matWorld", &matWorld ) );
 		V( g_pEffect->SetMatrix( "matWorldViewProjection", &mWorldViewProjection ) );
+
+		D3DXMATRIXA16 matBias;
+		float bias[16] = { 0.5f, 0.0f, 0.0f, 0.0f,
+						   0.0f, 0.5f, 0.0f, 0.0f,
+						   0.0f, 0.0f, 0.5f, 0.0f,
+						   0.5f, 0.5f, 0.5f, 1.0f };
+		memcpy(matBias, bias, sizeof(float)*16);
+
+		D3DXMATRIXA16 matMVPBias = mWorldViewProjection * matBias;
+
+		V( g_pEffect->SetMatrix( "matLightViewProjBias", &matMVPBias ) );
 
 		V( g_pEffect->SetTechnique( "DepthMap" ) );
 
@@ -148,7 +157,6 @@ void Update( uint32 deltaTime )
 		D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
 		D3DXMATRIXA16 matView;
 		D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );
-		D3DDevice()->SetTransform( D3DTS_VIEW, &matView );
 
 		// For the projection matrix, we set up a perspective transform (which
 		// transforms geometry from 3D view space to 2D viewport space, with
@@ -158,7 +166,6 @@ void Update( uint32 deltaTime )
 		// what distances geometry should be no longer be rendered).
 		D3DXMATRIXA16 matProj;
 		D3DXMatrixPerspectiveFovLH( &matProj, D3DX_PI / 4, g_ScreenAspect, 1.0f, 100.0f );
-		D3DDevice()->SetTransform( D3DTS_PROJECTION, &matProj );
 
 		// Shared parameters for shaders
 		D3DXMATRIXA16 mViewProjection = matView * matProj;
@@ -170,7 +177,6 @@ void Update( uint32 deltaTime )
 		D3DXMATRIXA16 matWorld;
 		D3DXMatrixIdentity( &matWorld );
 		D3DXMatrixRotationY( &matWorld, (float)Timer::GetElapsedTime() / 1000.0f );
-		D3DDevice()->SetTransform( D3DTS_WORLD, &matWorld );
 
 		D3DXMATRIXA16 mWorldViewProjection = matWorld * mViewProjection;
 
@@ -181,8 +187,9 @@ void Update( uint32 deltaTime )
 		D3DXVec4Normalize( &vecDir, &vecDir );
 
 		V( g_pEffect->SetVector( "vLightDir", &vecDir ) );
+		V( g_pEffect->SetTexture( "texLightSpaceDepth", g_DepthTexture ) );
 
-		V( g_pEffect->SetTechnique( "Default" ) );
+		V( g_pEffect->SetTechnique( "Shadowed" ) );
 
 		UINT iPass, cPasses;
 
@@ -260,7 +267,7 @@ HRESULT InitD3D( HWND hWnd, uint32 width, uint32 height )
 	//								false, &g_DepthBuffer, NULL);
 
 	D3DXCreateTexture(D3DDevice(), SHADOW_BUFFER_SIZE, SHADOW_BUFFER_SIZE, 1, D3DUSAGE_RENDERTARGET,
-					  D3DFMT_R32F, D3DPOOL_DEFAULT, &g_DepthTexture);
+					  D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &g_DepthTexture);
 	g_DepthTexture->GetSurfaceLevel(0, &g_DepthBuffer);
 
 	return S_OK;
