@@ -1,11 +1,9 @@
 
 #include "Global.fxh"
 
-float4x4 matWorldViewProjection;
-
 struct VS_OUTPUT
 {
-    float4 Position   : POSITION;
+    float4	Position	: POSITION;
 };
 
 VS_OUTPUT FlatColorVS( float4 vPosition : POSITION )
@@ -17,7 +15,7 @@ VS_OUTPUT FlatColorVS( float4 vPosition : POSITION )
 	return Out;
 }
 
-float4 FlatColorPS( VS_OUTPUT In ) : COLOR0
+float4 FlatColorPS( VS_OUTPUT In ) : COLOR
 {
 	return float4(0, 1, 0, 1);
 }

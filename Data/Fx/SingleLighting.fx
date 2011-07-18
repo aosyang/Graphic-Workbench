@@ -1,14 +1,11 @@
 
 #include "Global.fxh"
-
-float4x4	matWorld;
-float4x4	matWorldViewProjection;
-float4		vLightDir;
+#include "DepthMap.fxh"
 
 struct VS_OUTPUT
 {
-    float4 Position		: POSITION;
-    float4 Diffuse		: COLOR0;
+    float4	Position	: POSITION;
+    float4	Diffuse		: COLOR0;
 };
 
 VS_OUTPUT SingleLightingVS( float4 vPosition : POSITION,
@@ -24,7 +21,7 @@ VS_OUTPUT SingleLightingVS( float4 vPosition : POSITION,
 	return Out;
 }
 
-float4 SingleLightingPS( VS_OUTPUT In ) : COLOR0
+float4 SingleLightingPS( VS_OUTPUT In ) : COLOR
 {
 	return In.Diffuse;
 }
