@@ -15,6 +15,12 @@
 LPDIRECT3D9         g_pD3D = NULL; // Used to create the D3DDevice
 ID3DXEffect*		g_pEffect = NULL;
 ID3DXEffectPool*	g_pEffectPool = NULL;
+
+LPDIRECT3DTEXTURE9	g_DepthTexture = NULL;
+IDirect3DSurface9*	g_DepthBuffer = NULL;
+IDirect3DSurface9*	g_BackBuffer = NULL;
+#define SHADOW_BUFFER_SIZE 256
+
 float				g_ScreenAspect;
 Vector3				g_CenterPoint;
 
@@ -61,6 +67,69 @@ int WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, 
 void Update( uint32 deltaTime )
 {
 	HRESULT hr;
+
+	// Render to render target
+	D3DDevice()->SetRenderTarget(0, g_DepthBuffer);
+
+	// clear depth buffer
+	D3DDevice()->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0xff, 0xff, 0xff), 1.0f, 0);
+
+
+	// Begin the scene
+	if( SUCCEEDED( D3DDevice()->BeginScene() ) )
+	{
+		// Setup light view
+		D3DXVECTOR3 vEyePt( 5.0f, 5.0f,-5.0f );
+		D3DXVECTOR3 vLookatPt( 0.0f, g_CenterPoint.y, 0.0f );
+		D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
+		D3DXMATRIXA16 matView;
+		D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );
+		D3DDevice()->SetTransform( D3DTS_VIEW, &matView );
+
+		D3DXMATRIXA16 matProj;
+		D3DXMatrixOrthoLH(&matProj, 10.0f, 10.0f, 1.0f, 10.0f);
+		D3DDevice()->SetTransform( D3DTS_PROJECTION, &matProj );
+
+		// Shared parameters for shaders
+		D3DXMATRIXA16 mViewProjection = matView * matProj;
+		V( g_pEffect->SetMatrix( "matView", &matView ) );
+		V( g_pEffect->SetMatrix( "matProjection", &matProj ) );
+		V( g_pEffect->SetMatrix( "matViewProjection", &mViewProjection ) );
+
+		// Set up world matrix
+		D3DXMATRIXA16 matWorld;
+		D3DXMatrixIdentity( &matWorld );
+		D3DXMatrixRotationY( &matWorld, (float)Timer::GetElapsedTime() / 1000.0f );
+		D3DDevice()->SetTransform( D3DTS_WORLD, &matWorld );
+
+		D3DXMATRIXA16 mWorldViewProjection = matWorld * mViewProjection;
+
+		V( g_pEffect->SetMatrix( "matWorld", &matWorld ) );
+		V( g_pEffect->SetMatrix( "matWorldViewProjection", &mWorldViewProjection ) );
+
+		V( g_pEffect->SetTechnique( "DepthMap" ) );
+
+		UINT iPass, cPasses;
+
+		// Apply the technique contained in the effect 
+		V( g_pEffect->Begin( &cPasses, 0 ) );
+
+		for( iPass = 0; iPass < cPasses; iPass++ )
+		{
+			V( g_pEffect->BeginPass( iPass ) );
+
+			g_MeshBuffer.Render();
+
+			V( g_pEffect->EndPass() );
+		}
+		V( g_pEffect->End() );
+
+		// End the scene
+		D3DDevice()->EndScene();
+	}
+
+
+	D3DDevice()->SetRenderTarget(0, g_BackBuffer);
 
 	// Clear the backbuffer and the zbuffer
 	D3DDevice()->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
@@ -180,6 +249,20 @@ HRESULT InitD3D( HWND hWnd, uint32 width, uint32 height )
 		OutputDebugStringA( (LPCSTR)errorString->GetBufferPointer() );
 	}
 
+	// store back buffer
+	D3DDevice()->GetRenderTarget(0, &g_BackBuffer);
+	//D3DSURFACE_DESC desc;
+	//g_BackBuffer->GetDesc(&desc);
+
+	//// Create shadow depth target
+	//D3DDevice()->CreateRenderTarget(SHADOW_BUFFER_SIZE, SHADOW_BUFFER_SIZE, D3DFMT_R32F,
+	//								desc.MultiSampleType, desc.MultiSampleQuality,
+	//								false, &g_DepthBuffer, NULL);
+
+	D3DXCreateTexture(D3DDevice(), SHADOW_BUFFER_SIZE, SHADOW_BUFFER_SIZE, 1, D3DUSAGE_RENDERTARGET,
+					  D3DFMT_R32F, D3DPOOL_DEFAULT, &g_DepthTexture);
+	g_DepthTexture->GetSurfaceLevel(0, &g_DepthBuffer);
+
 	return S_OK;
 }
 
@@ -195,6 +278,9 @@ void LoadMesh()
 
 void Cleanup()
 {
+	SAFE_RELEASE(g_DepthBuffer);
+	SAFE_RELEASE(g_DepthTexture);
+	SAFE_RELEASE(g_BackBuffer);
 	SAFE_RELEASE(g_pEffect);
 	SAFE_RELEASE(g_pEffectPool);
 

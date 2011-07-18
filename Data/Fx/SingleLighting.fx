@@ -34,3 +34,12 @@ technique Default
 		PixelShader  = compile ps_2_0 SingleLightingPS();
 	}
 }
+
+technique DepthMap
+{
+	pass p0
+	{
+		VertexShader = compile vs_2_0 DepthMapVS();
+		PixelShader  = compile ps_2_0 DepthMapPS();
+	}
+}
