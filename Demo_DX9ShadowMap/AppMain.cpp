@@ -195,6 +195,9 @@ void LoadMesh()
 
 void Cleanup()
 {
+	SAFE_RELEASE(g_pEffect);
+	SAFE_RELEASE(g_pEffectPool);
+
 	if( D3DDevice() != NULL )
 		D3DDevice()->Release();
 
