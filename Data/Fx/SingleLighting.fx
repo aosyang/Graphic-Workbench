@@ -73,13 +73,6 @@ VS_SHADOW_OUTPUT SingleShadowedVS( float4 vPosition : POSITION,
 float4 SingleShadowedPS( VS_SHADOW_OUTPUT In ) : COLOR
 {
 	//return tex2Dproj(samplerLightSpaceDepth, In.ProjTexcoord);
-	
-	/*
-	float4 color = (float4)(In.LightSpacePos.z);
-	//float4 color = (float4)In.LightSpacePos.z;
-	color.a = 1;
-	return color;
-	*/
 		
 	float depth = tex2Dproj(samplerLightSpaceDepth, In.ProjTexcoord).r;
 	

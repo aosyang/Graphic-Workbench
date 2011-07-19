@@ -19,7 +19,7 @@ ID3DXEffectPool*	g_pEffectPool = NULL;
 LPDIRECT3DTEXTURE9	g_DepthTexture = NULL;
 IDirect3DSurface9*	g_DepthBuffer = NULL;
 IDirect3DSurface9*	g_BackBuffer = NULL;
-#define SHADOW_BUFFER_SIZE 256
+#define SHADOW_BUFFER_SIZE 512
 
 float				g_ScreenAspect;
 Vector3				g_CenterPoint;
@@ -35,7 +35,7 @@ void Cleanup();
 int WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, __in_opt LPSTR lpCmdLine, __in int nShowCmd )
 {
 	RenderWindow* rw = new RenderWindow;
-	rw->Create(L"Direct3D 9 Shadow map - Graphic Workbench", 640, 480, 32, false);
+	rw->Create(L"Direct3D 9 Shadow map - Graphic Workbench", 1024, 768, 32, false);
 
 	g_ScreenAspect = (float)rw->GetWidth() / rw->GetHeight();
 
@@ -68,10 +68,19 @@ void Update( uint32 deltaTime )
 {
 	HRESULT hr;
 
-	float rot = (float)Timer::GetElapsedTime() / 1000.0f;
+	float rot = (float)Timer::GetElapsedTime() / 5000.0f;
 
 	// Render to render target
 	D3DDevice()->SetRenderTarget(0, g_DepthBuffer);
+
+	D3DVIEWPORT9 vp;
+	vp.X = 0;
+	vp.Y = 0;
+	vp.Width = SHADOW_BUFFER_SIZE;
+	vp.Height = SHADOW_BUFFER_SIZE;
+	vp.MinZ = 0.0f;
+	vp.MaxZ = 1.0f;
+	D3DDevice()->SetViewport(&vp);
 
 	// clear depth buffer
 	D3DDevice()->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0xff, 0xff, 0xff), 1.0f, 0);
@@ -92,7 +101,7 @@ void Update( uint32 deltaTime )
 		D3DXVec4Normalize( &vecDir, &vecDir );
 
 		D3DXMATRIXA16 matProj;
-		D3DXMatrixOrthoLH(&matProj, 5.0f, 5.0f, 5.0f, 10.0f);
+		D3DXMatrixOrthoLH(&matProj, 15.0f, 15.0f, 1.0f, 40.0f);
 
 		// Shared parameters for shaders
 		D3DXMATRIXA16 mViewProjection = matView * matProj;
@@ -146,6 +155,16 @@ void Update( uint32 deltaTime )
 
 
 	D3DDevice()->SetRenderTarget(0, g_BackBuffer);
+	D3DSURFACE_DESC desc;
+	g_BackBuffer->GetDesc(&desc);
+
+	vp.X = 0;
+	vp.Y = 0;
+	vp.Width = desc.Width;
+	vp.Height = desc.Height;
+	vp.MinZ = 0.0f;
+	vp.MaxZ = 1.0f;
+	D3DDevice()->SetViewport(&vp);
 
 	// Clear the backbuffer and the zbuffer
 	D3DDevice()->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
