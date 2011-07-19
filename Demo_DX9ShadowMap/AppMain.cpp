@@ -68,46 +68,53 @@ void Update( uint32 deltaTime )
 {
 	HRESULT hr;
 
+	float rot = (float)Timer::GetElapsedTime() / 1000.0f;
+
 	// Render to render target
 	D3DDevice()->SetRenderTarget(0, g_DepthBuffer);
 
 	// clear depth buffer
 	D3DDevice()->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0xff, 0xff, 0xff), 1.0f, 0);
 
+	D3DXVECTOR4 vecDir;
 
 	// Begin the scene
 	if( SUCCEEDED( D3DDevice()->BeginScene() ) )
 	{
 		// Setup light view
-		D3DXVECTOR3 vEyePt( 5.0f, 5.0f,-5.0f );
+		D3DXVECTOR3 vEyePt( -5.0f, 5.0f, -5.0f );
 		D3DXVECTOR3 vLookatPt( 0.0f, g_CenterPoint.y, 0.0f );
 		D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
 		D3DXMATRIXA16 matView;
 		D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );
 
+		vecDir = D3DXVECTOR4(vLookatPt - vEyePt, 0.0f);
+		D3DXVec4Normalize( &vecDir, &vecDir );
+
 		D3DXMATRIXA16 matProj;
-		D3DXMatrixOrthoLH(&matProj, 5.0f, 5.0f, 1.0f, 10.0f);
+		D3DXMatrixOrthoLH(&matProj, 5.0f, 5.0f, 5.0f, 10.0f);
 
 		// Shared parameters for shaders
 		D3DXMATRIXA16 mViewProjection = matView * matProj;
-		//V( g_pEffect->SetMatrix( "matView", &matView ) );
-		//V( g_pEffect->SetMatrix( "matProjection", &matProj ) );
-		//V( g_pEffect->SetMatrix( "matViewProjection", &mViewProjection ) );
+		V( g_pEffect->SetMatrix( "matView", &matView ) );
+		V( g_pEffect->SetMatrix( "matProjection", &matProj ) );
+		V( g_pEffect->SetMatrix( "matViewProjection", &mViewProjection ) );
 
 
 		// Set up world matrix
 		D3DXMATRIXA16 matWorld;
 		D3DXMatrixIdentity( &matWorld );
-		D3DXMatrixRotationY( &matWorld, (float)Timer::GetElapsedTime() / 1000.0f );
+		D3DXMatrixRotationY( &matWorld, rot );
 
 		D3DXMATRIXA16 mWorldViewProjection = matWorld * mViewProjection;
 
 		V( g_pEffect->SetMatrix( "matWorld", &matWorld ) );
 		V( g_pEffect->SetMatrix( "matWorldViewProjection", &mWorldViewProjection ) );
+		V( g_pEffect->SetMatrix( "matLightSpace", &mWorldViewProjection ) );
 
 		D3DXMATRIXA16 matBias;
 		float bias[16] = { 0.5f, 0.0f, 0.0f, 0.0f,
-						   0.0f, 0.5f, 0.0f, 0.0f,
+						   0.0f, -0.5f, 0.0f, 0.0f,
 						   0.0f, 0.0f, 0.5f, 0.0f,
 						   0.5f, 0.5f, 0.5f, 1.0f };
 		memcpy(matBias, bias, sizeof(float)*16);
@@ -152,7 +159,7 @@ void Update( uint32 deltaTime )
 		// a point to lookat, and a direction for which way is up. Here, we set the
 		// eye five units back along the z-axis and up three units, look at the
 		// origin, and define "up" to be in the y-direction.
-		D3DXVECTOR3 vEyePt( 0.0f, 5.0f,-5.0f );
+		D3DXVECTOR3 vEyePt( 0.0f, 5.0f, -5.0f );
 		D3DXVECTOR3 vLookatPt( 0.0f, g_CenterPoint.y, 0.0f );
 		D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
 		D3DXMATRIXA16 matView;
@@ -176,15 +183,12 @@ void Update( uint32 deltaTime )
 		// Set up world matrix
 		D3DXMATRIXA16 matWorld;
 		D3DXMatrixIdentity( &matWorld );
-		D3DXMatrixRotationY( &matWorld, (float)Timer::GetElapsedTime() / 1000.0f );
+		D3DXMatrixRotationY( &matWorld, rot );
 
 		D3DXMATRIXA16 mWorldViewProjection = matWorld * mViewProjection;
 
 		V( g_pEffect->SetMatrix( "matWorld", &matWorld ) );
 		V( g_pEffect->SetMatrix( "matWorldViewProjection", &mWorldViewProjection ) );
-
-		D3DXVECTOR4 vecDir = D3DXVECTOR4( -1.0f, -1.0f, 1.0f, 0.0f );
-		D3DXVec4Normalize( &vecDir, &vecDir );
 
 		V( g_pEffect->SetVector( "vLightDir", &vecDir ) );
 		V( g_pEffect->SetTexture( "texLightSpaceDepth", g_DepthTexture ) );
@@ -267,7 +271,7 @@ HRESULT InitD3D( HWND hWnd, uint32 width, uint32 height )
 	//								false, &g_DepthBuffer, NULL);
 
 	D3DXCreateTexture(D3DDevice(), SHADOW_BUFFER_SIZE, SHADOW_BUFFER_SIZE, 1, D3DUSAGE_RENDERTARGET,
-					  D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &g_DepthTexture);
+					  D3DFMT_R32F, D3DPOOL_DEFAULT, &g_DepthTexture);
 	g_DepthTexture->GetSurfaceLevel(0, &g_DepthBuffer);
 
 	return S_OK;

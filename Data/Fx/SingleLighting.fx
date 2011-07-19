@@ -2,6 +2,7 @@
 #include "Global.fxh"
 #include "DepthMap.fxh"
 
+shared float4x4 matLightSpace;
 shared float4x4 matLightViewProjBias;
 
 struct VS_OUTPUT
@@ -47,7 +48,7 @@ struct VS_SHADOW_OUTPUT
 {
 	float4	Position		: POSITION;
 	float2	Texcoord		: TEXCOORD0;
-	float4	WorldPos		: TEXCOORD1;
+	float4	LightSpacePos	: TEXCOORD1;
 	float3	Normal			: TEXCOORD2;
 	float4	ProjTexcoord	: TEXCOORD3;
 };
@@ -60,7 +61,7 @@ VS_SHADOW_OUTPUT SingleShadowedVS( float4 vPosition : POSITION,
 	
 	Out.Position = mul(vPosition, matWorldViewProjection);
 	Out.Texcoord = vTexcoord;
-	Out.WorldPos = mul(vPosition, matWorld);
+	Out.LightSpacePos = mul(vPosition, matLightSpace);
 	
 	Out.Normal = mul(vNormal, (float3x3)matWorld);
 	
@@ -71,7 +72,21 @@ VS_SHADOW_OUTPUT SingleShadowedVS( float4 vPosition : POSITION,
 
 float4 SingleShadowedPS( VS_SHADOW_OUTPUT In ) : COLOR
 {
-	return tex2Dproj(samplerLightSpaceDepth, In.ProjTexcoord);
+	//return tex2Dproj(samplerLightSpaceDepth, In.ProjTexcoord);
+	
+	/*
+	float4 color = (float4)(In.LightSpacePos.z);
+	//float4 color = (float4)In.LightSpacePos.z;
+	color.a = 1;
+	return color;
+	*/
+		
+	float depth = tex2Dproj(samplerLightSpaceDepth, In.ProjTexcoord).r;
+	
+	if (depth < In.LightSpacePos.z - 0.01)
+		return float4((float3)abs(dot(vLightDir, normalize(In.Normal)) * 0.2), 1);
+	
+	return float4((float3)dot(-vLightDir, normalize(In.Normal)), 1);
 }
 
 technique Default
