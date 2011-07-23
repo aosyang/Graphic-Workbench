@@ -1,11 +1,12 @@
 /********************************************************************
-	created:	2011/07/17
+	created:	2011/07/24
 	filename: 	AppMain.cpp
-	project: 	Demo_DX9ShadowMap
+	project: 	Demo_DX9EnvironmentMapping
 	author:		Mwolf
 	
-	purpose:	Dx9 shadow map demo
+	purpose:	
 *********************************************************************/
+
 
 #include "../DX9SharedLayer/DX9SharedLayer.h"
 
@@ -16,25 +17,22 @@ LPDIRECT3D9         g_pD3D = NULL; // Used to create the D3DDevice
 ID3DXEffect*		g_pEffect = NULL;
 ID3DXEffectPool*	g_pEffectPool = NULL;
 
-LPDIRECT3DTEXTURE9	g_DepthTexture = NULL;
-IDirect3DSurface9*	g_DepthBuffer = NULL;
-IDirect3DSurface9*	g_BackBuffer = NULL;
-#define SHADOW_BUFFER_SIZE 512
-
 float				g_ScreenAspect;
 Vector3				g_CenterPoint;
 
 DX9MeshBuffer		g_MeshBuffer;
+LPDIRECT3DCUBETEXTURE9	g_EnvTexture = NULL;
 
 void Update(uint32 deltaTime);
 HRESULT InitD3D(HWND hWnd, uint32 width, uint32 height);
 void LoadMesh();
+void SetupLights();
 void Cleanup();
 
 int WINAPI WinMain( __in HINSTANCE hInstance, __in_opt HINSTANCE hPrevInstance, __in_opt LPSTR lpCmdLine, __in int nShowCmd )
 {
 	RenderWindow* rw = new RenderWindow;
-	rw->Create(L"Direct3D 9 Shadow map - Graphic Workbench", 1024, 768, 32, false);
+	rw->Create(L"Direct3D 9 Environment Mapping - Graphic Workbench", 1024, 768, 32, false);
 
 	g_ScreenAspect = (float)rw->GetWidth() / rw->GetHeight();
 
@@ -69,109 +67,9 @@ void Update( uint32 deltaTime )
 
 	float rot = (float)Timer::GetElapsedTime() / 5000.0f;
 
-	// Render to render target
-	D3DDevice()->SetRenderTarget(0, g_DepthBuffer);
-
-	D3DVIEWPORT9 vp;
-	vp.X = 0;
-	vp.Y = 0;
-	vp.Width = SHADOW_BUFFER_SIZE;
-	vp.Height = SHADOW_BUFFER_SIZE;
-	vp.MinZ = 0.0f;
-	vp.MaxZ = 1.0f;
-	D3DDevice()->SetViewport(&vp);
-
-	// clear depth buffer
-	D3DDevice()->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0xff, 0xff, 0xff), 1.0f, 0);
-
-	D3DXVECTOR4 vecDir;
-
-	// Begin the scene
-	if( SUCCEEDED( D3DDevice()->BeginScene() ) )
-	{
-		// Setup light view
-		D3DXVECTOR3 vEyePt( -5.0f, 5.0f, -5.0f );
-		D3DXVECTOR3 vLookatPt( 0.0f, g_CenterPoint.y, 0.0f );
-		D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
-		D3DXMATRIXA16 matView;
-		D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );
-
-		vecDir = D3DXVECTOR4(vLookatPt - vEyePt, 0.0f);
-		D3DXVec4Normalize( &vecDir, &vecDir );
-
-		D3DXMATRIXA16 matProj;
-		D3DXMatrixOrthoLH(&matProj, 15.0f, 15.0f, 1.0f, 40.0f);
-
-		// Shared parameters for shaders
-		D3DXMATRIXA16 mViewProjection = matView * matProj;
-		V( g_pEffect->SetMatrix( "matView", &matView ) );
-		V( g_pEffect->SetMatrix( "matProjection", &matProj ) );
-		V( g_pEffect->SetMatrix( "matViewProjection", &mViewProjection ) );
-
-
-		// Set up world matrix
-		D3DXMATRIXA16 matWorld;
-		D3DXMatrixIdentity( &matWorld );
-		D3DXMatrixRotationY( &matWorld, rot );
-
-		D3DXMATRIXA16 mWorldViewProjection = matWorld * mViewProjection;
-
-		V( g_pEffect->SetMatrix( "matWorld", &matWorld ) );
-		V( g_pEffect->SetMatrix( "matWorldViewProjection", &mWorldViewProjection ) );
-		V( g_pEffect->SetMatrix( "matLightSpace", &mWorldViewProjection ) );
-
-		// D3D has half a pixel offset in texture sampling
-		float xOffset = 0.5f + 0.5f / SHADOW_BUFFER_SIZE;
-		float yOffset = 0.5f + 0.5f / SHADOW_BUFFER_SIZE;
-		float bias[16] = { 0.5f, 0.0f, 0.0f, 0.0f,
-						   0.0f, -0.5f, 0.0f, 0.0f,
-						   0.0f, 0.0f, 0.0f, 0.0f,
-						   xOffset, yOffset, 0.0f, 1.0f };
-
-		D3DXMATRIXA16 matBias;
-		memcpy(matBias, bias, sizeof(float)*16);
-
-		D3DXMATRIXA16 matMVPBias = mWorldViewProjection * matBias;
-
-		V( g_pEffect->SetMatrix( "matLightViewProjBias", &matMVPBias ) );
-
-		V( g_pEffect->SetTechnique( "DepthMap" ) );
-
-		UINT iPass, cPasses;
-
-		// Apply the technique contained in the effect 
-		V( g_pEffect->Begin( &cPasses, 0 ) );
-
-		for( iPass = 0; iPass < cPasses; iPass++ )
-		{
-			V( g_pEffect->BeginPass( iPass ) );
-
-			g_MeshBuffer.Render();
-
-			V( g_pEffect->EndPass() );
-		}
-		V( g_pEffect->End() );
-
-		// End the scene
-		D3DDevice()->EndScene();
-	}
-
-
-	D3DDevice()->SetRenderTarget(0, g_BackBuffer);
-	D3DSURFACE_DESC desc;
-	g_BackBuffer->GetDesc(&desc);
-
-	vp.X = 0;
-	vp.Y = 0;
-	vp.Width = desc.Width;
-	vp.Height = desc.Height;
-	vp.MinZ = 0.0f;
-	vp.MaxZ = 1.0f;
-	D3DDevice()->SetViewport(&vp);
-
 	// Clear the backbuffer and the zbuffer
 	D3DDevice()->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER,
-						 D3DCOLOR_XRGB( 127, 127, 255 ), 1.0f, 0 );
+		D3DCOLOR_XRGB( 127, 127, 255 ), 1.0f, 0 );
 
 	// Begin the scene
 	if( SUCCEEDED( D3DDevice()->BeginScene() ) )
@@ -181,7 +79,7 @@ void Update( uint32 deltaTime )
 		// a point to lookat, and a direction for which way is up. Here, we set the
 		// eye five units back along the z-axis and up three units, look at the
 		// origin, and define "up" to be in the y-direction.
-		D3DXVECTOR3 vEyePt( 0.0f, 5.0f, -5.0f );
+		D3DXVECTOR3 vEyePt( sinf(rot) * 5.0f, 5.0f, cosf(rot) * 5.0f );
 		D3DXVECTOR3 vLookatPt( 0.0f, g_CenterPoint.y, 0.0f );
 		D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
 		D3DXMATRIXA16 matView;
@@ -201,21 +99,21 @@ void Update( uint32 deltaTime )
 		V( g_pEffect->SetMatrix( "matView", &matView ) );
 		V( g_pEffect->SetMatrix( "matProjection", &matProj ) );
 		V( g_pEffect->SetMatrix( "matViewProjection", &mViewProjection ) );
+		V( g_pEffect->SetFloatArray( "vEyePosWorld", vEyePt, 3 ));
 
 		// Set up world matrix
 		D3DXMATRIXA16 matWorld;
 		D3DXMatrixIdentity( &matWorld );
-		D3DXMatrixRotationY( &matWorld, rot );
+		//D3DXMatrixRotationY( &matWorld, rot );
 
 		D3DXMATRIXA16 mWorldViewProjection = matWorld * mViewProjection;
 
 		V( g_pEffect->SetMatrix( "matWorld", &matWorld ) );
 		V( g_pEffect->SetMatrix( "matWorldViewProjection", &mWorldViewProjection ) );
 
-		V( g_pEffect->SetVector( "vLightDir", &vecDir ) );
-		V( g_pEffect->SetTexture( "texLightSpaceDepth", g_DepthTexture ) );
+		V( g_pEffect->SetTexture( "texEnv", g_EnvTexture ) );
 
-		V( g_pEffect->SetTechnique( "Shadowed" ) );
+		V( g_pEffect->SetTechnique( "Default" ) );
 
 		UINT iPass, cPasses;
 
@@ -271,30 +169,17 @@ HRESULT InitD3D( HWND hWnd, uint32 width, uint32 height )
 	// Turn on the zbuffer
 	D3DDevice()->SetRenderState( D3DRS_ZENABLE, TRUE );
 
+	V_RETURN ( D3DXCreateCubeTextureFromFile( D3DDevice(), L"../Data/Texture/grace_cube.dds", &g_EnvTexture ) );
+
 	V_RETURN ( D3DXCreateEffectPool( &g_pEffectPool ) );
 
 	LPD3DXBUFFER errorString;
 
-	if ( FAILED( D3DXCreateEffectFromFile( D3DDevice(), L"../Data/Fx/SingleLighting.fx", NULL, NULL, NULL, 
-										   g_pEffectPool, &g_pEffect, &errorString ) ) )
+	if ( FAILED( D3DXCreateEffectFromFile( D3DDevice(), L"../Data/Fx/EnvMapping.fx", NULL, NULL, NULL, 
+		g_pEffectPool, &g_pEffect, &errorString ) ) )
 	{
-		//char* p = (char*)errorString->GetBufferPointer();
 		OutputDebugStringA( (LPCSTR)errorString->GetBufferPointer() );
 	}
-
-	// store back buffer
-	D3DDevice()->GetRenderTarget(0, &g_BackBuffer);
-	//D3DSURFACE_DESC desc;
-	//g_BackBuffer->GetDesc(&desc);
-
-	//// Create shadow depth target
-	//D3DDevice()->CreateRenderTarget(SHADOW_BUFFER_SIZE, SHADOW_BUFFER_SIZE, D3DFMT_R32F,
-	//								desc.MultiSampleType, desc.MultiSampleQuality,
-	//								false, &g_DepthBuffer, NULL);
-
-	D3DXCreateTexture(D3DDevice(), SHADOW_BUFFER_SIZE, SHADOW_BUFFER_SIZE, 1, D3DUSAGE_RENDERTARGET,
-					  D3DFMT_R32F, D3DPOOL_DEFAULT, &g_DepthTexture);
-	g_DepthTexture->GetSurfaceLevel(0, &g_DepthBuffer);
 
 	return S_OK;
 }
@@ -311,9 +196,6 @@ void LoadMesh()
 
 void Cleanup()
 {
-	SAFE_RELEASE(g_DepthBuffer);
-	SAFE_RELEASE(g_DepthTexture);
-	SAFE_RELEASE(g_BackBuffer);
 	SAFE_RELEASE(g_pEffect);
 	SAFE_RELEASE(g_pEffectPool);
 

@@ -26,6 +26,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo_DX9ShadowMap", "..\..\
 		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F} = {0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo_DX9EnvironmentMapping", "..\..\Demo_DX9EnvironmentMapping\Demo_DX9EnvironmentMapping.vcproj", "{8BFEEA43-83F0-407F-B306-5FAA965FF81E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D6C07D7C-1FDA-4C43-BC78-680FF5B283FB} = {D6C07D7C-1FDA-4C43-BC78-680FF5B283FB}
+		{655C1D84-A75F-43FB-B9A4-4776A9AC8F50} = {655C1D84-A75F-43FB-B9A4-4776A9AC8F50}
+		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F} = {0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -56,6 +63,10 @@ Global
 		{63BE85A7-AA90-4028-AC5D-F0E75CEC15F5}.Debug|Win32.Build.0 = Debug|Win32
 		{63BE85A7-AA90-4028-AC5D-F0E75CEC15F5}.Release|Win32.ActiveCfg = Release|Win32
 		{63BE85A7-AA90-4028-AC5D-F0E75CEC15F5}.Release|Win32.Build.0 = Release|Win32
+		{8BFEEA43-83F0-407F-B306-5FAA965FF81E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8BFEEA43-83F0-407F-B306-5FAA965FF81E}.Debug|Win32.Build.0 = Debug|Win32
+		{8BFEEA43-83F0-407F-B306-5FAA965FF81E}.Release|Win32.ActiveCfg = Release|Win32
+		{8BFEEA43-83F0-407F-B306-5FAA965FF81E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
