@@ -121,11 +121,15 @@ void Update( uint32 deltaTime )
 		V( g_pEffect->SetMatrix( "matWorldViewProjection", &mWorldViewProjection ) );
 		V( g_pEffect->SetMatrix( "matLightSpace", &mWorldViewProjection ) );
 
-		D3DXMATRIXA16 matBias;
+		// D3D has half a pixel offset in texture sampling
+		float xOffset = 0.5f + 0.5f / SHADOW_BUFFER_SIZE;
+		float yOffset = 0.5f + 0.5f / SHADOW_BUFFER_SIZE;
 		float bias[16] = { 0.5f, 0.0f, 0.0f, 0.0f,
 						   0.0f, -0.5f, 0.0f, 0.0f,
-						   0.0f, 0.0f, 0.5f, 0.0f,
-						   0.5f, 0.5f, 0.5f, 1.0f };
+						   0.0f, 0.0f, 0.0f, 0.0f,
+						   xOffset, yOffset, 0.0f, 1.0f };
+
+		D3DXMATRIXA16 matBias;
 		memcpy(matBias, bias, sizeof(float)*16);
 
 		D3DXMATRIXA16 matMVPBias = mWorldViewProjection * matBias;

@@ -76,7 +76,7 @@ float4 SingleShadowedPS( VS_SHADOW_OUTPUT In ) : COLOR
 		
 	float depth = tex2Dproj(samplerLightSpaceDepth, In.ProjTexcoord).r;
 	
-	if (depth < In.LightSpacePos.z - 0.01)
+	if (depth < In.LightSpacePos.z - 0.005)
 		return float4((float3)abs(dot(vLightDir, normalize(In.Normal)) * 0.2), 1);
 	
 	return float4((float3)dot(-vLightDir, normalize(In.Normal)), 1);
