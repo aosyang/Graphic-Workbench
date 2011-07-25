@@ -29,8 +29,10 @@ VS_OUTPUT EnvReflectiveVS( float4 vPosition : POSITION,
 	float3 worldPos = mul(vPosition, matWorld);
 
 	Out.Position = mul(vPosition, matWorldViewProjection);
-	Out.Diffuse = float4(0, 1, 1, 1);
 	Out.Normal = mul(vNormal, (float3x3)matWorld);
+
+	Out.Diffuse = dot(Out.Normal, float3(1, 1, 1)) * float4(0.7, 0.6, 0.5, 1);
+	Out.Diffuse.a = 1;
 	Out.Reflect = reflect(worldPos - vEyePosWorld, Out.Normal);
 	//Out.WorldPos = worldPos;
 	
@@ -40,9 +42,11 @@ VS_OUTPUT EnvReflectiveVS( float4 vPosition : POSITION,
 float4 EnvReflectivePS( VS_OUTPUT In ) : COLOR
 {
 	// Reflective cube map
+	//return lerp(texCUBE(samplerEnv, In.Reflect), In.Diffuse, 0.9);
 	return texCUBE(samplerEnv, In.Reflect);
 	
 	// Environmental map
+	//return texCUBE(samplerEnv, In.Normal) + In.Diffuse;
 	//return texCUBE(samplerEnv, In.Normal);
 	
 	// Per-pixel env map

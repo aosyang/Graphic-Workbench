@@ -111,6 +111,26 @@ void Update( uint32 deltaTime )
 		V( g_pEffect->SetMatrix( "matWorld", &matWorld ) );
 		V( g_pEffect->SetMatrix( "matWorldViewProjection", &mWorldViewProjection ) );
 
+		float L00[3] = { 0.79f, 0.44f, 0.54f };
+		float L1_1[3] = { 0.39f, 0.35f, 0.60f };
+		float L10[3] = { -0.34f, -0.18f, -0.27f };
+		float L11[3] = { -0.29f, -0.06f, 0.01f };
+		float L2_2[3] = { -0.11f, -0.05f, -0.12f };
+		float L2_1[3] = { -0.26f, -0.22f, -0.47f };
+		float L20[3] = { -0.16f, -0.09f, -0.15f };
+		float L21[3] = { 0.56f, 0.21f, 0.14f };
+		float L22[3] = { 0.21f, -0.05f, -0.3f };
+
+		V( g_pEffect->SetFloatArray("L00", L00, 3) );
+		V( g_pEffect->SetFloatArray("L1_1", L1_1, 3) );
+		V( g_pEffect->SetFloatArray("L10", L10, 3) );
+		V( g_pEffect->SetFloatArray("L11", L11, 3) );
+		V( g_pEffect->SetFloatArray("L2_2", L2_2, 3) );
+		V( g_pEffect->SetFloatArray("L2_1", L2_1, 3) );
+		V( g_pEffect->SetFloatArray("L20", L20, 3) );
+		V( g_pEffect->SetFloatArray("L21", L21, 3) );
+		V( g_pEffect->SetFloatArray("L22", L22, 3) );
+
 		V( g_pEffect->SetTexture( "texEnv", g_EnvTexture ) );
 
 		V( g_pEffect->SetTechnique( "Default" ) );
@@ -175,7 +195,7 @@ HRESULT InitD3D( HWND hWnd, uint32 width, uint32 height )
 
 	LPD3DXBUFFER errorString;
 
-	if ( FAILED( D3DXCreateEffectFromFile( D3DDevice(), L"../Data/Fx/EnvMapping.fx", NULL, NULL, NULL, 
+	if ( FAILED( D3DXCreateEffectFromFile( D3DDevice(), L"../Data/Fx/SHLighting.fx", NULL, NULL, NULL, 
 		g_pEffectPool, &g_pEffect, &errorString ) ) )
 	{
 		OutputDebugStringA( (LPCSTR)errorString->GetBufferPointer() );
