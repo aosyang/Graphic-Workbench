@@ -1,5 +1,6 @@
 
 #include "Global.fxh"
+#include "SHLighting.fxh"
 
 texture	texEnv;
 
@@ -31,8 +32,7 @@ VS_OUTPUT EnvReflectiveVS( float4 vPosition : POSITION,
 	Out.Position = mul(vPosition, matWorldViewProjection);
 	Out.Normal = mul(vNormal, (float3x3)matWorld);
 
-	Out.Diffuse = dot(Out.Normal, float3(1, 1, 1)) * float4(0.7, 0.6, 0.5, 1);
-	Out.Diffuse.a = 1;
+	Out.Diffuse = CalculateSHLighting(float4(Out.Normal, 1));
 	Out.Reflect = reflect(worldPos - vEyePosWorld, Out.Normal);
 	//Out.WorldPos = worldPos;
 	
@@ -42,8 +42,8 @@ VS_OUTPUT EnvReflectiveVS( float4 vPosition : POSITION,
 float4 EnvReflectivePS( VS_OUTPUT In ) : COLOR
 {
 	// Reflective cube map
-	//return lerp(texCUBE(samplerEnv, In.Reflect), In.Diffuse, 0.9);
-	return texCUBE(samplerEnv, In.Reflect);
+	return lerp(texCUBE(samplerEnv, In.Reflect), In.Diffuse, 0.75);
+	//return texCUBE(samplerEnv, In.Reflect);
 	
 	// Environmental map
 	//return texCUBE(samplerEnv, In.Normal) + In.Diffuse;

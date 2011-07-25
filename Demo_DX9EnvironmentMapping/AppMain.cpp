@@ -195,7 +195,7 @@ HRESULT InitD3D( HWND hWnd, uint32 width, uint32 height )
 
 	LPD3DXBUFFER errorString;
 
-	if ( FAILED( D3DXCreateEffectFromFile( D3DDevice(), L"../Data/Fx/SHLighting.fx", NULL, NULL, NULL, 
+	if ( FAILED( D3DXCreateEffectFromFile( D3DDevice(), L"../Data/Fx/EnvMapping.fx", NULL, NULL, NULL, 
 		g_pEffectPool, &g_pEffect, &errorString ) ) )
 	{
 		OutputDebugStringA( (LPCSTR)errorString->GetBufferPointer() );
