@@ -108,6 +108,7 @@ void Update( uint32 deltaTime )
 		V( g_pEffect->SetMatrix( "matProjection", &matProj ) );
 		V( g_pEffect->SetMatrix( "matViewProjection", &mViewProjection ) );
 
+		V( g_pEffect->SetFloat( "fShadowMapSize", SHADOW_BUFFER_SIZE ) );
 
 		// Set up world matrix
 		D3DXMATRIXA16 matWorld;
