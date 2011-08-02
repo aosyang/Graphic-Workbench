@@ -2,6 +2,8 @@
 #include "Global.fxh"
 #include "DepthMap.fxh"
 
+#define ENABLE_PCF;
+
 shared float4x4 matLightSpace;
 shared float4x4 matLightViewProjBias;
 shared float fShadowMapSize;
@@ -81,15 +83,7 @@ float4 SingleShadowedPS( VS_SHADOW_OUTPUT In ) : COLOR
 	float4 shadowedColor = float4((float3)abs(dot(vLightDir, normalize(In.Normal)) * 0.2), 1);
 	float4 litColor = float4((float3)dot(-vLightDir, normalize(In.Normal)), 1);
 
-/*
-	// Simple shadow map
-	float depth = tex2Dproj(samplerLightSpaceDepth, In.ProjTexcoord).r;
-	
-	if (depth < In.LightSpacePos.z - 0.005)
-		return shadowedColor;
-	
-	return litColor;
-*/
+#ifdef ENABLE_PCF
 	// PCF shadow map
 	float accum = 0;
 	float x, y;
@@ -107,6 +101,16 @@ float4 SingleShadowedPS( VS_SHADOW_OUTPUT In ) : COLOR
 	accum /= 16;
 	
 	return lerp(litColor, shadowedColor, accum);
+#else
+	// Simple shadow map
+	float depth = tex2Dproj(samplerLightSpaceDepth, In.ProjTexcoord).r;
+	
+	if (depth < In.LightSpacePos.z - 0.005)
+		return shadowedColor;
+	
+	return litColor;
+#endif
+
 }
 
 technique Default
