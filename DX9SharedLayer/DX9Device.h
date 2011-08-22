@@ -14,4 +14,19 @@ DLL_EXPORT LPDIRECT3DDEVICE9& D3DDevice();
 #define V_RETURN(x)    { hr = (x); if( FAILED(hr) ) { return hr; } }
 #endif
 
+class DLL_EXPORT_CLASS DX9Device
+{
+public:
+	DX9Device();
+	bool Init(HWND hWnd);
+
+	void Clear();
+	void BeginScene();
+	void EndScene();
+	void Present();
+
+private:
+	LPDIRECT3D9		m_pD3D;
+};
+
 #endif // DX9Device_h__

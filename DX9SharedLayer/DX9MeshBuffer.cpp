@@ -22,7 +22,7 @@ DX9MeshBuffer::~DX9MeshBuffer()
 }
 
 
-HRESULT DX9MeshBuffer::CreateFromFile(GWChar* filename)
+HRESULT DX9MeshBuffer::CreateFromFile( const GWChar* filename )
 {
 	EmdMesh mesh;
 	if (!mesh.LoadMesh(filename))
