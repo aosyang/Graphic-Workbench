@@ -24,6 +24,7 @@ public:
 	DX9MeshBuffer();
 	~DX9MeshBuffer();
 
+	HRESULT CreateFromFile(GWChar* filename);
 	HRESULT CreateFromMesh(EmdMesh* mesh);
 	void Destroy();
 

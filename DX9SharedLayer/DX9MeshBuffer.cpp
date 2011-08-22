@@ -21,6 +21,17 @@ DX9MeshBuffer::~DX9MeshBuffer()
 	Destroy();
 }
 
+
+HRESULT DX9MeshBuffer::CreateFromFile(GWChar* filename)
+{
+	EmdMesh mesh;
+	if (!mesh.LoadMesh(filename))
+		return E_FAIL;
+
+	return CreateFromMesh(&mesh);
+}
+
+
 HRESULT DX9MeshBuffer::CreateFromMesh( EmdMesh* mesh )
 {
 	HRESULT hr;
