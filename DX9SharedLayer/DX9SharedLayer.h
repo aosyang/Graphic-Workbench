@@ -11,6 +11,8 @@
 #pragma comment (lib, "d3dx9.lib")
 #endif
 
+#include "DllExport.h"
+
 #include "DX9Device.h"
 #include "DX9MeshBuffer.h"
 

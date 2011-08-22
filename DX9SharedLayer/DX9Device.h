@@ -3,7 +3,9 @@
 
 #include <d3d9.h>
 
-LPDIRECT3DDEVICE9& D3DDevice();
+#include "DllExport.h"
+
+DLL_EXPORT LPDIRECT3DDEVICE9& D3DDevice();
 
 #ifndef V
 #define V(x)           { hr = (x); }

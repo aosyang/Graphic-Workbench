@@ -4,6 +4,8 @@
 #include <d3d9.h>
 #include "../GraphicWorkbench/GWTypes.h"
 
+#include "DllExport.h"
+
 class EmdMesh;
 
 enum STREAM_TYPE
@@ -16,7 +18,7 @@ enum STREAM_TYPE
 	ST_MAX_VB_STREAMS,
 };
 
-class DX9MeshBuffer
+class DLL_EXPORT_CLASS DX9MeshBuffer
 {
 public:
 	DX9MeshBuffer();

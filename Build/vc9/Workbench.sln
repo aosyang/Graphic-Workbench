@@ -18,6 +18,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo_DX9Framework", "..\..\
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DX9SharedLayer", "..\..\DX9SharedLayer\DX9SharedLayer.vcproj", "{655C1D84-A75F-43FB-B9A4-4776A9AC8F50}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F} = {0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo_DX9ShadowMap", "..\..\Demo_DX9ShadowMap\Demo_DX9ShadowMap.vcproj", "{63BE85A7-AA90-4028-AC5D-F0E75CEC15F5}"
 	ProjectSection(ProjectDependencies) = postProject
