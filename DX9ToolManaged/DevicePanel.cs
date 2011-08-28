@@ -116,6 +116,14 @@ namespace DX9ToolManaged
 
         #region Overrides
 
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+
+            deviceWrapper.SetWindowSize(Size.Width, Size.Height);
+            deviceWrapper.ResetDevice();
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             if (!DesignMode)

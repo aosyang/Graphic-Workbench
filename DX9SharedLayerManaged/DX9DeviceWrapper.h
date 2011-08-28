@@ -22,7 +22,10 @@ namespace DX9ToolManaged
 		void EndScene();
 		void Present();
 
-		void SetViewMatrix(const D3DXVECTOR3& vEyePt, const D3DXVECTOR3& vLookatPt, const D3DXVECTOR3& vUpVec);
+		void SetWindowSize(Int32 width, Int32 height);
+		void ResetDevice();
+
+		void SetupView();
 
 	protected:
 		DX9Device*	m_Impl;

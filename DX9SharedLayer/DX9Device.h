@@ -26,10 +26,18 @@ public:
 	void EndScene();
 	void Present();
 
+	void SetWindowSize(int width, int height);
+	void ResetDevice();
+
 	void SetViewMatrix(const D3DXVECTOR3& vEyePt, const D3DXVECTOR3& vLookatPt, const D3DXVECTOR3& vUpVec);
+
+	void SetProjectionMatrix(float fovy, float aspect, float zn, float zf);
 
 private:
 	LPDIRECT3D9		m_pD3D;
+	D3DPRESENT_PARAMETERS	m_d3dParam;
+
+	float			m_ScreenAspect;
 };
 
 #endif // DX9Device_h__
