@@ -25,6 +25,11 @@ namespace DX9ToolManaged
 
         private void devicePanel_OnRender(object sender, DeviceEventArgs e)
         {
+            //D3DXVECTOR3 vEyePt = new D3DXVECTOR3( -5.0f, 5.0f, -5.0f );
+            //D3DXVECTOR3 vLookatPt = new D3DXVECTOR3( 0.0f, 0.0f, 0.0f );
+            //D3DXVECTOR3 vUpVec = new D3DXVECTOR3( 0.0f, 1.0f, 0.0f );
+
+            //e.Device.SetViewMatrix(vEyePt, vLookatPt, vUpVec);
             mesh.Render();
         }
 

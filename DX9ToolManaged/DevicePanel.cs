@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 using Microsoft.DirectX;
-using Microsoft.DirectX.Direct3D;
 
 namespace DX9ToolManaged
 {
@@ -64,7 +58,6 @@ namespace DX9ToolManaged
 
                 if (OnCreateDevice != null)
                     OnCreateDevice(this, new DeviceEventArgs(ref deviceWrapper));
-                    //OnCreateDevice(this);
 
                 parent.Show();
                 parent.Focus();
@@ -107,15 +100,6 @@ namespace DX9ToolManaged
         /// </summary>
         public void Render()
         {
-            //if (_device == null)
-            //    return;
-
-            ////Clear the backbuffer
-            //_device.Clear(ClearFlags.Target, _deviceBackColor, 1.0f, 0);
-
-            ////Begin the scene
-            //_device.BeginScene();
-
             deviceWrapper.Clear();
 
             deviceWrapper.BeginScene();
@@ -123,14 +107,9 @@ namespace DX9ToolManaged
             // Render of scene here
             if (OnRender != null)
                 OnRender(this, new DeviceEventArgs(ref deviceWrapper));
-                //OnRender(this);
 
             deviceWrapper.EndScene();
             deviceWrapper.Present();
-
-            ////End the scene
-            //_device.EndScene();
-            //_device.Present();
         }
 
         #endregion
@@ -139,8 +118,15 @@ namespace DX9ToolManaged
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            // Render on each Paint
-            this.Render();
+            if (!DesignMode)
+            {
+                // Render on each Paint
+                this.Render();
+            }
+            else
+            {
+                base.OnPaint(e);
+            }
         }
 
         protected override void OnKeyPress(System.Windows.Forms.KeyPressEventArgs e)

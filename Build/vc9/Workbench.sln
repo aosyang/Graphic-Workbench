@@ -37,6 +37,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo_DX9EnvironmentMapping"
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DX9ToolManaged", "..\..\DX9ToolManaged\DX9ToolManaged.csproj", "{BA72CACA-376B-4FE0-87D3-B956C2AF8F49}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A74CA5AC-EF6B-428E-BBB2-44DEEA97051A} = {A74CA5AC-EF6B-428E-BBB2-44DEEA97051A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DX9SharedLayerManaged", "..\..\DX9SharedLayerManaged\DX9SharedLayerManaged.vcproj", "{A74CA5AC-EF6B-428E-BBB2-44DEEA97051A}"
 	ProjectSection(ProjectDependencies) = postProject

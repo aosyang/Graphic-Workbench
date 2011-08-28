@@ -28,4 +28,9 @@ namespace DX9ToolManaged
 		m_Impl->Present();
 	}
 
+	void DX9DeviceWrapper::SetViewMatrix( const D3DXVECTOR3& vEyePt, const D3DXVECTOR3& vLookatPt, const D3DXVECTOR3& vUpVec )
+	{
+		m_Impl->SetViewMatrix(vEyePt, vLookatPt, vUpVec);
+	}
+
 }

@@ -22,6 +22,8 @@ namespace DX9ToolManaged
 		void EndScene();
 		void Present();
 
+		void SetViewMatrix(const D3DXVECTOR3& vEyePt, const D3DXVECTOR3& vLookatPt, const D3DXVECTOR3& vUpVec);
+
 	protected:
 		DX9Device*	m_Impl;
 	};

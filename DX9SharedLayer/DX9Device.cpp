@@ -2,6 +2,12 @@
 
 #pragma comment (lib, "d3d9.lib")
 
+#if defined (_DEBUG)
+#pragma comment (lib, "d3dx9d.lib")
+#else
+#pragma comment (lib, "d3dx9.lib")
+#endif
+
 static LPDIRECT3DDEVICE9 g_d3dDevice = NULL;
 
 LPDIRECT3DDEVICE9& D3DDevice()
@@ -62,6 +68,14 @@ void DX9Device::EndScene()
 void DX9Device::Present()
 {
 	D3DDevice()->Present( NULL, NULL, NULL, NULL );
+}
+
+void DX9Device::SetViewMatrix( const D3DXVECTOR3& vEyePt, const D3DXVECTOR3& vLookatPt, const D3DXVECTOR3& vUpVec )
+{
+	D3DXMATRIX matView;
+	D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );
+
+	D3DDevice()->SetTransform(D3DTS_VIEW, &matView);
 }
 
 

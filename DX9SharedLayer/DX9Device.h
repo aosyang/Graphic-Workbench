@@ -2,6 +2,7 @@
 #define DX9Device_h__
 
 #include <d3d9.h>
+#include <d3dx9.h>
 
 #include "DllExport.h"
 
@@ -24,6 +25,8 @@ public:
 	void BeginScene();
 	void EndScene();
 	void Present();
+
+	void SetViewMatrix(const D3DXVECTOR3& vEyePt, const D3DXVECTOR3& vLookatPt, const D3DXVECTOR3& vUpVec);
 
 private:
 	LPDIRECT3D9		m_pD3D;
