@@ -11,14 +11,14 @@
 // Lump indicates the usage of following data
 enum Lump
 {
-	LUMP_MATERIALS = 100,
+	LUMP_MATERIALS					= 100,
 	LUMP_MESH_ELEMENTS,
 	LUMP_VERTICES,
 
 	// NEW format
 
 	// Vertex attributes
-	LUMP_VERTEX_POSITION,
+	LUMP_VERTEX_POSITION			= 200,
 	LUMP_VERTEX_NORMAL,
 
 	// Texcoord
@@ -31,14 +31,14 @@ enum Lump
 
 	// TODO: More texcoords
 
-	LUMP_VERTEX_TANGENT,
+	LUMP_VERTEX_TANGENT				= LUMP_VERTEX_TEXCOORD0 + 10,
 	LUMP_VERTEX_BINORMAL,
 
-	LUMP_INDEX,
+	LUMP_INDEX						= 300,
 };
 
-#define MAJOR_VERSION 1
-#define MINOR_VERSION 0
-#define EMDL_VERSION (uint32)(MAJOR_VERSION * 100 + MINOR_VERSION)
+#define EMDL_MAJOR_VERSION 1
+#define EMDL_MINOR_VERSION 0
+#define EMDL_VERSION (unsigned int)(EMDL_MAJOR_VERSION * 100 + EMDL_MINOR_VERSION)
 
 #endif // EmdDefine_h__

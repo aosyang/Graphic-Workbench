@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EmdExporterMax2011", "..\..\Utilities\EmdExporterMax2011\EmdExporterMax2011.vcproj", "{BC1D1EDD-82CB-45F0-8454-60A87352CBD8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EmdExporterMax2011Loader", "..\..\Utilities\EmdExporterMax2011Loader\EmdExporterMax2011Loader.vcproj", "{9C1C5ADE-1104-482A-B9CD-ED856A2BA96A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BC1D1EDD-82CB-45F0-8454-60A87352CBD8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BC1D1EDD-82CB-45F0-8454-60A87352CBD8}.Debug|Win32.Build.0 = Debug|Win32
+		{BC1D1EDD-82CB-45F0-8454-60A87352CBD8}.Release|Win32.ActiveCfg = Release|Win32
+		{BC1D1EDD-82CB-45F0-8454-60A87352CBD8}.Release|Win32.Build.0 = Release|Win32
+		{9C1C5ADE-1104-482A-B9CD-ED856A2BA96A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9C1C5ADE-1104-482A-B9CD-ED856A2BA96A}.Debug|Win32.Build.0 = Debug|Win32
+		{9C1C5ADE-1104-482A-B9CD-ED856A2BA96A}.Release|Win32.ActiveCfg = Release|Win32
+		{9C1C5ADE-1104-482A-B9CD-ED856A2BA96A}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
