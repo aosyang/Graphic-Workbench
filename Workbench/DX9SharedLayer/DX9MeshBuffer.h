@@ -3,6 +3,7 @@
 
 #include <d3d9.h>
 #include "../GraphicWorkbench/GWTypes.h"
+#include "../libemd/emd_mesh.h"
 
 #include "DllExport.h"
 
@@ -26,6 +27,8 @@ public:
 
 	HRESULT CreateFromFile(const GWChar* filename);
 	HRESULT CreateFromMesh(EmdMesh* mesh);
+	HRESULT CreateFromMesh(EMD_MESH* mesh);
+
 	void Destroy();
 
 	void Render();

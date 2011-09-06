@@ -206,11 +206,18 @@ HRESULT InitD3D( HWND hWnd, uint32 width, uint32 height )
 
 void LoadMesh()
 {
-	EmdMesh mesh;
-	if (mesh.LoadMesh(L"../Data/Mesh/scene.emd"))
+	EMD_MESH* mesh;
+	if (NULL != (mesh = EMD_LoadMeshFromFile("../Data/Mesh/Berserker.emd")))
 	{
-		g_CenterPoint = (mesh.GetBoundingMin() + mesh.GetBoundingMax()) * 0.5f;
-		g_MeshBuffer.CreateFromMesh(&mesh);
+		Vector3 vecMax, vecMin;
+
+		EMD_GetBoundingMax(mesh, &vecMax.x, &vecMax.y, &vecMax.z);
+		EMD_GetBoundingMin(mesh, &vecMin.x, &vecMin.y, &vecMin.z);
+
+		g_CenterPoint = (vecMax + vecMin) * 0.5f;
+		g_MeshBuffer.CreateFromMesh(mesh);
+
+		EMD_FreeMesh(mesh);
 	}
 }
 

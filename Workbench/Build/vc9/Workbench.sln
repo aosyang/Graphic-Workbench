@@ -19,6 +19,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo_DX9Framework", "..\..\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DX9SharedLayer", "..\..\DX9SharedLayer\DX9SharedLayer.vcproj", "{655C1D84-A75F-43FB-B9A4-4776A9AC8F50}"
 	ProjectSection(ProjectDependencies) = postProject
+		{256A4B24-7350-446E-BE71-B71DF03504FD} = {256A4B24-7350-446E-BE71-B71DF03504FD}
 		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F} = {0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}
 	EndProjectSection
 EndProject
@@ -31,9 +32,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo_DX9ShadowMap", "..\..\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo_DX9EnvironmentMapping", "..\..\Demo_DX9EnvironmentMapping\Demo_DX9EnvironmentMapping.vcproj", "{8BFEEA43-83F0-407F-B306-5FAA965FF81E}"
 	ProjectSection(ProjectDependencies) = postProject
+		{256A4B24-7350-446E-BE71-B71DF03504FD} = {256A4B24-7350-446E-BE71-B71DF03504FD}
 		{D6C07D7C-1FDA-4C43-BC78-680FF5B283FB} = {D6C07D7C-1FDA-4C43-BC78-680FF5B283FB}
 		{655C1D84-A75F-43FB-B9A4-4776A9AC8F50} = {655C1D84-A75F-43FB-B9A4-4776A9AC8F50}
-		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F} = {0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DX9ToolManaged", "..\..\DX9ToolManaged\DX9ToolManaged.csproj", "{BA72CACA-376B-4FE0-87D3-B956C2AF8F49}"
@@ -45,6 +46,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DX9SharedLayerManaged", "..
 	ProjectSection(ProjectDependencies) = postProject
 		{655C1D84-A75F-43FB-B9A4-4776A9AC8F50} = {655C1D84-A75F-43FB-B9A4-4776A9AC8F50}
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libemd", "..\..\libemd\libemd.vcproj", "{256A4B24-7350-446E-BE71-B71DF03504FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -146,6 +149,16 @@ Global
 		{A74CA5AC-EF6B-428E-BBB2-44DEEA97051A}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{A74CA5AC-EF6B-428E-BBB2-44DEEA97051A}.Release|Win32.ActiveCfg = Release|Win32
 		{A74CA5AC-EF6B-428E-BBB2-44DEEA97051A}.Release|Win32.Build.0 = Release|Win32
+		{256A4B24-7350-446E-BE71-B71DF03504FD}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{256A4B24-7350-446E-BE71-B71DF03504FD}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{256A4B24-7350-446E-BE71-B71DF03504FD}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{256A4B24-7350-446E-BE71-B71DF03504FD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{256A4B24-7350-446E-BE71-B71DF03504FD}.Debug|Win32.Build.0 = Debug|Win32
+		{256A4B24-7350-446E-BE71-B71DF03504FD}.Release|Any CPU.ActiveCfg = Release|Win32
+		{256A4B24-7350-446E-BE71-B71DF03504FD}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{256A4B24-7350-446E-BE71-B71DF03504FD}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{256A4B24-7350-446E-BE71-B71DF03504FD}.Release|Win32.ActiveCfg = Release|Win32
+		{256A4B24-7350-446E-BE71-B71DF03504FD}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
