@@ -1,11 +1,21 @@
 #ifndef EMD_MESH_H__
 #define EMD_MESH_H__
 
+typedef unsigned char GW_UINT8;
+typedef unsigned short GW_UINT16;
 typedef unsigned int GW_UINT32;
 
 #ifndef __cplusplus
+
+#if defined (WIN32)
+// Win32 need __inline instead of inline when source compiled as C
 #define inline __inline
-#endif
+#else
+// for gcc, use static inline instead of inline
+#define inline static inline
+#endif // #if defined (WIN32)
+
+#endif // #ifndef __cplusplus
 
 // EMD mesh data structure
 typedef struct EMD_MESH_TYPE
