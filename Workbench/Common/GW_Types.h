@@ -11,11 +11,15 @@
 #define GW_TYPES_H_
 
 
-typedef unsigned char GW_UINT8;
-typedef unsigned short GW_UINT16;
-typedef unsigned int GW_UINT32;
+typedef	unsigned char		GW_UINT8;
+typedef	unsigned short		GW_UINT16;
+typedef	unsigned int		GW_UINT32;
 
-#ifndef __cplusplus
+#if defined (__cplusplus)
+
+#define GW_INLINE inline
+
+#else
 
 #if defined (WIN32)
 // Win32 need __inline instead of inline when source compiled as C
@@ -25,7 +29,7 @@ typedef unsigned int GW_UINT32;
 #define GW_INLINE static inline
 #endif // #if defined (WIN32)
 
-#endif // #ifndef __cplusplus
+#endif // #if defined (__cplusplus)
 
 
 #endif	// #ifndef GW_TYPES_H_
