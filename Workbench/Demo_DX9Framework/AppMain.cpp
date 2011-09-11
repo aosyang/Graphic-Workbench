@@ -10,7 +10,7 @@
 #include "../DX9SharedLayer/DX9SharedLayer.h"
 
 #include "../GraphicWorkbench/Workbench.h"
-#include "../libEmdMesh/EmdMesh.h"
+#include "../libemd/emd_mesh.h"
 
 LPDIRECT3D9         g_pD3D = NULL; // Used to create the D3DDevice
 float				g_ScreenAspect;
@@ -115,11 +115,18 @@ HRESULT InitD3D( HWND hWnd, uint32 width, uint32 height )
 
 void LoadMesh()
 {
-	EmdMesh mesh;
-	if (mesh.LoadMesh(L"../Data/Mesh/scene.emd"))
+	EMD_MESH* mesh;
+	if (NULL != (mesh = EMD_LoadMeshFromFile("../Data/Mesh/scene.emd")))
 	{
-		g_CenterPoint = (mesh.GetBoundingMin() + mesh.GetBoundingMax()) * 0.5f;
-		g_MeshBuffer.CreateFromMesh(&mesh);
+		Vector3 vecMax, vecMin;
+
+		EMD_GetBoundingMax(mesh, &vecMax.x, &vecMax.y, &vecMax.z);
+		EMD_GetBoundingMin(mesh, &vecMin.x, &vecMin.y, &vecMin.z);
+
+		g_CenterPoint = (vecMax + vecMin) * 0.5f;
+		g_MeshBuffer.CreateFromMesh(mesh);
+
+		EMD_FreeMesh(mesh);
 	}
 }
 

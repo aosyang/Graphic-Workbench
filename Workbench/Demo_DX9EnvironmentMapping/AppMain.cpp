@@ -11,7 +11,7 @@
 #include "../DX9SharedLayer/DX9SharedLayer.h"
 
 #include "../GraphicWorkbench/Workbench.h"
-#include "../libEmdMesh/EmdMesh.h"
+#include "../libemd/emd_mesh.h"
 
 LPDIRECT3D9         g_pD3D = NULL; // Used to create the D3DDevice
 ID3DXEffect*		g_pEffect = NULL;

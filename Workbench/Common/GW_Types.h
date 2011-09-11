@@ -6,10 +6,8 @@
  *  Copyright 2011. All rights reserved.
  *
  */
-
-#ifndef GW_TYPES_H_
-#define GW_TYPES_H_
-
+#ifndef GW_Types_h__
+#define GW_Types_h__
 
 typedef	unsigned char		GW_UINT8;
 typedef	unsigned short		GW_UINT16;
@@ -32,4 +30,4 @@ typedef	unsigned int		GW_UINT32;
 #endif // #if defined (__cplusplus)
 
 
-#endif	// #ifndef GW_TYPES_H_
+#endif // GW_Types_h__

@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libEmdMesh", "..\..\libEmdMesh\libEmdMesh.vcproj", "{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GraphicWorkbench", "..\..\GraphicWorkbench\GraphicWorkbench.vcproj", "{D6C07D7C-1FDA-4C43-BC78-680FF5B283FB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo_BasicRenderWindow", "..\..\Demo_BasicRenderWindow\Demo_BasicRenderWindow.vcproj", "{B9DA05F4-BA23-4D37-9594-58D593CC4D89}"
@@ -14,20 +12,18 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo_DX9Framework", "..\..\
 	ProjectSection(ProjectDependencies) = postProject
 		{D6C07D7C-1FDA-4C43-BC78-680FF5B283FB} = {D6C07D7C-1FDA-4C43-BC78-680FF5B283FB}
 		{655C1D84-A75F-43FB-B9A4-4776A9AC8F50} = {655C1D84-A75F-43FB-B9A4-4776A9AC8F50}
-		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F} = {0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DX9SharedLayer", "..\..\DX9SharedLayer\DX9SharedLayer.vcproj", "{655C1D84-A75F-43FB-B9A4-4776A9AC8F50}"
 	ProjectSection(ProjectDependencies) = postProject
 		{256A4B24-7350-446E-BE71-B71DF03504FD} = {256A4B24-7350-446E-BE71-B71DF03504FD}
-		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F} = {0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo_DX9ShadowMap", "..\..\Demo_DX9ShadowMap\Demo_DX9ShadowMap.vcproj", "{63BE85A7-AA90-4028-AC5D-F0E75CEC15F5}"
 	ProjectSection(ProjectDependencies) = postProject
+		{256A4B24-7350-446E-BE71-B71DF03504FD} = {256A4B24-7350-446E-BE71-B71DF03504FD}
 		{D6C07D7C-1FDA-4C43-BC78-680FF5B283FB} = {D6C07D7C-1FDA-4C43-BC78-680FF5B283FB}
 		{655C1D84-A75F-43FB-B9A4-4776A9AC8F50} = {655C1D84-A75F-43FB-B9A4-4776A9AC8F50}
-		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F} = {0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo_DX9EnvironmentMapping", "..\..\Demo_DX9EnvironmentMapping\Demo_DX9EnvironmentMapping.vcproj", "{8BFEEA43-83F0-407F-B306-5FAA965FF81E}"
@@ -59,16 +55,6 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}.Debug|Win32.ActiveCfg = Debug|Win32
-		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}.Debug|Win32.Build.0 = Debug|Win32
-		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}.Release|Any CPU.ActiveCfg = Release|Win32
-		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}.Release|Win32.ActiveCfg = Release|Win32
-		{0CDBD9D5-EFE0-453D-95F8-779E3C9FF11F}.Release|Win32.Build.0 = Release|Win32
 		{D6C07D7C-1FDA-4C43-BC78-680FF5B283FB}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{D6C07D7C-1FDA-4C43-BC78-680FF5B283FB}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{D6C07D7C-1FDA-4C43-BC78-680FF5B283FB}.Debug|Mixed Platforms.Build.0 = Debug|Win32
