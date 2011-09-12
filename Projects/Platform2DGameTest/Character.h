@@ -51,6 +51,8 @@ private:
 	Vector3		m_Velocity;
 	//int			m_LastXCol, m_LastYCol;
 	bool		m_CanJump;
+
+	static float		m_sCharSize;
 };
 
 #endif // Character_h__

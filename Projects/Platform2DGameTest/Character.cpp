@@ -3,12 +3,16 @@
 
 #include <d3dx9math.h>
 
+// define size of a character
+float Character::m_sCharSize = 1.0f;
+
 Character::Character()
-: m_Bound(-1.0f, -1.0f, 1.0f, 1.0f),
-  m_Position(7.0f, 5.0f, 0.0f),
+: m_Position(7.0f, 5.0f, 0.0f),
   m_Velocity(Vector3::ZERO),
   m_CanJump(false)
 {
+	m_Bound = BoundBox(-0.5f * m_sCharSize, -0.5f * m_sCharSize,
+						0.5f * m_sCharSize, 0.5f * m_sCharSize);
 }
 
 Character::~Character()
@@ -19,19 +23,20 @@ void Character::Render()
 {
 	Vertex v[6] =
 	{
-		{ -1.0f, -1.0f, 0.0f, D3DXCOLOR(0.0f, 1.0f, 1.0f, 1.0f) },
-		{ -1.0f, 1.0f, 0.0f, D3DXCOLOR(0.0f, 1.0f, 1.0f, 1.0f) },
-		{ 1.0f, 1.0f, 0.0f, D3DXCOLOR(0.0f, 1.0f, 1.0f, 1.0f) },
+		{ -0.5f * m_sCharSize, -0.5f * m_sCharSize, 0.0f, 0xFFFFF200 },
+		{ -0.5f * m_sCharSize, 0.5f * m_sCharSize, 0.0f, 0xFFFFF200 },
+		{ 0.5f * m_sCharSize, 0.5f * m_sCharSize, 0.0f, 0xFFFFF200 },
 
-		{ 1.0f, 1.0f, 0.0f, D3DXCOLOR(0.0f, 1.0f, 1.0f, 1.0f) },
-		{ 1.0f, -1.0f, 0.0f, D3DXCOLOR(0.0f, 1.0f, 1.0f, 1.0f) },
-		{ -1.0f, -1.0f, 0.0f, D3DXCOLOR(0.0f, 1.0f, 1.0f, 1.0f) },
+		{ 0.5f * m_sCharSize, 0.5f * m_sCharSize, 0.0f, 0xFFFFF200 },
+		{ 0.5f * m_sCharSize, -0.5f * m_sCharSize, 0.0f, 0xFFFFF200 },
+		{ -0.5f * m_sCharSize, -0.5f * m_sCharSize, 0.0f, 0xFFFFF200 },
 	};
 
 	D3DXMATRIXA16 transform;
 	D3DXMatrixTranslation(&transform, m_Position.x, m_Position.y, m_Position.z);
 	RenderSystem::Device()->SetTransform( D3DTS_WORLD, &transform );
 	
+	RenderSystem::Device()->SetTexture(0, NULL);
 	RenderSystem::Device()->SetFVF(D3DFVF_XYZ|D3DFVF_DIFFUSE);
 	RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(Vertex));
 }
@@ -55,6 +60,7 @@ bool Character::TestCollision( Vector3& vecRel, const BoundBox& other )
 	int last_x_col = 0,
 		last_y_col = 0;
 
+	// Calculate collision type for last frame
 	if (worldBox.xMax <= other.xMin)
 	{
 		last_x_col = -1;
@@ -73,6 +79,7 @@ bool Character::TestCollision( Vector3& vecRel, const BoundBox& other )
 		last_y_col = 1;
 	}
 
+	// Calculate collision type for this frame
 	if (box.xMax <= other.xMin)
 	{
 		x_col = -1;
@@ -135,6 +142,7 @@ void Character::Translate( const Vector3& vecRel )
 
 void Character::OnHitTop()
 {
+	// Bumped my head, stop moving upward
 	m_Velocity.y = 0.0f;
 }
 

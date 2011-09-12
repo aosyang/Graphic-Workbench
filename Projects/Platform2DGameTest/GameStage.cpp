@@ -67,22 +67,24 @@ bool GameStage::LoadFromFile( const char* filename )
 
 			int layer = geoms[i+1][1].GetInteger();
 			box.xMin = geoms[i+1][2].GetInteger();
-			box.yMin = geoms[i+1][3].GetInteger();
-			box.xMax = geoms[i+1][4].GetInteger();
+			box.xMax = geoms[i+1][3].GetInteger();
+			box.yMin = geoms[i+1][4].GetInteger();
 			box.yMax = geoms[i+1][5].GetInteger();
 			const char* tex_name = geoms[i+1][6].GetString();
 
+			// build vertex buffer with vertex position as its own texture coordinate
 			Vertex v[6] =
 			{
-				{ box.xMin, box.yMin, 0.0f, 0.0f, 1.0f },
-				{ box.xMin, box.yMax, 0.0f, 0.0f, 0.0f },
-				{ box.xMax, box.yMax, 0.0f, 1.0f, 0.0f },
+				{ box.xMin, box.yMin, 0.0f, box.xMin, box.yMin },
+				{ box.xMin, box.yMax, 0.0f, box.xMin, box.yMax },
+				{ box.xMax, box.yMax, 0.0f, box.xMax, box.yMax },
 
-				{ box.xMax, box.yMax, 0.0f, 1.0f, 0.0f },
-				{ box.xMax, box.yMin, 0.0f, 1.0f, 1.0f },
-				{ box.xMin, box.yMin, 0.0f, 0.0f, 1.0f },
+				{ box.xMax, box.yMax, 0.0f, box.xMax, box.yMax },
+				{ box.xMax, box.yMin, 0.0f, box.xMax, box.yMin },
+				{ box.xMin, box.yMin, 0.0f, box.xMin, box.yMin },
 			};
 
+			// Find texture id by name
 			int texID = -1;
 			if ( (texID=m_TextureMgr.GetTextureID(tex_name)) == -1)
 			{
@@ -119,6 +121,9 @@ void GameStage::RenderStage()
 		{
 			LPDIRECT3DTEXTURE9 tex = m_TextureMgr.GetD3DTexture(iter->textureID);
 			RenderSystem::Device()->SetTexture(0, tex);
+
+			// enable mip-map for texture
+			RenderSystem::Device()->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
 		}
 		else
 		{
