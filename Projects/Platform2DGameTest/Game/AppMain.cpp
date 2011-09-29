@@ -1,7 +1,7 @@
 
 #include <windows.h>
-#include "DXUT/DXUT.h"
-#include "DXUT/SDKmisc.h"
+#include "../DXUT/DXUT.h"
+#include "../DXUT/SDKmisc.h"
 
 #include "RenderDevice.h"
 #include "GameStage.h"

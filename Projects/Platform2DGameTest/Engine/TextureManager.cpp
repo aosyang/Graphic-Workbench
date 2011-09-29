@@ -1,5 +1,5 @@
 #include "TextureManager.h"
-#include "DXUT/DXUT.h"
+#include "../DXUT/DXUT.h"
 
 TextureManager::TextureManager()
 : m_TextureID(0)

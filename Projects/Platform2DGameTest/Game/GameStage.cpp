@@ -1,9 +1,9 @@
 #include "GameStage.h"
 
-#include "DXUT/DXUT.h"
+#include "../DXUT/DXUT.h"
 #include <string>
 
-#include "LuaPlus/LuaPlus.h"
+#include "../LuaPlus/LuaPlus.h"
 
 using namespace LuaPlus;
 
@@ -20,36 +20,6 @@ GameStage::~GameStage()
 
 bool GameStage::LoadFromFile( const char* filename )
 {
-	//// load stage from lua file
-	//lua_State* ls = lua_open();
-	//luaL_openlibs(ls);
-
-	//bool result = false;
-
-	//int err_code = luaL_dofile(ls, filename);
-
-	//if (err_code==0)
-	//{
-	//	lua_getglobal(ls, "Stage");
-
-	//	if (lua_istable(ls, -1))
-	//	{
-	//		// Get geometries
-	//		lua_pushstring(ls, "Geometries");
-	//		lua_gettable(ls, -2);
-	//		if (lua_istable(ls, -1))
-	//		{
-	//			GetStageGeoms(ls);
-	//		}
-
-	//		lua_pop(ls, 1);
-
-	//		result = true;
-	//	}
-	//}
-
-	//return result;
-
 	bool result = false;
 	LuaStateOwner state;
 	int err_code = state->DoFile(filename);

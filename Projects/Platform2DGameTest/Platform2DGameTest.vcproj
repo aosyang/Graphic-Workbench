@@ -41,6 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)\Engine&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -116,6 +117,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="&quot;$(ProjectDir)\Engine&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -169,68 +171,6 @@
 	<References>
 	</References>
 	<Files>
-		<Filter
-			Name="源文件"
-			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
-			>
-			<File
-				RelativePath=".\AppMain.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Character.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\GameStage.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TextureManager.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Vector3.cpp"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="头文件"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
-			>
-			<File
-				RelativePath=".\BoundBox.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Character.h"
-				>
-			</File>
-			<File
-				RelativePath=".\GameStage.h"
-				>
-			</File>
-			<File
-				RelativePath=".\RenderDevice.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TextureManager.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Vector3.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="资源文件"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
-		</Filter>
 		<Filter
 			Name="DXUT"
 			>
@@ -308,6 +248,62 @@
 			</File>
 			<File
 				RelativePath=".\LuaPlus\luaplus51-1201.lib"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Engine"
+			>
+			<File
+				RelativePath=".\Engine\BoundBox.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Engine\RenderDevice.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Engine\TextureManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Engine\TextureManager.h"
+				>
+			</File>
+			<Filter
+				Name="Math"
+				>
+				<File
+					RelativePath=".\Engine\Math\Vector3.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Engine\Math\Vector3.h"
+					>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="Game"
+			>
+			<File
+				RelativePath=".\Game\AppMain.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Game\Character.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Game\Character.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Game\GameStage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Game\GameStage.h"
 				>
 			</File>
 		</Filter>
