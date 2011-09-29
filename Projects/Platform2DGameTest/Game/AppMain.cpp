@@ -3,13 +3,16 @@
 #include "../DXUT/DXUT.h"
 #include "../DXUT/SDKmisc.h"
 
+#include <d3dx9.h>
+
 #include "RenderDevice.h"
 #include "GameStage.h"
 #include "Character.h"
 
 LPDIRECT3DDEVICE9 RenderSystem::m_sDevice = NULL;
-GameStage*	g_GameStage;
-Character*	g_Character;
+GameStage*		g_GameStage;
+Character*		g_Character;
+LPD3DXFONT		g_pFont;
 
 enum KeyState
 {
@@ -129,12 +132,16 @@ bool CALLBACK ModifyDeviceSettings( DXUTDeviceSettings* pDeviceSettings, void* p
 
 HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext )
 {
-	//HRESULT hr;
+	HRESULT hr;
 
 	//LPD3DXBUFFER errorString;
 
-	RenderSystem::Initialize(pd3dDevice);
+	RenderSystem::Initialize( pd3dDevice );
 	pd3dDevice->SetRenderState( D3DRS_LIGHTING, FALSE );
+
+	V_RETURN( D3DXCreateFont( pd3dDevice, 16, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
+							  OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+							  L"Arial", &g_pFont ) );
 
 	return S_OK;
 }
@@ -143,24 +150,61 @@ HRESULT CALLBACK OnResetDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_D
 {
 	//HRESULT hr;
 
+	g_pFont->OnResetDevice();
+
 	return S_OK;
+}
+
+void CALLBACK OnLostDevice( void* pUserContext )
+{
+	g_pFont->OnLostDevice();
+}
+
+void CALLBACK OnDestroyDevice( void* pUserContext )
+{
+	SAFE_RELEASE( g_pFont );
 }
 
 void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext )
 {
-	// Gravity
-	g_Character->Velocity() += Vector3(0.0f, -0.03f, 0.0f);
-
 	g_Character->Update(fElapsedTime);
+
+	TileType player_pos_type = g_GameStage->GetTileTypeAtPoint(g_Character->WorldPosition());
 
 	Vector3 moveVector(0.0f, 0.0f, 0.0f);
 	if (g_KeyPressed[KEY_LEFT]) moveVector += Vector3(-1.0f, 0.0f, 0.0f);
-	//if (g_KeyPressed[KEY_UP]) moveVector += Vector3(0.0f, 1.0f, 0.0f);
 	if (g_KeyPressed[KEY_RIGHT]) moveVector += Vector3(1.0f, 0.0f, 0.0f);
-	//if (g_KeyPressed[KEY_DOWN]) moveVector += Vector3(0.0f, -1.0f, 0.0f);
+
+	if (g_Character->IsClimbingLadder())
+	{
+		if (g_KeyPressed[KEY_UP]) moveVector += Vector3(0.0f, 1.0f, 0.0f);
+		if (g_KeyPressed[KEY_DOWN]) moveVector += Vector3(0.0f, -1.0f, 0.0f);
+
+		// Fall down if no ladder
+		if (player_pos_type != TILE_LADDER)
+		{
+			g_Character->SetClimbingLadder(false);
+		}
+	}
+	else
+	{
+		// Climb up if player stands near by a ladder
+		if (g_KeyPressed[KEY_UP] && player_pos_type == TILE_LADDER)
+		{
+			g_Character->SetClimbingLadder(true);
+		}
+	}
 
 	moveVector.Normalize();
-	moveVector *= 0.1f;
+	if (g_Character->IsClimbingLadder())
+	{
+		// Slow down if climbing ladder
+		moveVector *= 0.05f;
+	}
+	else
+	{
+		moveVector *= 0.1f;
+	}
 
 	g_GameStage->TestCollision(g_Character, moveVector);
 }
@@ -186,12 +230,21 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 	D3DXMatrixIdentity(&matWorld);
 	pd3dDevice->SetTransform( D3DTS_WORLD, &matWorld );
 
+	Vector3 char_pos = g_Character->WorldPosition();
+
 	// Set up our view matrix. A view matrix can be defined given an eye point,
 	// a point to lookat, and a direction for which way is up. Here, we set the
 	// eye five units back along the z-axis and up three units, look at the
 	// origin, and define "up" to be in the y-direction.
+
+#if 1		// Fixed Camera
 	D3DXVECTOR3 vEyePt( 0.0f, 0.0f, -20.0f );
 	D3DXVECTOR3 vLookatPt( 0.0f, 0.0f, 0.0f );
+#else
+	D3DXVECTOR3 vEyePt( char_pos.x, char_pos.y, -20.0f );
+	D3DXVECTOR3 vLookatPt( char_pos.x, char_pos.y, 0.0f );
+#endif
+
 	D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
 	D3DXMATRIXA16 matView;
 	D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );
@@ -213,14 +266,24 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 	// Render the scene
 	if( SUCCEEDED( pd3dDevice->BeginScene() ) )
 	{
+
 		g_GameStage->RenderStage();
 
 		g_Character->Render();
 
+		// Draw debug text
+		RECT font_rect;
+		char debug_text[256];
+		sprintf(debug_text, "pos: %f, %f\nBlock: x( %d ~ %d ) - y( %d ~ %d )",
+				char_pos.x, char_pos.y,
+				(int)floor(char_pos.x), (int)ceil(char_pos.x),
+				(int)floor(char_pos.y), (int)ceil(char_pos.y));
+
+		SetRect( &font_rect, 0, 0, 400, 400 );
+		g_pFont->DrawTextA( NULL, debug_text, -1, &font_rect, DT_LEFT|DT_NOCLIP, 0xFFFFFF00 );
+
 		V( pd3dDevice->EndScene() );
 	}
-
-	
 }
 
 LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing, void* pUserContext )
@@ -242,14 +305,6 @@ void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUse
 		g_Character->Jump();
 		break;
 	}
-}
-
-void CALLBACK OnLostDevice( void* pUserContext )
-{
-}
-
-void CALLBACK OnDestroyDevice( void* pUserContext )
-{
 }
 
 void InitApp() 

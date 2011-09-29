@@ -7,6 +7,13 @@
 
 using namespace LuaPlus;
 
+TileTypeTable tile_table[] =
+{
+	{ TILE_SOLID,		"SOLID" },
+	{ TILE_LADDER,		"LADDER" },
+	{ TILE_END,			"" },
+};
+
 static STAGE_GEOM* StageGeomHead = NULL;
 static STAGE_GEOM* StageGeomTail = NULL;
 
@@ -18,7 +25,7 @@ STAGE_GEOM* CreateStageGeom()
 
 	if (StageGeomTail == NULL)
 	{
-		// Build new chain list
+		// Build new linked list
 		StageGeomHead = StageGeomTail = geom;
 	}
 	else
@@ -104,9 +111,20 @@ bool GameStage::LoadFromFile( const char* filename )
 			box.yMax = (float)geom_script[i+1][5].GetInteger();
 			const char* tex_name = geom_script[i+1][6].GetString();
 
+			float geom_depth = (float)layer;
+
 			// build vertex buffer with vertex position as its own texture coordinate
 			StageGeomVertex v[6] =
 			{
+#if 0		// Use layer as depth
+				{ box.xMin, box.yMin, geom_depth, box.xMin, box.yMin },
+				{ box.xMin, box.yMax, geom_depth, box.xMin, box.yMax },
+				{ box.xMax, box.yMax, geom_depth, box.xMax, box.yMax },
+
+				{ box.xMax, box.yMax, geom_depth, box.xMax, box.yMax },
+				{ box.xMax, box.yMin, geom_depth, box.xMax, box.yMin },
+				{ box.xMin, box.yMin, geom_depth, box.xMin, box.yMin },
+#else
 				{ box.xMin, box.yMin, 0.0f, box.xMin, box.yMin },
 				{ box.xMin, box.yMax, 0.0f, box.xMin, box.yMax },
 				{ box.xMax, box.yMax, 0.0f, box.xMax, box.yMax },
@@ -114,17 +132,29 @@ bool GameStage::LoadFromFile( const char* filename )
 				{ box.xMax, box.yMax, 0.0f, box.xMax, box.yMax },
 				{ box.xMax, box.yMin, 0.0f, box.xMax, box.yMin },
 				{ box.xMin, box.yMin, 0.0f, box.xMin, box.yMin },
+#endif
 			};
 
 			// Find texture id by name
 			int texID = -1;
+			TileType t = TILE_VOID;
 			if (m_TileTypes.find(tex_name)!=m_TileTypes.end())
 			{
 				texID = m_TileTypes[tex_name].texID;
+				std::string type_name = m_TileTypes[tex_name].type;
+				for ( int i = 0; tile_table[i].type != TILE_END ; i++ )
+				{
+					if ( type_name == tile_table[i].name )
+					{
+						t = (TileType)i;
+						break;
+					}
+				}
 			}
 
 			geom->bound = box;
 			geom->textureID = texID;
+			geom->type = t;
 
 			RenderSystem::Device()->CreateVertexBuffer(sizeof(StageGeomVertex) * 6, D3DUSAGE_WRITEONLY,
 				D3DFVF_XYZ|D3DFVF_TEX1, D3DPOOL_DEFAULT, &geom->vbuffer, NULL);
@@ -195,11 +225,25 @@ void GameStage::TestCollision( Character* character, const Vector3& vecRel )
 	STAGE_GEOM* geom;
 	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 	{
+		if ( geom->type != TILE_SOLID )
+			continue;
+
 		result |= character->DoCollisionMove(geom->bound, rel, &rel);
-		//if (result) break;
 	}
 
 	character->Translate(rel);
+}
+
+TileType GameStage::GetTileTypeAtPoint( const Vector3 point ) const
+{
+	STAGE_GEOM* geom;
+	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
+	{
+		if ( geom->bound.IsPointInsideBox(point.x, point.y) )
+			return geom->type;
+	}
+
+	return TILE_VOID;
 }
 
 void GameStage::DebugRenderStageGeom( STAGE_GEOM* geom )

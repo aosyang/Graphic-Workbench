@@ -255,6 +255,10 @@
 			Name="Engine"
 			>
 			<File
+				RelativePath=".\Engine\BoundBox.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Engine\BoundBox.h"
 				>
 			</File>

@@ -14,6 +14,8 @@ public:
 	BoundBox(float _xMin, float _yMin, float _xMax, float _yMax)
 		: xMin(_xMin), yMin(_yMin), xMax(_xMax), yMax(_yMax)
 	{}
+
+	bool IsPointInsideBox(float x, float y);
 };
 
 #endif // BoundBox_h__

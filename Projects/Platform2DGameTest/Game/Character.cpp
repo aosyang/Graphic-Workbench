@@ -9,7 +9,8 @@ float Character::m_sCharSize = 1.0f;
 Character::Character()
 : m_Position(7.0f, 5.0f, 0.0f),
   m_Velocity(Vector3::ZERO),
-  m_CanJump(false)
+  m_CanJump(false),
+  m_ClimbingLadder(false)
 {
 	m_Bound = BoundBox(-0.5f * m_sCharSize, -0.5f * m_sCharSize,
 						0.5f * m_sCharSize, 0.5f * m_sCharSize);
@@ -133,6 +134,16 @@ bool Character::DoCollisionMove( const BoundBox& other, const Vector3& input, Ve
 
 void Character::Update( float elapsedTime )
 {
+	if (m_ClimbingLadder)
+	{
+		m_Velocity = Vector3(0.0f, 0.0f, 0.0f);
+	}
+	else
+	{
+		// Gravity
+		m_Velocity += Vector3(0.0f, -0.03f, 0.0f);
+	}
+
 	m_CanJump = false;
 }
 
@@ -155,8 +166,12 @@ void Character::OnHitGround()
 
 void Character::Jump()
 {
-	if (m_CanJump)
+	if (m_ClimbingLadder)
 	{
-		m_Velocity = Vector3(0.0f, 0.5f, 0.0f);
+		m_ClimbingLadder = false;
+	}
+	else if (m_CanJump)
+	{
+		m_Velocity = Vector3(0.0f, 0.35f, 0.0f);
 	}
 }

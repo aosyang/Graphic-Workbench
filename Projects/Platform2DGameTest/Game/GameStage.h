@@ -11,6 +11,21 @@
 
 struct lua_State;
 
+enum TileType
+{
+	TILE_VOID = -1,
+
+	TILE_SOLID = 0,
+	TILE_LADDER,
+	TILE_END,
+};
+
+struct TileTypeTable
+{
+	TileType	type;
+	char		name[256];
+};
+
 // -----------------------------------------------------------
 // Tile types
 // -----------------------------------------------------------
@@ -25,11 +40,12 @@ typedef struct TileTypeInfo
 // -----------------------------------------------------------
 typedef struct StageGeom
 {
-	BoundBox	bound;
-	int textureID;
-	LPDIRECT3DVERTEXBUFFER9	vbuffer;
+	BoundBox					bound;
+	int							textureID;
+	LPDIRECT3DVERTEXBUFFER9		vbuffer;
+	TileType					type;
 
-	StageGeom*	next;
+	StageGeom*					next;
 } STAGE_GEOM;
 
 STAGE_GEOM* CreateStageGeom();
@@ -67,6 +83,8 @@ public:
 	void RenderStage();
 	void Reset();
 	void TestCollision(Character* character, const Vector3& vecRel);
+
+	TileType GetTileTypeAtPoint(const Vector3 point) const;
 
 private:
 	void DebugRenderStageGeom(STAGE_GEOM* geom);

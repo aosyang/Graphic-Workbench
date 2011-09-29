@@ -33,26 +33,29 @@ public:
 
 	// Test if character can move in this direction, if not, give an available movement
 	bool DoCollisionMove(const BoundBox& other, const Vector3& input, Vector3* output);
-
 	void Update(float elapsedTime);
 
 	// Move character in local direction
 	void Translate(const Vector3& vecRel);
+	void Jump();
 
 	Vector3& Velocity() { return m_Velocity; }
+	Vector3& WorldPosition() { return m_Position; }
 
-	void Jump();
+	void SetClimbingLadder(bool climbing) { m_ClimbingLadder = climbing; }
+	bool IsClimbingLadder() { return m_ClimbingLadder; }
 
 private:
 
 	void OnHitTop();
 	void OnHitGround();
 
-	BoundBox	m_Bound;
-	Vector3		m_Position;
-	Vector3		m_Velocity;
-	//int			m_LastXCol, m_LastYCol;
-	bool		m_CanJump;
+	BoundBox			m_Bound;
+	Vector3				m_Position;
+	Vector3				m_Velocity;
+	//int				m_LastXCol, m_LastYCol;
+	bool				m_CanJump;
+	bool				m_ClimbingLadder;
 
 	static float		m_sCharSize;
 };
