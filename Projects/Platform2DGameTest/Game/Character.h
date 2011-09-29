@@ -5,6 +5,14 @@
 #include "BoundBox.h"
 #include "RenderDevice.h"
 
+struct ActorSpriteVertex
+{
+	float x, y, z;
+	DWORD color;
+};
+
+#define ActorSpriteFVF D3DFVF_XYZ|D3DFVF_DIFFUSE
+
 class Character
 {
 public:
@@ -24,7 +32,7 @@ public:
 	void Render();
 
 	// Test if character can move in this direction, if not, give an available movement
-	bool TestCollision(Vector3& vecRel, const BoundBox& other);
+	bool DoCollisionMove(const BoundBox& other, const Vector3& input, Vector3* output);
 
 	void Update(float elapsedTime);
 
@@ -39,12 +47,6 @@ private:
 
 	void OnHitTop();
 	void OnHitGround();
-
-	struct Vertex
-	{
-		float x, y, z;
-		DWORD color;
-	};
 
 	BoundBox	m_Bound;
 	Vector3		m_Position;

@@ -7,6 +7,41 @@
 
 using namespace LuaPlus;
 
+static StageGeom* StageGeomHead = NULL;
+static StageGeom* StageGeomTail = NULL;
+
+// Stage geometry methods
+StageGeom* CreateStageGeom()
+{
+	StageGeom* geom = new StageGeom();
+	geom->next = NULL;
+
+	if (StageGeomTail == NULL)
+	{
+		// Build new chain list
+		StageGeomHead = StageGeomTail = geom;
+	}
+	else
+	{
+		// Add new geometry to the tail
+		StageGeomTail->next = geom;
+		StageGeomTail = geom;
+	}
+
+	return geom;
+}
+
+StageGeom* GetFirstStageGeom()
+{
+	return StageGeomHead;
+}
+
+StageGeom* GetNextStageGeom(StageGeom* geom)
+{
+	return geom->next;
+}
+
+
 GameStage::GameStage()
 : m_GeomCount(0)
 {
@@ -26,24 +61,24 @@ bool GameStage::LoadFromFile( const char* filename )
 
 	if (!err_code)
 	{
-		LuaObject stage = state->GetGlobals()["Stage"];
+		LuaObject stage_script = state->GetGlobals()["Stage"];
 		//int layers = stage["Layers"].GetInteger();
-		LuaObject geoms = stage["Geometries"];
-		m_GeomCount = geoms.GetTableCount();
+		LuaObject geom_script = stage_script["Geometries"];
+		m_GeomCount = geom_script.GetTableCount();
 		for (int i=0; i<m_GeomCount; i++)
 		{
-			StageGeom geom;
+			StageGeom* geom = CreateStageGeom();
 			BoundBox box;
 
-			int layer = geoms[i+1][1].GetInteger();
-			box.xMin = geoms[i+1][2].GetInteger();
-			box.xMax = geoms[i+1][3].GetInteger();
-			box.yMin = geoms[i+1][4].GetInteger();
-			box.yMax = geoms[i+1][5].GetInteger();
-			const char* tex_name = geoms[i+1][6].GetString();
+			int layer = geom_script[i+1][1].GetInteger();
+			box.xMin = geom_script[i+1][2].GetInteger();
+			box.xMax = geom_script[i+1][3].GetInteger();
+			box.yMin = geom_script[i+1][4].GetInteger();
+			box.yMax = geom_script[i+1][5].GetInteger();
+			const char* tex_name = geom_script[i+1][6].GetString();
 
 			// build vertex buffer with vertex position as its own texture coordinate
-			Vertex v[6] =
+			StageGeomVertex v[6] =
 			{
 				{ box.xMin, box.yMin, 0.0f, box.xMin, box.yMin },
 				{ box.xMin, box.yMax, 0.0f, box.xMin, box.yMax },
@@ -62,18 +97,16 @@ bool GameStage::LoadFromFile( const char* filename )
 					texID = m_TextureMgr.GetTextureID(tex_name);
 			}
 
-			geom.bound = box;
-			geom.textureID = texID;
+			geom->bound = box;
+			geom->textureID = texID;
 
-			RenderSystem::Device()->CreateVertexBuffer(sizeof(Vertex) * 6, D3DUSAGE_WRITEONLY,
-				D3DFVF_XYZ|D3DFVF_TEX1, D3DPOOL_DEFAULT, &geom.vbuffer, NULL);
+			RenderSystem::Device()->CreateVertexBuffer(sizeof(StageGeomVertex) * 6, D3DUSAGE_WRITEONLY,
+				D3DFVF_XYZ|D3DFVF_TEX1, D3DPOOL_DEFAULT, &geom->vbuffer, NULL);
 
 			void* pData;
-			geom.vbuffer->Lock(0, sizeof(Vertex) * 6, (void**)&pData, 0);
-			memcpy(pData, v, sizeof(Vertex) * 6);
-			geom.vbuffer->Unlock();
-
-			m_StageGeoms.push_back(geom);
+			geom->vbuffer->Lock(0, sizeof(StageGeomVertex) * 6, (void**)&pData, 0);
+			memcpy(pData, v, sizeof(StageGeomVertex) * 6);
+			geom->vbuffer->Unlock();
 		}
 
 		result = true;
@@ -84,12 +117,12 @@ bool GameStage::LoadFromFile( const char* filename )
 
 void GameStage::RenderStage()
 {
-	std::vector<StageGeom>::iterator iter;
-	for (iter=m_StageGeoms.begin(); iter!=m_StageGeoms.end(); iter++)
+	StageGeom* geom;
+	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 	{
-		if (iter->textureID!=-1)
+		if (geom->textureID!=-1)
 		{
-			LPDIRECT3DTEXTURE9 tex = m_TextureMgr.GetD3DTexture(iter->textureID);
+			LPDIRECT3DTEXTURE9 tex = m_TextureMgr.GetD3DTexture(geom->textureID);
 			RenderSystem::Device()->SetTexture(0, tex);
 
 			// enable mip-map for texture
@@ -100,8 +133,8 @@ void GameStage::RenderStage()
 			RenderSystem::Device()->SetTexture(0, NULL);
 		}
 
-		RenderSystem::Device()->SetStreamSource(0, iter->vbuffer, 0, sizeof(Vertex));
-		RenderSystem::Device()->SetFVF(D3DFVF_XYZ|D3DFVF_TEX1);
+		RenderSystem::Device()->SetStreamSource(0, geom->vbuffer, 0, sizeof(StageGeomVertex));
+		RenderSystem::Device()->SetFVF(StageGeomFVF);
 		RenderSystem::Device()->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
 	}
 }
@@ -110,13 +143,18 @@ void GameStage::Reset()
 {
 	m_GeomCount = 0;
 
-	std::vector<StageGeom>::iterator iter;
-	for (iter=m_StageGeoms.begin(); iter!=m_StageGeoms.end(); iter++)
+	StageGeom* geom;
+	for (geom = GetFirstStageGeom(); geom != NULL; )
 	{
-		iter->vbuffer->Release();
+		geom->vbuffer->Release();
+
+		StageGeom* old_geom = geom;
+		geom = GetNextStageGeom(geom);
+		delete old_geom;
 	}
 
-	m_StageGeoms.clear();
+	StageGeomHead = NULL;
+	StageGeomTail = NULL;
 }
 
 void GameStage::TestCollision( Character* character, const Vector3& vecRel )
@@ -124,85 +162,12 @@ void GameStage::TestCollision( Character* character, const Vector3& vecRel )
 	bool result = false;
 	Vector3 rel = vecRel + character->Velocity();
 
-	std::vector<StageGeom>::iterator iter;
-	for (iter=m_StageGeoms.begin(); iter!=m_StageGeoms.end(); iter++)
+	StageGeom* geom;
+	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 	{
-		result |= character->TestCollision(rel, iter->bound);
+		result |= character->DoCollisionMove(geom->bound, rel, &rel);
 		//if (result) break;
 	}
 
 	character->Translate(rel);
 }
-//
-//void GameStage::GetStageGeoms( lua_State* ls )
-//{
-//	m_GeomCount = lua_objlen(ls, -1);
-//
-//	int geom_index = 0;
-//
-//	lua_pushnil(ls);
-//
-//	while(lua_next(ls, -2) != 0)
-//	{
-//		if (lua_istable(ls, -1))
-//		{
-//			// read info for a single geometry
-//			lua_pushnil(ls);
-//
-//			int n = 0;
-//			int layer;
-//			std::string tex_name;
-//			BoundBox box;
-//			StageGeom geom;
-//
-//			while(lua_next(ls, -2) != 0)
-//			{
-//				if (n==0)
-//					layer = lua_tointeger(ls, -1);
-//				else if (n==5)
-//					tex_name = lua_tostring(ls, -1);
-//				else
-//					(&box.xMin)[n-1] = (float)lua_tonumber(ls, -1);
-//				n++;
-//
-//				lua_pop(ls, 1);
-//			}
-//
-//			Vertex v[6] =
-//			{
-//				{ box.xMin, box.yMin, 0.0f, 0.0f, 1.0f },
-//				{ box.xMin, box.yMax, 0.0f, 0.0f, 0.0f },
-//				{ box.xMax, box.yMax, 0.0f, 1.0f, 0.0f },
-//
-//				{ box.xMax, box.yMax, 0.0f, 1.0f, 0.0f },
-//				{ box.xMax, box.yMin, 0.0f, 1.0f, 1.0f },
-//				{ box.xMin, box.yMin, 0.0f, 0.0f, 1.0f },
-//			};
-//
-//			int texID = -1;
-//			if ( (texID=m_TextureMgr.GetTextureID(tex_name.data())) == -1)
-//			{
-//				if (m_TextureMgr.LoadTextureFromFile(tex_name.data()))
-//					texID = m_TextureMgr.GetTextureID(tex_name.data());
-//			}
-//
-//			geom.bound = box;
-//			geom.textureID = texID;
-//
-//			RenderSystem::Device()->CreateVertexBuffer(sizeof(Vertex) * 6, D3DUSAGE_WRITEONLY,
-//													   D3DFVF_XYZ|D3DFVF_TEX1, D3DPOOL_DEFAULT, &geom.vbuffer, NULL);
-//
-//			void* pData;
-//			geom.vbuffer->Lock(0, sizeof(Vertex) * 6, (void**)&pData, 0);
-//			memcpy(pData, v, sizeof(Vertex) * 6);
-//			geom.vbuffer->Unlock();
-//
-//			m_StageGeoms.push_back(geom);
-//
-//			geom_index++;
-//		}
-//
-//		lua_pop(ls, 1);
-//	}
-//
-//}

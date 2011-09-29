@@ -21,7 +21,7 @@ Character::~Character()
 
 void Character::Render()
 {
-	Vertex v[6] =
+	ActorSpriteVertex v[6] =
 	{
 		{ -0.5f * m_sCharSize, -0.5f * m_sCharSize, 0.0f, 0xFFFFF200 },
 		{ -0.5f * m_sCharSize, 0.5f * m_sCharSize, 0.0f, 0xFFFFF200 },
@@ -37,13 +37,13 @@ void Character::Render()
 	RenderSystem::Device()->SetTransform( D3DTS_WORLD, &transform );
 	
 	RenderSystem::Device()->SetTexture(0, NULL);
-	RenderSystem::Device()->SetFVF(D3DFVF_XYZ|D3DFVF_DIFFUSE);
-	RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(Vertex));
+	RenderSystem::Device()->SetFVF(ActorSpriteFVF);
+	RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(ActorSpriteVertex));
 }
 
-bool Character::TestCollision( Vector3& vecRel, const BoundBox& other )
+bool Character::DoCollisionMove( const BoundBox& other, const Vector3& input, Vector3* output )
 {
-	Vector3 newPos = m_Position + vecRel;
+	Vector3 newPos = m_Position + input;
 
 	BoundBox worldBox(m_Bound.xMin + m_Position.x,
 					  m_Bound.yMin + m_Position.y,
@@ -100,29 +100,30 @@ bool Character::TestCollision( Vector3& vecRel, const BoundBox& other )
 
 	if (x_col!=0 || y_col!=0)
 	{
-		// no collision, move to new position
-		//m_Position += vecRel;
+		// no collision, done
 		return false;
 	}
 	else
 	{
+		*output = input;
+
 		// check last frame with collision type
 		if (last_x_col==-1)
 		{
-			vecRel.x -= box.xMax - other.xMin;
+			output->x -= box.xMax - other.xMin;
 		}
 		else if (last_x_col==1)
 		{
-			vecRel.x += other.xMax - box.xMin;
+			output->x += other.xMax - box.xMin;
 		}
 		else if (last_y_col==-1)
 		{
-			vecRel.y -= box.yMax - other.yMin;
+			output->y -= box.yMax - other.yMin;
 			OnHitTop();
 		}
 		else if (last_y_col==1)
 		{
-			vecRel.y += other.yMax - box.yMin;
+			output->y += other.yMax - box.yMin;
 			OnHitGround();
 		}
 	}

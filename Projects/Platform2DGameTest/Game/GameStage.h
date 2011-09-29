@@ -6,8 +6,6 @@
 #include "BoundBox.h"
 #include "Character.h"
 
-#include <vector>
-
 struct lua_State;
 
 struct StageGeom
@@ -15,7 +13,21 @@ struct StageGeom
 	BoundBox	bound;
 	int textureID;
 	LPDIRECT3DVERTEXBUFFER9	vbuffer;
+
+	StageGeom*	next;
 };
+
+StageGeom* CreateStageGeom();
+StageGeom* GetFirstStageGeom();
+StageGeom* GetNextStageGeom(StageGeom* geom);
+
+struct StageGeomVertex
+{
+	float x, y, z;
+	float u, v;
+};
+
+#define StageGeomFVF D3DFVF_XYZ|D3DFVF_TEX1
 
 class GameStage
 {
@@ -33,19 +45,7 @@ public:
 	void TestCollision(Character* character, const Vector3& vecRel);
 
 private:
-
-	//void GetStageGeoms(lua_State* ls);
-
-	struct Vertex
-	{
-		float x, y, z;
-		float u, v;
-	};
-
 	int							m_GeomCount;
-
-	std::vector<StageGeom>		m_StageGeoms;
-
 	TextureManager				m_TextureMgr;
 };
 
