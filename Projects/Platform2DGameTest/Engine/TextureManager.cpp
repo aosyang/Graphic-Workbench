@@ -17,7 +17,7 @@ void TextureManager::Reset()
 
 	for (iter=m_Textures.begin(); iter!=m_Textures.end(); iter++)
 	{
-		iter->second->Release();
+		iter->second.d3d_tex->Release();
 	}
 
 	m_TextureNameMap.clear();
@@ -43,7 +43,7 @@ LPDIRECT3DTEXTURE9 TextureManager::GetD3DTexture( int id ) const
 
 	if ( (iter=m_Textures.find(id)) != m_Textures.end() )
 	{
-		return iter->second;
+		return iter->second.d3d_tex;
 	}
 
 	return NULL;
@@ -60,7 +60,7 @@ bool TextureManager::LoadTextureFromFile( const char* filename )
 	id = m_TextureID++;
 
 	m_TextureNameMap[filename] = id;
-	m_Textures[id] = tex;
+	m_Textures[id].d3d_tex = tex;
 
 	return true;
 }

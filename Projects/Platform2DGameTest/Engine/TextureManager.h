@@ -6,6 +6,12 @@
 
 #include "RenderDevice.h"
 
+typedef struct TextureInfoType
+{
+	int					width, height;
+	LPDIRECT3DTEXTURE9	d3d_tex;
+} TEXTURE_INFO;
+
 class TextureManager
 {
 public:
@@ -25,7 +31,7 @@ private:
 	typedef std::map<std::string, int> TextureNameMap;
 	TextureNameMap	m_TextureNameMap;
 
-	typedef std::map<int, LPDIRECT3DTEXTURE9>	TextureMap;
+	typedef std::map<int, TextureInfoType>	TextureMap;
 	TextureMap	m_Textures;
 };
 

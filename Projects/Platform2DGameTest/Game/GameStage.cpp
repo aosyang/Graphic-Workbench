@@ -7,13 +7,13 @@
 
 using namespace LuaPlus;
 
-static StageGeom* StageGeomHead = NULL;
-static StageGeom* StageGeomTail = NULL;
+static STAGE_GEOM* StageGeomHead = NULL;
+static STAGE_GEOM* StageGeomTail = NULL;
 
 // Stage geometry methods
-StageGeom* CreateStageGeom()
+STAGE_GEOM* CreateStageGeom()
 {
-	StageGeom* geom = new StageGeom();
+	STAGE_GEOM* geom = new STAGE_GEOM();
 	geom->next = NULL;
 
 	if (StageGeomTail == NULL)
@@ -31,12 +31,12 @@ StageGeom* CreateStageGeom()
 	return geom;
 }
 
-StageGeom* GetFirstStageGeom()
+STAGE_GEOM* GetFirstStageGeom()
 {
 	return StageGeomHead;
 }
 
-StageGeom* GetNextStageGeom(StageGeom* geom)
+STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom)
 {
 	return geom->next;
 }
@@ -63,18 +63,45 @@ bool GameStage::LoadFromFile( const char* filename )
 	{
 		LuaObject stage_script = state->GetGlobals()["Stage"];
 		//int layers = stage["Layers"].GetInteger();
+
+		// Load tile types
+		LuaObject tiletype_script = stage_script["TileTypes"];
+		int tiletype_count = tiletype_script.GetTableCount();
+
+		for (int i=0; i<tiletype_count; i++)
+		{
+			std::string type_name = tiletype_script[i+1][1].GetString();
+
+			TILE_TYPE_INFO tile_info;
+			tile_info.type = tiletype_script[i+1][2].GetString();
+			const char* tex_name = tiletype_script[i+1][3].GetString();
+
+			int texID = -1;
+			if ( (texID=m_TextureMgr.GetTextureID(tex_name)) == -1)
+			{
+				if (m_TextureMgr.LoadTextureFromFile(tex_name))
+					texID = m_TextureMgr.GetTextureID(tex_name);
+			}
+
+			tile_info.texID = texID;
+
+			m_TileTypes[type_name] = tile_info;
+		}
+
+		// Load geometries for the stage
 		LuaObject geom_script = stage_script["Geometries"];
 		m_GeomCount = geom_script.GetTableCount();
+
 		for (int i=0; i<m_GeomCount; i++)
 		{
-			StageGeom* geom = CreateStageGeom();
+			STAGE_GEOM* geom = CreateStageGeom();
 			BoundBox box;
 
 			int layer = geom_script[i+1][1].GetInteger();
-			box.xMin = geom_script[i+1][2].GetInteger();
-			box.xMax = geom_script[i+1][3].GetInteger();
-			box.yMin = geom_script[i+1][4].GetInteger();
-			box.yMax = geom_script[i+1][5].GetInteger();
+			box.xMin = (float)geom_script[i+1][2].GetInteger();
+			box.xMax = (float)geom_script[i+1][3].GetInteger();
+			box.yMin = (float)geom_script[i+1][4].GetInteger();
+			box.yMax = (float)geom_script[i+1][5].GetInteger();
 			const char* tex_name = geom_script[i+1][6].GetString();
 
 			// build vertex buffer with vertex position as its own texture coordinate
@@ -91,10 +118,9 @@ bool GameStage::LoadFromFile( const char* filename )
 
 			// Find texture id by name
 			int texID = -1;
-			if ( (texID=m_TextureMgr.GetTextureID(tex_name)) == -1)
+			if (m_TileTypes.find(tex_name)!=m_TileTypes.end())
 			{
-				if (m_TextureMgr.LoadTextureFromFile(tex_name))
-					texID = m_TextureMgr.GetTextureID(tex_name);
+				texID = m_TileTypes[tex_name].texID;
 			}
 
 			geom->bound = box;
@@ -117,7 +143,7 @@ bool GameStage::LoadFromFile( const char* filename )
 
 void GameStage::RenderStage()
 {
-	StageGeom* geom;
+	STAGE_GEOM* geom;
 	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 	{
 		if (geom->textureID!=-1)
@@ -136,6 +162,8 @@ void GameStage::RenderStage()
 		RenderSystem::Device()->SetStreamSource(0, geom->vbuffer, 0, sizeof(StageGeomVertex));
 		RenderSystem::Device()->SetFVF(StageGeomFVF);
 		RenderSystem::Device()->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
+
+		//DebugRenderStageGeom(geom);
 	}
 }
 
@@ -143,18 +171,20 @@ void GameStage::Reset()
 {
 	m_GeomCount = 0;
 
-	StageGeom* geom;
+	STAGE_GEOM* geom;
 	for (geom = GetFirstStageGeom(); geom != NULL; )
 	{
 		geom->vbuffer->Release();
 
-		StageGeom* old_geom = geom;
+		STAGE_GEOM* old_geom = geom;
 		geom = GetNextStageGeom(geom);
 		delete old_geom;
 	}
 
 	StageGeomHead = NULL;
 	StageGeomTail = NULL;
+
+	m_TileTypes.clear();
 }
 
 void GameStage::TestCollision( Character* character, const Vector3& vecRel )
@@ -162,7 +192,7 @@ void GameStage::TestCollision( Character* character, const Vector3& vecRel )
 	bool result = false;
 	Vector3 rel = vecRel + character->Velocity();
 
-	StageGeom* geom;
+	STAGE_GEOM* geom;
 	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 	{
 		result |= character->DoCollisionMove(geom->bound, rel, &rel);
@@ -170,4 +200,26 @@ void GameStage::TestCollision( Character* character, const Vector3& vecRel )
 	}
 
 	character->Translate(rel);
+}
+
+void GameStage::DebugRenderStageGeom( STAGE_GEOM* geom )
+{
+	StageGeomWireframeVertex v[6] =
+	{
+		{ geom->bound.xMin, geom->bound.yMin, 0.0f, 0xFFFFF200 },
+		{ geom->bound.xMin, geom->bound.yMax, 0.0f, 0xFFFFF200 },
+		{ geom->bound.xMax, geom->bound.yMax, 0.0f, 0xFFFFF200 },
+
+		{ geom->bound.xMax, geom->bound.yMax, 0.0f, 0xFFFFF200 },
+		{ geom->bound.xMax, geom->bound.yMin, 0.0f, 0xFFFFF200 },
+		{ geom->bound.xMin, geom->bound.yMin, 0.0f, 0xFFFFF200 },
+	};
+
+	RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+
+	RenderSystem::Device()->SetTexture(0, NULL);
+	RenderSystem::Device()->SetFVF(StageGeomWireframeFVF);
+	RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(StageGeomWireframeVertex));
+
+	RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 }
