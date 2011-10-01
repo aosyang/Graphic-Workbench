@@ -1,7 +1,7 @@
 #ifndef Character_h__
 #define Character_h__
 
-#include "Math/Vector3.h"
+#include "Math/GWVectors.h"
 #include "BoundBox.h"
 #include "RenderDevice.h"
 

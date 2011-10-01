@@ -171,14 +171,14 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 
 	TileType player_pos_type = g_GameStage->GetTileTypeAtPoint(g_Character->WorldPosition());
 
-	Vector3 moveVector(0.0f, 0.0f, 0.0f);
-	if (g_KeyPressed[KEY_LEFT]) moveVector += Vector3(-1.0f, 0.0f, 0.0f);
-	if (g_KeyPressed[KEY_RIGHT]) moveVector += Vector3(1.0f, 0.0f, 0.0f);
+	Vector2 moveVector(0.0f, 0.0f);
+	if (g_KeyPressed[KEY_LEFT]) moveVector += Vector2(-1.0f, 0.0f);
+	if (g_KeyPressed[KEY_RIGHT]) moveVector += Vector2(1.0f, 0.0f);
 
 	if (g_Character->IsClimbingLadder())
 	{
-		if (g_KeyPressed[KEY_UP]) moveVector += Vector3(0.0f, 1.0f, 0.0f);
-		if (g_KeyPressed[KEY_DOWN]) moveVector += Vector3(0.0f, -1.0f, 0.0f);
+		if (g_KeyPressed[KEY_UP]) moveVector += Vector2(0.0f, 1.0f);
+		if (g_KeyPressed[KEY_DOWN]) moveVector += Vector2(0.0f, -1.0f);
 
 		// Fall down if no ladder
 		if (player_pos_type != TILE_LADDER)
@@ -206,7 +206,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 		moveVector *= 0.1f;
 	}
 
-	g_GameStage->TestCollision(g_Character, moveVector);
+	g_GameStage->TestCollision( g_Character, Vector3(moveVector, 0.0f) );
 }
 
 void SetupLight() 

@@ -278,11 +278,11 @@
 				Name="Math"
 				>
 				<File
-					RelativePath=".\Engine\Math\Vector3.cpp"
+					RelativePath=".\Engine\Math\GWVectors.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\Engine\Math\Vector3.h"
+					RelativePath=".\Engine\Math\GWVectors.h"
 					>
 				</File>
 			</Filter>
