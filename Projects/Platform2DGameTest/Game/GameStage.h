@@ -9,9 +9,13 @@
 #include <map>
 #include <string>
 
-struct lua_State;
 
-enum TileType
+namespace LuaPlus
+{
+	class LuaObject;
+}
+
+enum TileTypeEnum
 {
 	TILE_VOID = -1,
 
@@ -20,19 +24,15 @@ enum TileType
 	TILE_END,
 };
 
-struct TileTypeTable
-{
-	TileType	type;
-	char		name[256];
-};
+TileTypeEnum StringToTileType(const char* type_name);
 
 // -----------------------------------------------------------
 // Tile types
 // -----------------------------------------------------------
 typedef struct TileTypeInfo
 {
-	std::string		type;
-	int				texID;
+	char		into_type_name[256];
+	int			tex_id;
 } TILE_TYPE_INFO;
 
 // -----------------------------------------------------------
@@ -41,15 +41,24 @@ typedef struct TileTypeInfo
 typedef struct StageGeom
 {
 	BoundBox					bound;
-	int							textureID;
+	int							texture_id;
 	LPDIRECT3DVERTEXBUFFER9		vbuffer;
-	TileType					type;
+	TileTypeEnum				type;
 
 	StageGeom*					next;
 } STAGE_GEOM;
 
-STAGE_GEOM* CreateStageGeom();
-STAGE_GEOM* GetFirstStageGeom();
+enum GameWorldviewEnum
+{
+	GAME_WORLD_COMMON,
+	GAME_WORLD_0,
+	GAME_WORLD_1,
+	GAME_WORLD_2,
+	GAME_WORLD_COUNT,
+};
+
+STAGE_GEOM* CreateStageGeom(int world_id);
+STAGE_GEOM* GetFirstStageGeom(int world_id);
 STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom);
 
 struct StageGeomVertex
@@ -84,17 +93,17 @@ public:
 	void Reset();
 	void TestCollision(Character* character, const Vector3& vecRel);
 
-	TileType GetTileTypeAtPoint(const Vector3 point) const;
+	TileTypeEnum GetTileTypeAtPoint(const Vector3 point) const;
 
 private:
+	
+	void ScriptLoadTileTypes(const LuaPlus::LuaObject* script, int world_id);
+	void ScriptLoadGeometries(const LuaPlus::LuaObject* script, int world_id);
+
 	void DebugRenderStageGeom(STAGE_GEOM* geom);
 
 private:
-	int							m_GeomCount;
 	TextureManager				m_TextureMgr;
-
-	std::map<std::string, TILE_TYPE_INFO>
-								m_TileTypes;
 };
 
 #endif // GameStage_h__

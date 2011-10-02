@@ -1,3 +1,11 @@
-﻿1.可移动的角色
-2.场景 (编辑)
-3.动画对象
+﻿Here are some major features to be implemented in the game.
+
+- (DONE) Movable characters
+  - (DONE) Player can move, jump and/or climb up and down the ladder in game.
+  
+- Stage
+  - (DONE) Build up basic structure of a stage.
+  - Move among multiple different worldviews.
+  
+- Scene editor
+- Animated objects

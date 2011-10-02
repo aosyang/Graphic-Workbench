@@ -142,7 +142,6 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 	V_RETURN( D3DXCreateFont( pd3dDevice, 16, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
 							  OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
 							  L"Arial", &g_pFont ) );
-
 	return S_OK;
 }
 
@@ -169,7 +168,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 {
 	g_Character->Update(fElapsedTime);
 
-	TileType player_pos_type = g_GameStage->GetTileTypeAtPoint(g_Character->WorldPosition());
+	TileTypeEnum player_pos_type = g_GameStage->GetTileTypeAtPoint(g_Character->WorldPosition());
 
 	Vector2 moveVector(0.0f, 0.0f);
 	if (g_KeyPressed[KEY_LEFT]) moveVector += Vector2(-1.0f, 0.0f);
@@ -266,6 +265,10 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 	// Render the scene
 	if( SUCCEEDED( pd3dDevice->BeginScene() ) )
 	{
+		pd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+		pd3dDevice->SetRenderState ( D3DRS_BLENDOP, D3DBLENDOP_ADD );
+		pd3dDevice->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+		pd3dDevice->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
 
 		g_GameStage->RenderStage();
 

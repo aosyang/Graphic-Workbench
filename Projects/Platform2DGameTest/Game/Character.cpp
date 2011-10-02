@@ -3,8 +3,10 @@
 
 #include <d3dx9math.h>
 
+static float COL_TOLERANCE = 0.001f;
+
 // define size of a character
-float Character::m_sCharSize = 1.0f;
+float Character::m_sCharSize = 0.8f;
 
 Character::Character()
 : m_Position(7.0f, 5.0f, 0.0f),
@@ -111,20 +113,20 @@ bool Character::DoCollisionMove( const BoundBox& other, const Vector3& input, Ve
 		// check last frame with collision type
 		if (last_x_col==-1)
 		{
-			output->x -= box.xMax - other.xMin;
+			output->x -= box.xMax - other.xMin + COL_TOLERANCE;
 		}
 		else if (last_x_col==1)
 		{
-			output->x += other.xMax - box.xMin;
+			output->x += other.xMax - box.xMin + COL_TOLERANCE;
 		}
 		else if (last_y_col==-1)
 		{
-			output->y -= box.yMax - other.yMin;
+			output->y -= box.yMax - other.yMin + COL_TOLERANCE;
 			OnHitTop();
 		}
 		else if (last_y_col==1)
 		{
-			output->y += other.yMax - box.yMin;
+			output->y += other.yMax - box.yMin + COL_TOLERANCE;
 			OnHitGround();
 		}
 	}
