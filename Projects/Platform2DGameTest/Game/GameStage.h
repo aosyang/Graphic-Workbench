@@ -105,6 +105,7 @@ public:
 
 	TileUsageEnum GetTileTypeAtPoint(const Vector3 point);
 	void SetWorldview(int world_id);
+	GameWorldviewEnum GetWorldview() const { return m_ActiveWorld; }
 
 private:
 	

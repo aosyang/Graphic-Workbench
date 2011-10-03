@@ -47,5 +47,8 @@ Stage = {
 		},
 	},
 
+	GameWorld1 = {
+	},
+
 	StartPoint = { 5.0, 10.6, 15.0 },
 }

@@ -274,13 +274,19 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 
 		g_Character->Render();
 
+		int world_id = (int)g_GameStage->GetWorldview();
+
 		// Draw debug text
 		RECT font_rect;
 		char debug_text[256];
-		sprintf(debug_text, "pos: %f, %f\nBlock: x( %d ~ %d ) - y( %d ~ %d )",
+		sprintf(debug_text,
+				"pos: %f, %f\n"
+				"Block: x( %d ~ %d ) - y( %d ~ %d )\n"
+				"World: %d",
 				char_pos.x, char_pos.y,
 				(int)floor(char_pos.x), (int)ceil(char_pos.x),
-				(int)floor(char_pos.y), (int)ceil(char_pos.y));
+				(int)floor(char_pos.y), (int)ceil(char_pos.y),
+				world_id);
 
 		SetRect( &font_rect, 0, 0, 400, 400 );
 		g_pFont->DrawTextA( NULL, debug_text, -1, &font_rect, DT_LEFT|DT_NOCLIP, 0xFFFFFF00 );
@@ -305,10 +311,10 @@ void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUse
 		g_KeyPressed[nChar - 37] = bKeyDown ? true : false;
 		break;
 	case '1':
-		g_GameStage->SetWorldview(GAME_WORLD_COMMON);
-		break;
 	case '2':
-		g_GameStage->SetWorldview(GAME_WORLD_0);
+	case '3':
+	case '4':
+		g_GameStage->SetWorldview(GAME_WORLD_COMMON + nChar - '1');
 		break;
 	case 'Z':		// z
 		g_Character->Jump();
