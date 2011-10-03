@@ -7,30 +7,30 @@
 
 using namespace LuaPlus;
 
-typedef struct TileTypeTable
+typedef struct TileUsageTable
 {
-	TileTypeEnum	type;
+	TileUsageEnum	usage;
 	char			name[256];
-} TILE_TYPE_TABLE;
+} TILE_USAGE_TABLE;
 
-TILE_TYPE_TABLE tile_table[] =
+TILE_USAGE_TABLE tile_usage_table[] =
 {
-	{ TILE_SOLID,		"SOLID"		},
-	{ TILE_LADDER,		"LADDER"	},
-	{ TILE_END,			""			},
+	{ TILE_USAGE_SOLID,			"SOLID"		},
+	{ TILE_USAGE_LADDER,		"LADDER"	},
+	{ TILE_USAGE_END,			""			},
 };
 
-TileTypeEnum StringToTileType( const char* type_name )
+TileUsageEnum StringToTileUsage( const char* type_name )
 {
-	for ( int i = 0; tile_table[i].type != TILE_END ; i++ )
+	for ( int i = 0; tile_usage_table[i].usage != TILE_USAGE_END ; i++ )
 	{
-		if ( strcmp(type_name, tile_table[i].name) == 0 )
+		if ( strcmp(type_name, tile_usage_table[i].name) == 0 )
 		{
-			return (TileTypeEnum)i;
+			return (TileUsageEnum)i;
 		}
 	}
 
-	return TILE_VOID;
+	return TILE_USAGE_VOID;
 }
 
 char GameWorldviewKeyWord[GAME_WORLD_COUNT][32] =
@@ -46,8 +46,9 @@ typedef struct StageGeomListType
 	STAGE_GEOM*				StageGeomHead;
 	STAGE_GEOM*				StageGeomTail;
 	int						geom_count;
-	std::map<std::string, TILE_TYPE_INFO>
-							tile_types;
+
+	std::map<int, TILE_TYPE_INFO>
+							world_tile_types;
 } STAGE_GEOM_LIST;
 
 static STAGE_GEOM_LIST StageGeomList[GAME_WORLD_COUNT] = { { NULL, NULL, 0 } };
@@ -86,6 +87,8 @@ STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom)
 
 
 GameStage::GameStage()
+: m_ActiveWorld(GAME_WORLD_COMMON),
+  m_TileTypeIndex(0.)
 {
 
 }
@@ -116,11 +119,11 @@ bool GameStage::LoadFromFile( const char* filename )
 
 			// Load tile types
 			LuaObject tiletype_script = world_script["TileTypes"];
-			ScriptLoadTileTypes(&tiletype_script, GAME_WORLD_COMMON);
+			ScriptLoadTileTypes(&tiletype_script, i);
 
 			// Load geometries for the stage
 			LuaObject geom_script = world_script["Geometries"];
-			ScriptLoadGeometries(&geom_script, GAME_WORLD_COMMON);
+			ScriptLoadGeometries(&geom_script, i);
 
 			// Load tile types for each worldview
 		}
@@ -136,24 +139,16 @@ void GameStage::RenderStage()
 	STAGE_GEOM* geom;
 	for (geom = GetFirstStageGeom(GAME_WORLD_COMMON); geom != NULL; geom = GetNextStageGeom(geom))
 	{
-		if (geom->texture_id!=-1)
+		RenderStageGeom(geom);
+	}
+
+	// Got an extra world to render
+	if (m_ActiveWorld>GAME_WORLD_COMMON && m_ActiveWorld<GAME_WORLD_COUNT)
+	{
+		for (geom = GetFirstStageGeom(m_ActiveWorld); geom != NULL; geom = GetNextStageGeom(geom))
 		{
-			LPDIRECT3DTEXTURE9 tex = m_TextureMgr.GetD3DTexture(geom->texture_id);
-			RenderSystem::Device()->SetTexture(0, tex);
-
-			// enable mip-map for texture
-			RenderSystem::Device()->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
+			RenderStageGeom(geom);
 		}
-		else
-		{
-			RenderSystem::Device()->SetTexture(0, NULL);
-		}
-
-		RenderSystem::Device()->SetStreamSource(0, geom->vbuffer, 0, sizeof(StageGeomVertex));
-		RenderSystem::Device()->SetFVF(StageGeomFVF);
-		RenderSystem::Device()->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
-
-		//DebugRenderStageGeom(geom);
 	}
 }
 
@@ -174,8 +169,14 @@ void GameStage::Reset()
 		StageGeomList[i].StageGeomHead = NULL;
 		StageGeomList[i].StageGeomTail = NULL;
 		StageGeomList[i].geom_count = 0;
-		StageGeomList[i].tile_types.clear();
+		StageGeomList[i].world_tile_types.clear();
 	}
+
+	m_ActiveWorld = GAME_WORLD_COMMON;
+
+	m_TileTypeIndex = 0;
+	m_TileName2Id.clear();
+	m_TileId2TypeInfo.clear();
 }
 
 void GameStage::TestCollision( Character* character, const Vector3& vecRel )
@@ -186,37 +187,70 @@ void GameStage::TestCollision( Character* character, const Vector3& vecRel )
 	STAGE_GEOM* geom;
 	for (geom = GetFirstStageGeom(GAME_WORLD_COMMON); geom != NULL; geom = GetNextStageGeom(geom))
 	{
-		if ( geom->type != TILE_SOLID )
+		if ( GetTileUsageById(geom->tile_type_id) != TILE_USAGE_SOLID )
 			continue;
 
 		result |= character->DoCollisionMove(geom->bound, rel, &rel);
 	}
 
+	if (m_ActiveWorld != GAME_WORLD_COMMON)
+	{
+		for (geom = GetFirstStageGeom(m_ActiveWorld); geom != NULL; geom = GetNextStageGeom(geom))
+		{
+			if ( GetTileUsageById(geom->tile_type_id) != TILE_USAGE_SOLID )
+				continue;
+
+			result |= character->DoCollisionMove(geom->bound, rel, &rel);
+		}
+	}
+
 	character->Translate(rel);
 }
 
-TileTypeEnum GameStage::GetTileTypeAtPoint( const Vector3 point ) const
+TileUsageEnum GameStage::GetTileTypeAtPoint( const Vector3 point )
 {
 	STAGE_GEOM* geom;
+
+	if (m_ActiveWorld != GAME_WORLD_COMMON)
+	{
+		for (geom = GetFirstStageGeom(GAME_WORLD_COMMON); geom != NULL; geom = GetNextStageGeom(geom))
+		{
+			if ( geom->bound.IsPointInsideBox(point.x, point.y) )
+				return GetTileUsageById(geom->tile_type_id);
+		}
+	}
+
 	for (geom = GetFirstStageGeom(GAME_WORLD_COMMON); geom != NULL; geom = GetNextStageGeom(geom))
 	{
 		if ( geom->bound.IsPointInsideBox(point.x, point.y) )
-			return geom->type;
+			return GetTileUsageById(geom->tile_type_id);
 	}
 
-	return TILE_VOID;
+	return TILE_USAGE_VOID;
 }
+
+
+void GameStage::SetWorldview( int world_id )
+{
+	m_ActiveWorld = (GameWorldviewEnum)world_id;
+}
+
+
 
 void GameStage::ScriptLoadTileTypes( const LuaPlus::LuaObject* script, int world_id )
 {
+	if (script->IsNil()) return;
+
 	int tiletype_count = script->GetTableCount();
 
 	for (int i=0; i<tiletype_count; i++)
 	{
-		std::string type_name = (*script)[i+1][1].GetString();
+		// Load tile type info into common container
+		std::string tile_name = (*script)[i+1][1].GetString();
 
 		TILE_TYPE_INFO tile_info;
-		strcpy(tile_info.into_type_name, (*script)[i+1][2].GetString());
+		strcpy(tile_info.tile_usage_str, (*script)[i+1][2].GetString());
+		tile_info.usage = StringToTileUsage(tile_info.tile_usage_str);
 		const char* tex_name = (*script)[i+1][3].GetString();
 
 		int texID = -1;
@@ -228,12 +262,37 @@ void GameStage::ScriptLoadTileTypes( const LuaPlus::LuaObject* script, int world
 
 		tile_info.tex_id = texID;
 
-		StageGeomList[world_id].tile_types[type_name] = tile_info;
+		if ( world_id == GAME_WORLD_COMMON )
+		{
+			// Add tile type to stage containers
+			m_TileName2Id[tile_name] = m_TileTypeIndex;
+			m_TileId2TypeInfo[m_TileTypeIndex] = tile_info;
+			m_TileTypeIndex++;
+		}
+		else
+		{
+			// Only load tile types overridden by this worldview
+			if ( m_TileName2Id.find(tile_name) != m_TileName2Id.end() )
+			{
+				// We've already got this tile in common world, override!
+				int tile_id = m_TileName2Id[tile_name];
+				StageGeomList[world_id].world_tile_types[tile_id] = tile_info;
+			}
+			else
+			{
+				// Add new tile to stage container
+				m_TileName2Id[tile_name] = m_TileTypeIndex;
+				m_TileId2TypeInfo[m_TileTypeIndex] = tile_info;
+				m_TileTypeIndex++;
+			}
+		}
 	}
 }
 
 void GameStage::ScriptLoadGeometries( const LuaPlus::LuaObject* script, int world_id )
 {
+	if (script->IsNil()) return;
+
 	int geom_count = StageGeomList[world_id].geom_count = script->GetTableCount();
 
 	for (int i=0; i<geom_count; i++)
@@ -273,17 +332,17 @@ void GameStage::ScriptLoadGeometries( const LuaPlus::LuaObject* script, int worl
 		};
 
 		// Find texture id by name
-		int texID = -1;
-		TileTypeEnum t = TILE_VOID;
-		if (StageGeomList[world_id].tile_types.find(tex_name)!=StageGeomList[world_id].tile_types.end())
+		int geom_tile_type = -1;
+		TileUsageEnum t = TILE_USAGE_VOID;
+		if (m_TileName2Id.find(tex_name)!=m_TileName2Id.end())
 		{
-			texID = StageGeomList[world_id].tile_types[tex_name].tex_id;
-			t = StringToTileType(StageGeomList[world_id].tile_types[tex_name].into_type_name);
+			geom_tile_type = m_TileName2Id[tex_name];
+			t = StringToTileUsage(m_TileId2TypeInfo[geom_tile_type].tile_usage_str);
 		}
 
 		geom->bound = box;
-		geom->texture_id = texID;
-		geom->type = t;
+		geom->tile_type_id = geom_tile_type;
+		//geom->usage = t;
 
 		RenderSystem::Device()->CreateVertexBuffer(sizeof(StageGeomVertex) * 6, D3DUSAGE_WRITEONLY,
 			D3DFVF_XYZ|D3DFVF_TEX1, D3DPOOL_DEFAULT, &geom->vbuffer, NULL);
@@ -293,6 +352,40 @@ void GameStage::ScriptLoadGeometries( const LuaPlus::LuaObject* script, int worl
 		memcpy(pData, v, sizeof(StageGeomVertex) * 6);
 		geom->vbuffer->Unlock();
 	}
+}
+
+void GameStage::RenderStageGeom( STAGE_GEOM* geom )
+{
+	int tile_id = geom->tile_type_id;
+	int tex_id = m_TileId2TypeInfo[tile_id].tex_id;
+
+	if (m_ActiveWorld!=GAME_WORLD_COMMON)
+	{
+		if ( StageGeomList[m_ActiveWorld].world_tile_types.find(tile_id) !=
+			 StageGeomList[m_ActiveWorld].world_tile_types.end() )
+		{
+			tex_id = StageGeomList[m_ActiveWorld].world_tile_types[tile_id].tex_id;
+		}
+	}
+
+	if (tex_id!=-1)
+	{
+		LPDIRECT3DTEXTURE9 tex = m_TextureMgr.GetD3DTexture(tex_id);
+		RenderSystem::Device()->SetTexture(0, tex);
+
+		// enable mip-map for texture
+		RenderSystem::Device()->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
+	}
+	else
+	{
+		RenderSystem::Device()->SetTexture(0, NULL);
+	}
+
+	RenderSystem::Device()->SetStreamSource(0, geom->vbuffer, 0, sizeof(StageGeomVertex));
+	RenderSystem::Device()->SetFVF(StageGeomFVF);
+	RenderSystem::Device()->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
+
+	//DebugRenderStageGeom(geom);
 }
 
 void GameStage::DebugRenderStageGeom( STAGE_GEOM* geom )
@@ -315,4 +408,23 @@ void GameStage::DebugRenderStageGeom( STAGE_GEOM* geom )
 	RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(StageGeomWireframeVertex));
 
 	RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+}
+
+TileUsageEnum GameStage::GetTileUsageById( int id )
+{
+	if ( m_ActiveWorld != GAME_WORLD_COMMON )
+	{
+		if ( StageGeomList[m_ActiveWorld].world_tile_types.find(id)
+			 != StageGeomList[m_ActiveWorld].world_tile_types.end() )
+		{
+			return StageGeomList[m_ActiveWorld].world_tile_types[id].usage;
+		}
+	}
+
+	if ( m_TileId2TypeInfo.find(id) != m_TileId2TypeInfo.end() )
+	{
+		return m_TileId2TypeInfo[id].usage;
+	}
+
+	return TILE_USAGE_VOID;
 }

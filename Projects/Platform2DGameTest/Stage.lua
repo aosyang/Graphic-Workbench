@@ -1,7 +1,7 @@
 Stage = {
 	GameWorldCommon = {
 		TileTypes = {
-			-- { Name, Type, Texture }
+			-- { Name, Usage, Texture }
 			{ "StoneWall", "SOLID", "Data/Fieldstone.tga" },
 			{ "Terrain", "SOLID", "Data/Terrain.tga" },
 			{ "Ladder", "LADDER", "Data/Grid_Ladders.tga" },
@@ -37,6 +37,13 @@ Stage = {
 			-- Ladders
 			{ 0, -8, -7, -7, 0, "Ladder" },
 			{ 0, -6, -5, -1, 3, "Ladder" },
+		},
+	},
+
+	GameWorld0 = {
+		TileTypes = {
+			-- { Name, Usage, Texture }
+			{ "Ladder", "SOLID", "Data/Fieldstone.tga" },
 		},
 	},
 

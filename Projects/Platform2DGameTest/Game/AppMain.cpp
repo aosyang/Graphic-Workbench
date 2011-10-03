@@ -168,7 +168,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 {
 	g_Character->Update(fElapsedTime);
 
-	TileTypeEnum player_pos_type = g_GameStage->GetTileTypeAtPoint(g_Character->WorldPosition());
+	TileUsageEnum player_pos_type = g_GameStage->GetTileTypeAtPoint(g_Character->WorldPosition());
 
 	Vector2 moveVector(0.0f, 0.0f);
 	if (g_KeyPressed[KEY_LEFT]) moveVector += Vector2(-1.0f, 0.0f);
@@ -180,7 +180,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 		if (g_KeyPressed[KEY_DOWN]) moveVector += Vector2(0.0f, -1.0f);
 
 		// Fall down if no ladder
-		if (player_pos_type != TILE_LADDER)
+		if (player_pos_type != TILE_USAGE_LADDER)
 		{
 			g_Character->SetClimbingLadder(false);
 		}
@@ -188,7 +188,7 @@ void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext 
 	else
 	{
 		// Climb up if player stands near by a ladder
-		if (g_KeyPressed[KEY_UP] && player_pos_type == TILE_LADDER)
+		if (g_KeyPressed[KEY_UP] && player_pos_type == TILE_USAGE_LADDER)
 		{
 			g_Character->SetClimbingLadder(true);
 		}
@@ -304,7 +304,13 @@ void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUse
 	case 40:		// Down
 		g_KeyPressed[nChar - 37] = bKeyDown ? true : false;
 		break;
-	case 90:		// z
+	case '1':
+		g_GameStage->SetWorldview(GAME_WORLD_COMMON);
+		break;
+	case '2':
+		g_GameStage->SetWorldview(GAME_WORLD_0);
+		break;
+	case 'Z':		// z
 		g_Character->Jump();
 		break;
 	}

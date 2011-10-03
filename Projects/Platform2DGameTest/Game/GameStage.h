@@ -15,24 +15,34 @@ namespace LuaPlus
 	class LuaObject;
 }
 
-enum TileTypeEnum
+enum TileUsageEnum
 {
-	TILE_VOID = -1,
+	TILE_USAGE_VOID = -1,
 
-	TILE_SOLID = 0,
-	TILE_LADDER,
-	TILE_END,
+	TILE_USAGE_SOLID = 0,
+	TILE_USAGE_LADDER,
+	TILE_USAGE_END,
 };
 
-TileTypeEnum StringToTileType(const char* type_name);
+TileUsageEnum StringToTileUsage(const char* type_name);
 
 // -----------------------------------------------------------
 // Tile types
 // -----------------------------------------------------------
 typedef struct TileTypeInfo
 {
-	char		into_type_name[256];
-	int			tex_id;
+	char				tile_usage_str[256];
+	int					tex_id;
+	TileUsageEnum		usage;
+
+	TileTypeInfo& operator=(const TileTypeInfo& rhs)
+	{
+		strcpy(this->tile_usage_str, rhs.tile_usage_str);
+		this->tex_id = rhs.tex_id;
+		this->usage = rhs.usage;
+
+		return *this;
+	}
 } TILE_TYPE_INFO;
 
 // -----------------------------------------------------------
@@ -41,9 +51,9 @@ typedef struct TileTypeInfo
 typedef struct StageGeom
 {
 	BoundBox					bound;
-	int							texture_id;
+	int							tile_type_id;
 	LPDIRECT3DVERTEXBUFFER9		vbuffer;
-	TileTypeEnum				type;
+	//TileUsageEnum				usage;
 
 	StageGeom*					next;
 } STAGE_GEOM;
@@ -93,17 +103,28 @@ public:
 	void Reset();
 	void TestCollision(Character* character, const Vector3& vecRel);
 
-	TileTypeEnum GetTileTypeAtPoint(const Vector3 point) const;
+	TileUsageEnum GetTileTypeAtPoint(const Vector3 point);
+	void SetWorldview(int world_id);
 
 private:
 	
 	void ScriptLoadTileTypes(const LuaPlus::LuaObject* script, int world_id);
 	void ScriptLoadGeometries(const LuaPlus::LuaObject* script, int world_id);
 
+	void RenderStageGeom(STAGE_GEOM* geom);
 	void DebugRenderStageGeom(STAGE_GEOM* geom);
+
+	TileUsageEnum GetTileUsageById(int id);
 
 private:
 	TextureManager				m_TextureMgr;
+	GameWorldviewEnum			m_ActiveWorld;
+
+	int							m_TileTypeIndex;
+	std::map<std::string, int>
+								m_TileName2Id;
+	std::map<int, TILE_TYPE_INFO>
+								m_TileId2TypeInfo;
 };
 
 #endif // GameStage_h__
