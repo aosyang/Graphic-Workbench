@@ -106,6 +106,8 @@ bool GameStage::LoadFromFile( const char* filename )
 
 	if (!err_code)
 	{
+		//state->DumpObject("Stage_out.lua", "Stage", state->GetGlobals()["Stage"], 0);
+
 		LuaObject stage_script = state->GetGlobals()["Stage"];
 
 		for (int i=0; i<GAME_WORLD_COUNT; i++)
