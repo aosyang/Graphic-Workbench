@@ -56,15 +56,8 @@ bool Character::DoCollisionMove( const BoundBox& other, const Vector3& input, Ve
 {
 	Vector3 newPos = m_Position + input;
 
-	BoundBox worldBox(m_Bound.xMin + m_Position.x,
-					  m_Bound.yMin + m_Position.y,
-					  m_Bound.xMax + m_Position.x,
-					  m_Bound.yMax + m_Position.y);
-
-	BoundBox box(m_Bound.xMin + newPos.x,
-				 m_Bound.yMin + newPos.y,
-				 m_Bound.xMax + newPos.x,
-				 m_Bound.yMax + newPos.y);
+	BoundBox worldBox = m_Bound.Translate(m_Position);
+	BoundBox box = m_Bound.Translate(newPos);
 
 	int x_col = 0,		// x collision type -1: to the left 0: collision 1: to the right
 		y_col = 0;		// y collision type -1: to the bottom 0: collision 1: to the top
@@ -136,134 +129,6 @@ bool Character::DoCollisionMove( const BoundBox& other, const Vector3& input, Ve
 		{
 			output->y += other.yMax - box.yMin + COL_TOLERANCE;
 			OnHitGround();
-		}
-	}
-
-	return true;
-}
-
-bool Character::DoVerticalCollisionMove( const BoundBox& other, const Vector3& input, Vector3* output )
-{
-	Vector3 vInput = input;
-	vInput.x = 0.0f;
-
-	Vector3 newPos = m_Position + vInput;
-
-	BoundBox worldBox(m_Bound.xMin + m_Position.x,
-					  m_Bound.yMin + m_Position.y,
-					  m_Bound.xMax + m_Position.x,
-					  m_Bound.yMax + m_Position.y);
-
-	BoundBox box(m_Bound.xMin + newPos.x,
-				 m_Bound.yMin + newPos.y,
-				 m_Bound.xMax + newPos.x,
-				 m_Bound.yMax + newPos.y);
-
-	int y_col = 0;		// y collision type -1: to the bottom 0: collision 1: to the top
-	int last_y_col = 0;
-
-	// Calculate collision type for last frame
-	if (worldBox.yMax <= other.yMin)
-	{
-		last_y_col = -1;
-	}
-	else if (worldBox.yMin >= other.yMax)
-	{
-		last_y_col = 1;
-	}
-
-	// Calculate collision type for this frame
-	if (box.yMax <= other.yMin)
-	{
-		y_col = -1;
-	}
-	else if (box.yMin >= other.yMax)
-	{
-		y_col = 1;
-	}
-
-	if (y_col!=0)
-	{
-		// no collision, done
-		return false;
-	}
-	else
-	{
-		*output = vInput;
-
-		// check last frame with collision type
-		if (last_y_col==-1)
-		{
-			output->y -= box.yMax - other.yMin + COL_TOLERANCE;
-			OnHitTop();
-		}
-		else if (last_y_col==1)
-		{
-			output->y += other.yMax - box.yMin + COL_TOLERANCE;
-			OnHitGround();
-		}
-	}
-
-	return true;
-}
-
-bool Character::DoHorizontalCollisionMove( const BoundBox& other, const Vector3& input, Vector3* output )
-{
-	Vector3 vInput = input;
-	vInput.y = 0.0f;
-
-	Vector3 newPos = m_Position + vInput;
-
-	BoundBox worldBox(m_Bound.xMin + m_Position.x,
-					  m_Bound.yMin + m_Position.y,
-					  m_Bound.xMax + m_Position.x,
-					  m_Bound.yMax + m_Position.y);
-
-	BoundBox box(m_Bound.xMin + newPos.x,
-				 m_Bound.yMin + newPos.y,
-				 m_Bound.xMax + newPos.x,
-				 m_Bound.yMax + newPos.y);
-
-	int x_col = 0;		// x collision type -1: to the left 0: collision 1: to the right
-	int last_x_col = 0;
-
-	// Calculate collision type for last frame
-	if (worldBox.xMax <= other.xMin)
-	{
-		last_x_col = -1;
-	}
-	else if (worldBox.xMin >= other.xMax)
-	{
-		last_x_col = 1;
-	}
-
-	// Calculate collision type for this frame
-	if (box.xMax <= other.xMin)
-	{
-		x_col = -1;
-	}
-	else if (box.xMin >= other.xMax)
-	{
-		x_col = 1;
-	}
-
-	if (x_col!=0)
-	{
-		// no collision, done
-		return false;
-	}
-	else
-	{
-		*output = vInput;
-
-		// check last frame with collision type
-		if (last_x_col==-1)
-		{
-			output->x -= box.xMax - other.xMin + COL_TOLERANCE;
-		}
-		else if (last_x_col==1)
-		{
-			output->x += other.xMax - box.xMin + COL_TOLERANCE;
 		}
 	}
 

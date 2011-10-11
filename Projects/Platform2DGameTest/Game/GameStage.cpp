@@ -187,13 +187,18 @@ void GameStage::TestCollision( Character* character, const Vector3& vecRel )
 	bool result = false;
 	Vector3 rel = vecRel + character->Velocity();
 
+	std::vector<STAGE_GEOM*> col_group;
+
 	STAGE_GEOM* geom;
+
+	// Collect collision objects
 	for (geom = GetFirstStageGeom(GAME_WORLD_COMMON); geom != NULL; geom = GetNextStageGeom(geom))
 	{
 		if ( GetTileUsageById(geom->tile_type_id) != TILE_USAGE_SOLID )
 			continue;
 
-		result |= character->DoCollisionMove(geom->bound, rel, &rel);
+		if (character->TestCollision(geom, rel))
+			col_group.push_back(geom);
 	}
 
 	if (m_ActiveWorld != GAME_WORLD_COMMON)
@@ -203,54 +208,32 @@ void GameStage::TestCollision( Character* character, const Vector3& vecRel )
 			if ( GetTileUsageById(geom->tile_type_id) != TILE_USAGE_SOLID )
 				continue;
 
-			result |= character->DoCollisionMove(geom->bound, rel, &rel);
+			if (character->TestCollision(geom, rel))
+				col_group.push_back(geom);
 		}
 	}
 
-	//std::vector<STAGE_GEOM*> col_group;
+	Vector3 rel_x, rel_y;
+	rel_x = rel;
+	rel_y = rel;
 
-	//STAGE_GEOM* geom;
+	rel_x.y = 0.0f;
+	rel_y.x = 0.0f;
 
-	//// Collect collision objects
-	//for (geom = GetFirstStageGeom(GAME_WORLD_COMMON); geom != NULL; geom = GetNextStageGeom(geom))
-	//{
-	//	if ( GetTileUsageById(geom->tile_type_id) != TILE_USAGE_SOLID )
-	//		continue;
+	std::vector<STAGE_GEOM*>::iterator iter;
+	// Test collision move in x dir and y dir separately
+	for ( iter = col_group.begin(); iter != col_group.end(); iter++ )
+	{
+		result |= character->DoCollisionMove((*iter)->bound, rel_y, &rel_y);
+	}
 
-	//	if (character->TestCollision(geom, rel))
-	//		col_group.push_back(geom);
-	//}
+	if (!col_group.empty())
+		rel = rel_x + rel_y;
 
-	//if (m_ActiveWorld != GAME_WORLD_COMMON)
-	//{
-	//	for (geom = GetFirstStageGeom(m_ActiveWorld); geom != NULL; geom = GetNextStageGeom(geom))
-	//	{
-	//		if ( GetTileUsageById(geom->tile_type_id) != TILE_USAGE_SOLID )
-	//			continue;
-
-	//		if (character->TestCollision(geom, rel))
-	//			col_group.push_back(geom);
-	//	}
-	//}
-
-	//Vector3 rel_x, rel_y;
-	//rel_x = rel;
-	//rel_y = rel;
-
-	//rel_x.y = 0.0f;
-	//rel_y.x = 0.0f;
-
-	//std::vector<STAGE_GEOM*>::iterator iter;
-	//// Test collision move in x dir and y dir separately
-	//for ( iter = col_group.begin(); iter != col_group.end(); iter++ )
-	//{
-	//	result |= character->DoVerticalCollisionMove((*iter)->bound, rel_y, &rel_y);
-	//}
-
-	//for ( iter = col_group.begin(); iter != col_group.end(); iter++ )
-	//{
-	//	result |= character->DoCollisionMove((*iter)->bound, rel_x + rel_y, &rel);
-	//}
+	for ( iter = col_group.begin(); iter != col_group.end(); iter++ )
+	{
+		result |= character->DoCollisionMove((*iter)->bound, rel, &rel);
+	}
 
 	character->Translate(rel);
 }
@@ -433,7 +416,7 @@ void GameStage::RenderStageGeom( STAGE_GEOM* geom )
 	RenderSystem::Device()->SetFVF(StageGeomFVF);
 	RenderSystem::Device()->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
 
-	//DebugRenderStageGeom(geom);
+	DebugRenderStageGeom(geom);
 }
 
 void GameStage::DebugRenderStageGeom( STAGE_GEOM* geom )
