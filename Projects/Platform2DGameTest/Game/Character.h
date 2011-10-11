@@ -5,6 +5,8 @@
 #include "BoundBox.h"
 #include "RenderDevice.h"
 
+typedef struct StageGeom STAGE_GEOM;
+
 struct ActorSpriteVertex
 {
 	float x, y, z;
@@ -31,8 +33,12 @@ public:
 
 	void Render();
 
+	bool TestCollision(STAGE_GEOM* stage_geom, const Vector3& new_pos_rel = Vector3::ZERO) const;
+
 	// Test if character can move in this direction, if not, give an available movement
 	bool DoCollisionMove(const BoundBox& other, const Vector3& input, Vector3* output);
+	bool DoVerticalCollisionMove(const BoundBox& other, const Vector3& input, Vector3* output);
+	bool DoHorizontalCollisionMove(const BoundBox& other, const Vector3& input, Vector3* output);
 	void Update(float elapsedTime);
 
 	// Move character in local direction

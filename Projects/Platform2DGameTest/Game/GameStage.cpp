@@ -2,6 +2,7 @@
 
 #include "../DXUT/DXUT.h"
 #include <string>
+#include <vector>
 
 #include "../LuaPlus/LuaPlus.h"
 
@@ -88,7 +89,7 @@ STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom)
 
 GameStage::GameStage()
 : m_ActiveWorld(GAME_WORLD_COMMON),
-  m_TileTypeIndex(0.)
+  m_TileTypeIndex(0)
 {
 
 }
@@ -205,6 +206,51 @@ void GameStage::TestCollision( Character* character, const Vector3& vecRel )
 			result |= character->DoCollisionMove(geom->bound, rel, &rel);
 		}
 	}
+
+	//std::vector<STAGE_GEOM*> col_group;
+
+	//STAGE_GEOM* geom;
+
+	//// Collect collision objects
+	//for (geom = GetFirstStageGeom(GAME_WORLD_COMMON); geom != NULL; geom = GetNextStageGeom(geom))
+	//{
+	//	if ( GetTileUsageById(geom->tile_type_id) != TILE_USAGE_SOLID )
+	//		continue;
+
+	//	if (character->TestCollision(geom, rel))
+	//		col_group.push_back(geom);
+	//}
+
+	//if (m_ActiveWorld != GAME_WORLD_COMMON)
+	//{
+	//	for (geom = GetFirstStageGeom(m_ActiveWorld); geom != NULL; geom = GetNextStageGeom(geom))
+	//	{
+	//		if ( GetTileUsageById(geom->tile_type_id) != TILE_USAGE_SOLID )
+	//			continue;
+
+	//		if (character->TestCollision(geom, rel))
+	//			col_group.push_back(geom);
+	//	}
+	//}
+
+	//Vector3 rel_x, rel_y;
+	//rel_x = rel;
+	//rel_y = rel;
+
+	//rel_x.y = 0.0f;
+	//rel_y.x = 0.0f;
+
+	//std::vector<STAGE_GEOM*>::iterator iter;
+	//// Test collision move in x dir and y dir separately
+	//for ( iter = col_group.begin(); iter != col_group.end(); iter++ )
+	//{
+	//	result |= character->DoVerticalCollisionMove((*iter)->bound, rel_y, &rel_y);
+	//}
+
+	//for ( iter = col_group.begin(); iter != col_group.end(); iter++ )
+	//{
+	//	result |= character->DoCollisionMove((*iter)->bound, rel_x + rel_y, &rel);
+	//}
 
 	character->Translate(rel);
 }
