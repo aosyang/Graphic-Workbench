@@ -6,23 +6,11 @@
 #include <d3dx9.h>
 
 #include "RenderDevice.h"
-#include "GameStage.h"
-#include "Character.h"
+#include "GameMain.h"
 
 LPDIRECT3DDEVICE9 RenderSystem::m_sDevice = NULL;
-GameStage*		g_GameStage;
-Character*		g_Character;
+GameMain*		g_Game		= NULL;
 LPD3DXFONT		g_pFont;
-
-enum KeyState
-{
-	KEY_LEFT,
-	KEY_UP,
-	KEY_RIGHT,
-	KEY_DOWN,
-};
-
-bool		g_KeyPressed[4] = { false };
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -39,7 +27,6 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext );
 void CALLBACK OnLostDevice( void* pUserContext );
 void CALLBACK OnDestroyDevice( void* pUserContext );
-void InitApp();
 void Startup();
 void Cleanup();
 
@@ -57,8 +44,6 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	DXUTSetCallbackDeviceChanging( ModifyDeviceSettings );
 
 	DXUTSetCursorSettings( true, true );
-
-	InitApp();
 
 	DXUTInit();
 	DXUTSetHotkeyHandling();
@@ -166,46 +151,8 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 
 void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext )
 {
-	g_Character->Update(fElapsedTime);
+	g_Game->Update(fElapsedTime);
 
-	TileUsageEnum player_pos_type = g_GameStage->GetTileTypeAtPoint(g_Character->WorldPosition());
-
-	Vector2 moveVector(0.0f, 0.0f);
-	if (g_KeyPressed[KEY_LEFT]) moveVector += Vector2(-1.0f, 0.0f);
-	if (g_KeyPressed[KEY_RIGHT]) moveVector += Vector2(1.0f, 0.0f);
-
-	if (g_Character->IsClimbingLadder())
-	{
-		if (g_KeyPressed[KEY_UP]) moveVector += Vector2(0.0f, 1.0f);
-		if (g_KeyPressed[KEY_DOWN]) moveVector += Vector2(0.0f, -1.0f);
-
-		// Fall down if no ladder
-		if (player_pos_type != TILE_USAGE_LADDER)
-		{
-			g_Character->SetClimbingLadder(false);
-		}
-	}
-	else
-	{
-		// Climb up if player stands near by a ladder
-		if (g_KeyPressed[KEY_UP] && player_pos_type == TILE_USAGE_LADDER)
-		{
-			g_Character->SetClimbingLadder(true);
-		}
-	}
-
-	moveVector.Normalize();
-	if (g_Character->IsClimbingLadder())
-	{
-		// Slow down if climbing ladder
-		moveVector *= 0.05f;
-	}
-	else
-	{
-		moveVector *= 0.1f;
-	}
-
-	g_GameStage->TestCollision( g_Character, Vector3(moveVector, 0.0f) );
 }
 
 void SetupLight() 
@@ -229,7 +176,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 	D3DXMatrixIdentity(&matWorld);
 	pd3dDevice->SetTransform( D3DTS_WORLD, &matWorld );
 
-	Vector3 char_pos = g_Character->WorldPosition();
+	Vector3 char_pos = g_Game->GetCharacterPos();
 
 	// Set up our view matrix. A view matrix can be defined given an eye point,
 	// a point to lookat, and a direction for which way is up. Here, we set the
@@ -270,11 +217,9 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 		pd3dDevice->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
 		pd3dDevice->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
 
-		g_GameStage->RenderStage();
+		g_Game->Render();
 
-		g_Character->Render();
-
-		int world_id = (int)g_GameStage->GetWorldview();
+		int world_id = g_Game->GetWorldviewId();
 
 		// Draw debug text
 		RECT font_rect;
@@ -302,41 +247,16 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext )
 {
-	switch (nChar)
-	{
-	case 37:		// Left
-	case 38:		// Up
-	case 39:		// Right
-	case 40:		// Down
-		g_KeyPressed[nChar - 37] = bKeyDown ? true : false;
-		break;
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-		g_GameStage->SetWorldview(GAME_WORLD_COMMON + nChar - '1');
-		break;
-	case 'Z':		// z
-		g_Character->Jump();
-		break;
-	}
+	g_Game->SetKeyState(nChar, bKeyDown);
 }
-
-void InitApp() 
-{
-}
-
 
 void Startup()
 {
-	g_GameStage = new GameStage;
-	g_GameStage->LoadFromFile("stage.lua");
-
-	g_Character = new Character;
+	g_Game = new GameMain();
+	g_Game->Startup();
 }
 
 void Cleanup()
 {
-	delete g_GameStage;
-	delete g_Character;
+	SAFE_DELETE(g_Game);
 }

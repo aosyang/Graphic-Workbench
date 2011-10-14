@@ -263,6 +263,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Engine\GWCommon.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Engine\GWInputKeyboard.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Engine\RenderDevice.h"
 				>
 			</File>
@@ -300,6 +308,14 @@
 			</File>
 			<File
 				RelativePath=".\Game\Character.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Game\GameMain.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Game\GameMain.h"
 				>
 			</File>
 			<File

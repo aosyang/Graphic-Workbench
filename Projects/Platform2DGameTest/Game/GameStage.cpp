@@ -416,7 +416,7 @@ void GameStage::RenderStageGeom( STAGE_GEOM* geom )
 	RenderSystem::Device()->SetFVF(StageGeomFVF);
 	RenderSystem::Device()->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
 
-	DebugRenderStageGeom(geom);
+	//DebugRenderStageGeom(geom);
 }
 
 void GameStage::DebugRenderStageGeom( STAGE_GEOM* geom )
