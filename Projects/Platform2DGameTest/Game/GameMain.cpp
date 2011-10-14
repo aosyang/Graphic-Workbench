@@ -7,10 +7,16 @@
 
 GameMain::GameMain()
 : m_GameStage(NULL),
-  m_Character(NULL)
+  m_Character(NULL),
+  m_EditorMode(false),
+  m_MousePosX(0),
+  m_MousePosY(0)
 {
 	for (int i=0; i<0xFF; i++)
 		m_KeyPressed[i] = false;
+
+	for (int i=0; i<MBTN_COUNT; i++)
+		m_MBtnPressed[i] = false;
 }
 
 GameMain::~GameMain()
@@ -34,7 +40,6 @@ void GameMain::Startup()
 
 void GameMain::Update( float fElapsedTime )
 {
-
 	m_Character->Update(fElapsedTime);
 
 	TileUsageEnum player_pos_type = m_GameStage->GetTileTypeAtPoint(m_Character->WorldPosition());
@@ -98,10 +103,34 @@ void GameMain::SetKeyState( int key_code, bool key_down )
 	}
 }
 
+void GameMain::SetMouseBtnState( GWMouseButton mbtn_code, bool btn_down )
+{
+	bool old_state = m_MBtnPressed[mbtn_code];
+	m_MBtnPressed[mbtn_code] = btn_down;
+
+	if ( btn_down != old_state )
+	{
+		if (btn_down)
+			OnMouseBtnPressed(mbtn_code);
+		else
+			OnMouseBtnReleased(mbtn_code);
+	}
+}
+
+void GameMain::SetMousePosition( int x_pos, int y_pos )
+{
+	m_MousePosX = x_pos;
+	m_MousePosY = y_pos;
+}
+
 void GameMain::OnKeyPressed( int key_code )
 {
 	switch (key_code)
 	{
+	case GW_KEY_SPACE:
+		// Toggle editor mode
+		m_EditorMode = !m_EditorMode;
+		break;
 	case GW_KEY_1:
 	case GW_KEY_2:
 	case GW_KEY_3:
@@ -115,6 +144,16 @@ void GameMain::OnKeyPressed( int key_code )
 }
 
 void GameMain::OnKeyReleased( int key_code )
+{
+
+}
+
+void GameMain::OnMouseBtnPressed( GWMouseButton mbtn_code )
+{
+
+}
+
+void GameMain::OnMouseBtnReleased( GWMouseButton mbtn_code )
 {
 
 }

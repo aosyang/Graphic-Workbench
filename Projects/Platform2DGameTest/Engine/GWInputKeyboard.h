@@ -12,6 +12,8 @@ enum GWKeyCode
 
 	GW_KEY_ENTER			= 13,
 
+	GW_KEY_SPACE			= 32,
+
 	GW_KEY_LEFT				= 37,
 	GW_KEY_UP				= 38,
 	GW_KEY_RIGHT			= 39,

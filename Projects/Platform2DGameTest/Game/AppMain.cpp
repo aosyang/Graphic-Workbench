@@ -1,5 +1,6 @@
 
 #include <windows.h>
+#include <Windowsx.h>
 #include "../DXUT/DXUT.h"
 #include "../DXUT/SDKmisc.h"
 
@@ -11,6 +12,9 @@
 LPDIRECT3DDEVICE9 RenderSystem::m_sDevice = NULL;
 GameMain*		g_Game		= NULL;
 LPD3DXFONT		g_pFont;
+
+int				g_MousePosX = 0,
+				g_MousePosY = 0;
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -25,6 +29,8 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing,
 						 void* pUserContext );
 void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext );
+void CALLBACK MouseProc( bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, bool bSideButton1Down,
+						 bool bSideButton2Down, int nMouseWheelDelta, int xPos, int yPos, void* pUserContext );
 void CALLBACK OnLostDevice( void* pUserContext );
 void CALLBACK OnDestroyDevice( void* pUserContext );
 void Startup();
@@ -40,6 +46,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	DXUTSetCallbackD3D9DeviceDestroyed( OnDestroyDevice );
 	DXUTSetCallbackMsgProc( MsgProc );
 	DXUTSetCallbackKeyboard( KeyboardProc );
+	DXUTSetCallbackMouse( MouseProc );
 	DXUTSetCallbackFrameMove( OnFrameMove );
 	DXUTSetCallbackDeviceChanging( ModifyDeviceSettings );
 
@@ -227,11 +234,13 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 		sprintf(debug_text,
 				"pos: %f, %f\n"
 				"Block: x( %d ~ %d ) - y( %d ~ %d )\n"
-				"World: %d",
+				"World: %d\n"
+				"Mouse: %d %d",
 				char_pos.x, char_pos.y,
 				(int)floor(char_pos.x), (int)ceil(char_pos.x),
 				(int)floor(char_pos.y), (int)ceil(char_pos.y),
-				world_id);
+				world_id,
+				g_MousePosX, g_MousePosY);
 
 		SetRect( &font_rect, 0, 0, 400, 400 );
 		g_pFont->DrawTextA( NULL, debug_text, -1, &font_rect, DT_LEFT|DT_NOCLIP, 0xFFFFFF00 );
@@ -242,12 +251,31 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 
 LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool* pbNoFurtherProcessing, void* pUserContext )
 {
+	switch (uMsg)
+	{
+	case WM_MOUSEMOVE:
+		g_Game->SetMousePosition(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		g_MousePosX = GET_X_LPARAM(lParam); 
+		g_MousePosY = GET_Y_LPARAM(lParam); 
+		break;
+	}
+
 	return 0;
 }
 
 void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext )
 {
 	g_Game->SetKeyState(nChar, bKeyDown);
+}
+
+void CALLBACK MouseProc( bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, bool bSideButton1Down,
+						 bool bSideButton2Down, int nMouseWheelDelta, int xPos, int yPos, void* pUserContext )
+{
+	g_Game->SetMouseBtnState(MBTN_LEFT, bLeftButtonDown);
+	g_Game->SetMouseBtnState(MBTN_RIGHT, bRightButtonDown);
+
+	//g_MousePosX = xPos;
+	//g_MousePosY = yPos;
 }
 
 void Startup()
