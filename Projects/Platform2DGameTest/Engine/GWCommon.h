@@ -9,4 +9,10 @@
 #define GW_SAFE_DELETE_ARRAY(x)		{ if (x) { delete [] (x); (x) = NULL; } }
 #endif
 
+#ifdef _DEBUG
+#define GW_BREAKPOINT				{ while(0) {} }
+#elif
+#define GW_BREAKPOINT
+#endif
+
 #endif // GWCommon_h__

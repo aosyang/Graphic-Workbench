@@ -7,6 +7,7 @@
 #include <d3dx9.h>
 
 #include "RenderDevice.h"
+#include "GameDef.h"
 #include "GameMain.h"
 
 LPDIRECT3DDEVICE9 RenderSystem::m_sDevice = NULL;
@@ -55,7 +56,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	DXUTInit();
 	DXUTSetHotkeyHandling();
 	DXUTCreateWindow( L"2D Platform Test" );
-	DXUTCreateDevice( true, 640, 480 );
+	DXUTCreateDevice( true, KLEIN_SCREEN_WIDTH, KLEIN_SCREEN_HEIGHT );
 
 	Startup();
 
@@ -191,10 +192,10 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 	// origin, and define "up" to be in the y-direction.
 
 #if 1		// Fixed Camera
-	D3DXVECTOR3 vEyePt( 0.0f, 0.0f, -20.0f );
+	D3DXVECTOR3 vEyePt( 0.0f, 0.0f, KLEIN_CAMERA_ZPOS );
 	D3DXVECTOR3 vLookatPt( 0.0f, 0.0f, 0.0f );
 #else
-	D3DXVECTOR3 vEyePt( char_pos.x, char_pos.y, -20.0f );
+	D3DXVECTOR3 vEyePt( char_pos.x, char_pos.y, KLEIN_CAMERA_ZPOS );
 	D3DXVECTOR3 vLookatPt( char_pos.x, char_pos.y, 0.0f );
 #endif
 
@@ -210,7 +211,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 	// the aspect ratio, and the near and far clipping planes (which define at
 	// what distances geometry should be no longer be rendered).
 	D3DXMATRIXA16 matProj;
-	D3DXMatrixPerspectiveFovLH( &matProj, D3DX_PI / 4, (float)4/3, 1.0f, 100.0f );
+	D3DXMatrixPerspectiveFovLH( &matProj, KLEIN_CAMERA_FOVY, KLEIN_SCREEN_ASPECT, 1.0f, 100.0f );
 	pd3dDevice->SetTransform( D3DTS_PROJECTION, &matProj );
 
 	// Clear the render target and the zbuffer 

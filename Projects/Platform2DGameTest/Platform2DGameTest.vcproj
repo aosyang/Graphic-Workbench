@@ -311,6 +311,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Game\GameDef.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Game\GameMain.cpp"
 				>
 			</File>

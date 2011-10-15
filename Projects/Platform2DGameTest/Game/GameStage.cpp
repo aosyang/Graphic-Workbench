@@ -412,6 +412,8 @@ void GameStage::RenderStageGeom( STAGE_GEOM* geom )
 		RenderSystem::Device()->SetTexture(0, NULL);
 	}
 
+	RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+
 	RenderSystem::Device()->SetStreamSource(0, geom->vbuffer, 0, sizeof(StageGeomVertex));
 	RenderSystem::Device()->SetFVF(StageGeomFVF);
 	RenderSystem::Device()->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
@@ -437,8 +439,6 @@ void GameStage::DebugRenderStageGeom( STAGE_GEOM* geom )
 	RenderSystem::Device()->SetTexture(0, NULL);
 	RenderSystem::Device()->SetFVF(StageGeomWireframeFVF);
 	RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(StageGeomWireframeVertex));
-
-	RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 }
 
 TileUsageEnum GameStage::GetTileUsageById( int id )

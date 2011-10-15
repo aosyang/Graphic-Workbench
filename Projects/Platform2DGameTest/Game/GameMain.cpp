@@ -4,6 +4,9 @@
 #include "GameStage.h"
 
 #include "GWCommon.h"
+#include "GameDef.h"
+
+#include <d3dx9.h>
 
 GameMain::GameMain()
 : m_GameStage(NULL),
@@ -87,6 +90,42 @@ void GameMain::Render()
 	m_GameStage->RenderStage();
 
 	m_Character->Render();
+
+	if (m_EditorMode)
+	{
+		// Render tile position at cursor
+		float height = tanf(KLEIN_CAMERA_FOVY / 2.0f) * abs(KLEIN_CAMERA_ZPOS);
+		float width = height * KLEIN_SCREEN_ASPECT;
+
+		float step_x = (float)KLEIN_SCREEN_WIDTH / (width * 2);
+		float tile_x = ((float)m_MousePosX - (float)KLEIN_SCREEN_WIDTH * 0.5f)  / step_x;
+
+		float step_y = (float)KLEIN_SCREEN_HEIGHT / (height * 2);
+		float tile_y = ((float)m_MousePosY - (float)KLEIN_SCREEN_HEIGHT * 0.5f)  / -step_y;
+
+		StageGeomWireframeVertex v[6] =
+		{
+			{ floorf(tile_x), floorf(tile_y), 0.0f, 0xFFFFF200 },
+			{ floorf(tile_x), ceilf(tile_y), 0.0f, 0xFFFFF200 },
+			{ ceilf(tile_x), ceilf(tile_y), 0.0f, 0xFFFFF200 },
+
+			{ ceilf(tile_x), ceilf(tile_y), 0.0f, 0xFFFFF200 },
+			{ ceilf(tile_x), floorf(tile_y), 0.0f, 0xFFFFF200 },
+			{ floorf(tile_x), floorf(tile_y), 0.0f, 0xFFFFF200 },
+		};
+
+		D3DXMATRIXA16 matWorld;
+		D3DXMatrixIdentity(&matWorld);
+		RenderSystem::Device()->SetTransform( D3DTS_WORLD, &matWorld );
+
+		RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+
+		RenderSystem::Device()->SetTexture(0, NULL);
+		RenderSystem::Device()->SetFVF(StageGeomWireframeFVF);
+		RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(StageGeomWireframeVertex));
+
+		GW_BREAKPOINT;
+	}
 }
 
 void GameMain::SetKeyState( int key_code, bool key_down )

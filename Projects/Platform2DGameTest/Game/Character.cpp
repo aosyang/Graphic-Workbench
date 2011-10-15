@@ -39,7 +39,9 @@ void Character::Render()
 	D3DXMATRIXA16 transform;
 	D3DXMatrixTranslation(&transform, m_Position.x, m_Position.y, m_Position.z);
 	RenderSystem::Device()->SetTransform( D3DTS_WORLD, &transform );
-	
+
+	RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+
 	RenderSystem::Device()->SetTexture(0, NULL);
 	RenderSystem::Device()->SetFVF(ActorSpriteFVF);
 	RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(ActorSpriteVertex));
