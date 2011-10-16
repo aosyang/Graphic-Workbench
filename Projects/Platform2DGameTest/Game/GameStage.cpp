@@ -34,6 +34,12 @@ TileUsageEnum StringToTileUsage( const char* type_name )
 	return TILE_USAGE_VOID;
 }
 
+const char* TileUsageToString( TileUsageEnum usage )
+{
+	return tile_usage_table[usage].name;
+}
+
+
 char GameWorldviewKeyWord[GAME_WORLD_COUNT][32] =
 {
 	"GameWorldCommon",
@@ -86,7 +92,6 @@ STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom)
 	return geom->next;
 }
 
-
 GameStage::GameStage()
 : m_ActiveWorld(GAME_WORLD_COMMON),
   m_TileTypeIndex(0)
@@ -135,6 +140,61 @@ bool GameStage::LoadFromFile( const char* filename )
 	}
 
 	return result;
+}
+
+bool GameStage::SaveToFile( const char* filename )
+{
+	LuaStateOwner state;
+
+	LuaObject stage_script = state->GetGlobals().CreateTable("Stage");
+
+	LuaObject world_script = stage_script.CreateTable(GameWorldviewKeyWord[0]);
+	LuaObject tile_type_script = world_script.CreateTable("TileTypes");
+
+	// Write tile types
+	int i = 1;
+	std::map<std::string, int>::iterator iter;
+	for (iter=m_TileName2Id.begin(); iter!=m_TileName2Id.end(); iter++)
+	{
+		LuaObject tile_type_obj = tile_type_script.CreateTable(i);
+		int tile_id = iter->second;
+		int tex_id = m_TileId2TypeInfo[tile_id].tex_id;
+
+		tile_type_obj.SetString(1, iter->first.c_str());
+		tile_type_obj.SetString(2, TileUsageToString(m_TileId2TypeInfo[tile_id].usage));
+		tile_type_obj.SetString(3, m_TextureMgr.GetTextureName(tex_id));
+
+		i++;
+	}
+
+	LuaObject geom_group_script = world_script.CreateTable("Geometries");
+
+	i = 1;
+	// Write geometries
+	STAGE_GEOM* geom;
+	for (geom = GetFirstStageGeom(GAME_WORLD_COMMON); geom!=NULL; geom = GetNextStageGeom(geom))
+	{
+		LuaObject geom_script = geom_group_script.CreateTable(i);
+
+		geom_script.SetInteger(1, 0);
+		geom_script.SetNumber(2, geom->bound.xMin);
+		geom_script.SetNumber(3, geom->bound.xMax);
+		geom_script.SetNumber(4, geom->bound.yMin);
+		geom_script.SetNumber(5, geom->bound.yMax);
+
+		for (iter=m_TileName2Id.begin(); iter!=m_TileName2Id.end(); iter++)
+		{
+			if (iter->second == geom->tile_type_id)
+			{
+				geom_script.SetString(6, iter->first.c_str());
+				break;
+			}
+		}
+
+		i++;
+	}
+
+	return state->DumpGlobals(filename);
 }
 
 void GameStage::RenderStage()
@@ -307,12 +367,10 @@ STAGE_GEOM* GameStage::AddStageGeom( int world_id, int layer_id, const BoundBox&
 	if (m_TileName2Id.find(tile_type_name)!=m_TileName2Id.end())
 	{
 		geom_tile_type = m_TileName2Id[tile_type_name];
-		t = StringToTileUsage(m_TileId2TypeInfo[geom_tile_type].tile_usage_str);
 	}
 
 	geom->bound = bound;
 	geom->tile_type_id = geom_tile_type;
-	//geom->usage = t;
 
 	RenderSystem::Device()->CreateVertexBuffer(sizeof(StageGeomVertex) * 6, D3DUSAGE_WRITEONLY,
 		D3DFVF_XYZ|D3DFVF_TEX1, D3DPOOL_DEFAULT, &geom->vbuffer, NULL);
@@ -337,8 +395,7 @@ void GameStage::ScriptLoadTileTypes( const LuaPlus::LuaObject* script, int world
 		std::string tile_name = (*script)[i+1][1].GetString();
 
 		TILE_TYPE_INFO tile_info;
-		strcpy(tile_info.tile_usage_str, (*script)[i+1][2].GetString());
-		tile_info.usage = StringToTileUsage(tile_info.tile_usage_str);
+		tile_info.usage = StringToTileUsage((*script)[i+1][2].GetString());
 		const char* tex_name = (*script)[i+1][3].GetString();
 
 		int texID = -1;

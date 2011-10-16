@@ -49,6 +49,20 @@ LPDIRECT3DTEXTURE9 TextureManager::GetD3DTexture( int id ) const
 	return NULL;
 }
 
+const char* TextureManager::GetTextureName( int id ) const
+{
+	TextureNameMap::const_iterator iter;
+	for (iter=m_TextureNameMap.begin(); iter!=m_TextureNameMap.end(); iter++)
+	{
+		if (iter->second == id)
+		{
+			return iter->first.c_str();
+		}
+	}
+
+	return NULL;
+}
+
 bool TextureManager::LoadTextureFromFile( const char* filename )
 {
 	int id;

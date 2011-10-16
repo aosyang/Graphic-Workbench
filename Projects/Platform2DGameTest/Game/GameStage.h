@@ -25,24 +25,15 @@ enum TileUsageEnum
 };
 
 TileUsageEnum StringToTileUsage(const char* type_name);
+const char* TileUsageToString(TileUsageEnum usage);
 
 // -----------------------------------------------------------
 // Tile types
 // -----------------------------------------------------------
 typedef struct TileTypeInfo
 {
-	char				tile_usage_str[256];
 	int					tex_id;
 	TileUsageEnum		usage;
-
-	TileTypeInfo& operator=(const TileTypeInfo& rhs)
-	{
-		strcpy(this->tile_usage_str, rhs.tile_usage_str);
-		this->tex_id = rhs.tex_id;
-		this->usage = rhs.usage;
-
-		return *this;
-	}
 } TILE_TYPE_INFO;
 
 // -----------------------------------------------------------
@@ -53,7 +44,6 @@ typedef struct StageGeom
 	BoundBox					bound;
 	int							tile_type_id;
 	LPDIRECT3DVERTEXBUFFER9		vbuffer;
-	//TileUsageEnum				usage;
 
 	StageGeom*					next;
 } STAGE_GEOM;
@@ -97,6 +87,7 @@ public:
 	~GameStage();
 
 	bool LoadFromFile(const char* filename);
+	bool SaveToFile(const char* filename);
 
 	// Render entire stage
 	void RenderStage();

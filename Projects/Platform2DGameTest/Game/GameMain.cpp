@@ -42,7 +42,7 @@ void GameMain::Reset()
 void GameMain::Startup()
 {
 	m_GameStage = new GameStage;
-	m_GameStage->LoadFromFile("stage.lua");
+	m_GameStage->LoadFromFile("Stage.lua");
 
 	m_Character = new Character;
 
@@ -90,7 +90,7 @@ void GameMain::Update( float delta_time )
 	if (m_Character->IsClimbingLadder())
 	{
 		// Slow down if climbing ladder
-		moveVector *= 0.05f;
+		moveVector *= 0.08f;
 	}
 	else
 	{
@@ -195,6 +195,11 @@ void GameMain::OnKeyPressed( int key_code )
 	case GW_KEY_Z:
 		m_Character->Jump();
 		break;
+	case GW_KEY_P:
+		if (m_IsEditorMode)
+			m_GameStage->SaveToFile("Stage.lua");
+		break;
+
 	}
 }
 

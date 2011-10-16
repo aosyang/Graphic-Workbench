@@ -22,6 +22,7 @@ public:
 
 	int GetTextureID(const char* filename) const;
 	LPDIRECT3DTEXTURE9 GetD3DTexture(int id) const;
+	const char* GetTextureName(int id) const;
 
 	bool LoadTextureFromFile( const char* filename );
 
