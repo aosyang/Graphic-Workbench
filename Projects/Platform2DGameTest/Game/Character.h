@@ -37,7 +37,7 @@ public:
 
 	// Test if character can move in this direction, if not, give an available movement
 	bool DoCollisionMove(const BoundBox& other, const Vector3& input, Vector3* output);
-	void Update(float elapsedTime);
+	void Update(float delta_time);
 
 	// Move character in local direction
 	void Translate(const Vector3& vecRel);

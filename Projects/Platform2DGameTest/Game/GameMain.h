@@ -26,7 +26,7 @@ public:
 	void Reset();
 
 	void Startup();
-	void Update(float fElapsedTime);
+	void Update(float delta_time);
 
 	void Render();
 
@@ -45,6 +45,8 @@ private:
 	void OnMouseBtnPressed(GWMouseButton mbtn_code);
 	void OnMouseBtnReleased(GWMouseButton mbtn_code);
 
+	void UpdateDebugText();
+
 private:
 	GameStage*		m_GameStage;
 	Character*		m_Character;
@@ -55,6 +57,8 @@ private:
 
 	bool			m_EditorMode;
 	char			m_DebugText[256];
+
+	Vector3			m_CameraPos;
 };
 
 #endif // GameMain_h__

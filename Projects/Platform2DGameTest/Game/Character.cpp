@@ -137,7 +137,7 @@ bool Character::DoCollisionMove( const BoundBox& other, const Vector3& input, Ve
 	return true;
 }
 
-void Character::Update( float elapsedTime )
+void Character::Update( float delta_time )
 {
 	if (m_ClimbingLadder)
 	{

@@ -13,7 +13,8 @@ GameMain::GameMain()
   m_Character(NULL),
   m_EditorMode(false),
   m_MousePosX(0),
-  m_MousePosY(0)
+  m_MousePosY(0),
+  m_CameraPos(Vector3::ZERO)
 {
 	for (int i=0; i<0xFF; i++)
 		m_KeyPressed[i] = false;
@@ -43,9 +44,9 @@ void GameMain::Startup()
 	m_Character = new Character;
 }
 
-void GameMain::Update( float fElapsedTime )
+void GameMain::Update( float delta_time )
 {
-	m_Character->Update(fElapsedTime);
+	m_Character->Update(delta_time);
 
 	TileUsageEnum player_pos_type = m_GameStage->GetTileTypeAtPoint(m_Character->WorldPosition());
 
@@ -86,21 +87,13 @@ void GameMain::Update( float fElapsedTime )
 
 	m_GameStage->TestCollision( m_Character, Vector3(moveVector, 0.0f) );
 
-	// Update debug info
-	Vector3 char_pos = m_Character->WorldPosition();
-	int world_id = (int)m_GameStage->GetWorldview();
+	// Update camera position
+	Vector3 rel = m_Character->WorldPosition() - m_CameraPos;
+	float dist = sqrtf(rel.SqrdLen());
+	if (dist > 0.3f)
+		m_CameraPos += rel * dist * 0.05f;
 
-	// Draw debug text
-	sprintf(m_DebugText,
-			"pos: %f, %f\n"
-			"Block: x( %d ~ %d ) - y( %d ~ %d )\n"
-			"World: %d\n"
-			"Mouse: %d %d",
-			char_pos.x, char_pos.y,
-			(int)floor(char_pos.x), (int)ceil(char_pos.x),
-			(int)floor(char_pos.y), (int)ceil(char_pos.y),
-			world_id,
-			m_MousePosX, m_MousePosY);
+	UpdateDebugText();
 }
 
 void GameMain::Render()
@@ -119,7 +112,10 @@ void GameMain::Render()
 		float tile_x = ((float)m_MousePosX - (float)KLEIN_SCREEN_WIDTH * 0.5f)  / step_x;
 
 		float step_y = (float)KLEIN_SCREEN_HEIGHT / (height * 2);
-		float tile_y = ((float)m_MousePosY - (float)KLEIN_SCREEN_HEIGHT * 0.5f)  / -step_y;
+		float tile_y = -((float)m_MousePosY - (float)KLEIN_SCREEN_HEIGHT * 0.5f)  / step_y;
+
+		tile_x += m_CameraPos.x;
+		tile_y += m_CameraPos.y;
 
 		StageGeomWireframeVertex v[6] =
 		{
@@ -141,8 +137,6 @@ void GameMain::Render()
 		RenderSystem::Device()->SetTexture(0, NULL);
 		RenderSystem::Device()->SetFVF(StageGeomWireframeFVF);
 		RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(StageGeomWireframeVertex));
-
-		GW_BREAKPOINT;
 	}
 }
 
@@ -180,6 +174,16 @@ void GameMain::SetMousePosition( int x_pos, int y_pos )
 	m_MousePosY = y_pos;
 }
 
+Vector3 GameMain::GetCameraPos() const
+{
+	return m_CameraPos;
+}
+
+const char* GameMain::GetDebugText() const
+{
+	return m_DebugText;
+}
+
 void GameMain::OnKeyPressed( int key_code )
 {
 	switch (key_code)
@@ -215,13 +219,22 @@ void GameMain::OnMouseBtnReleased( GWMouseButton mbtn_code )
 
 }
 
-Vector3 GameMain::GetCameraPos() const
+void GameMain::UpdateDebugText()
 {
-	return Vector3::ZERO;
-}
+	// Update debug info
+	Vector3 char_pos = m_Character->WorldPosition();
+	int world_id = (int)m_GameStage->GetWorldview();
 
-const char* GameMain::GetDebugText() const
-{
-	return m_DebugText;
+	// Draw debug text
+	sprintf(m_DebugText,
+			"pos: %f, %f\n"
+			"Block: x( %d ~ %d ) - y( %d ~ %d )\n"
+			"World: %d\n"
+			"Mouse: %d %d",
+			char_pos.x, char_pos.y,
+			(int)floor(char_pos.x), (int)ceil(char_pos.x),
+			(int)floor(char_pos.y), (int)ceil(char_pos.y),
+			world_id,
+			m_MousePosX, m_MousePosY);
 }
 

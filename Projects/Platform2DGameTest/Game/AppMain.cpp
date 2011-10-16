@@ -191,13 +191,8 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 	// eye five units back along the z-axis and up three units, look at the
 	// origin, and define "up" to be in the y-direction.
 
-#if 1		// Fixed Camera
-	D3DXVECTOR3 vEyePt( 0.0f, 0.0f, KLEIN_CAMERA_ZPOS );
-	D3DXVECTOR3 vLookatPt( 0.0f, 0.0f, 0.0f );
-#else
 	D3DXVECTOR3 vEyePt( cam_pos.x, cam_pos.y, KLEIN_CAMERA_ZPOS );
 	D3DXVECTOR3 vLookatPt( cam_pos.x, cam_pos.y, 0.0f );
-#endif
 
 	D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
 	D3DXMATRIXA16 matView;
