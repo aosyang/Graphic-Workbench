@@ -20,6 +20,8 @@ GameMain::GameMain()
 
 	for (int i=0; i<MBTN_COUNT; i++)
 		m_MBtnPressed[i] = false;
+
+	memset(m_DebugText, 0, sizeof(m_DebugText));
 }
 
 GameMain::~GameMain()
@@ -83,6 +85,22 @@ void GameMain::Update( float fElapsedTime )
 	}
 
 	m_GameStage->TestCollision( m_Character, Vector3(moveVector, 0.0f) );
+
+	// Update debug info
+	Vector3 char_pos = m_Character->WorldPosition();
+	int world_id = (int)m_GameStage->GetWorldview();
+
+	// Draw debug text
+	sprintf(m_DebugText,
+			"pos: %f, %f\n"
+			"Block: x( %d ~ %d ) - y( %d ~ %d )\n"
+			"World: %d\n"
+			"Mouse: %d %d",
+			char_pos.x, char_pos.y,
+			(int)floor(char_pos.x), (int)ceil(char_pos.x),
+			(int)floor(char_pos.y), (int)ceil(char_pos.y),
+			world_id,
+			m_MousePosX, m_MousePosY);
 }
 
 void GameMain::Render()
@@ -197,13 +215,13 @@ void GameMain::OnMouseBtnReleased( GWMouseButton mbtn_code )
 
 }
 
-const Vector3& GameMain::GetCharacterPos() const
+Vector3 GameMain::GetCameraPos() const
 {
-	return m_Character->WorldPosition();
+	return Vector3::ZERO;
 }
 
-int GameMain::GetWorldviewId() const
+const char* GameMain::GetDebugText() const
 {
-	return (int)m_GameStage->GetWorldview();
+	return m_DebugText;
 }
 

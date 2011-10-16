@@ -34,8 +34,9 @@ public:
 	void SetMouseBtnState(GWMouseButton mbtn_code, bool btn_down);
 	void SetMousePosition(int x_pos, int y_pos);
 
-	const Vector3& GetCharacterPos() const;
-	int GetWorldviewId() const;
+	Vector3 GetCameraPos() const;
+
+	const char* GetDebugText() const;
 
 private:
 	void OnKeyPressed(int key_code);
@@ -53,6 +54,7 @@ private:
 	int				m_MousePosX, m_MousePosY;
 
 	bool			m_EditorMode;
+	char			m_DebugText[256];
 };
 
 #endif // GameMain_h__

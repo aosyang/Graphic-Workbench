@@ -184,7 +184,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 	D3DXMatrixIdentity(&matWorld);
 	pd3dDevice->SetTransform( D3DTS_WORLD, &matWorld );
 
-	Vector3 char_pos = g_Game->GetCharacterPos();
+	Vector3 cam_pos = g_Game->GetCameraPos();
 
 	// Set up our view matrix. A view matrix can be defined given an eye point,
 	// a point to lookat, and a direction for which way is up. Here, we set the
@@ -195,8 +195,8 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 	D3DXVECTOR3 vEyePt( 0.0f, 0.0f, KLEIN_CAMERA_ZPOS );
 	D3DXVECTOR3 vLookatPt( 0.0f, 0.0f, 0.0f );
 #else
-	D3DXVECTOR3 vEyePt( char_pos.x, char_pos.y, KLEIN_CAMERA_ZPOS );
-	D3DXVECTOR3 vLookatPt( char_pos.x, char_pos.y, 0.0f );
+	D3DXVECTOR3 vEyePt( cam_pos.x, cam_pos.y, KLEIN_CAMERA_ZPOS );
+	D3DXVECTOR3 vLookatPt( cam_pos.x, cam_pos.y, 0.0f );
 #endif
 
 	D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
@@ -221,30 +221,15 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 	if( SUCCEEDED( pd3dDevice->BeginScene() ) )
 	{
 		pd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-		pd3dDevice->SetRenderState ( D3DRS_BLENDOP, D3DBLENDOP_ADD );
+		pd3dDevice->SetRenderState( D3DRS_BLENDOP, D3DBLENDOP_ADD );
 		pd3dDevice->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
 		pd3dDevice->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
 
 		g_Game->Render();
 
-		int world_id = g_Game->GetWorldviewId();
-
-		// Draw debug text
 		RECT font_rect;
-		char debug_text[256];
-		sprintf(debug_text,
-				"pos: %f, %f\n"
-				"Block: x( %d ~ %d ) - y( %d ~ %d )\n"
-				"World: %d\n"
-				"Mouse: %d %d",
-				char_pos.x, char_pos.y,
-				(int)floor(char_pos.x), (int)ceil(char_pos.x),
-				(int)floor(char_pos.y), (int)ceil(char_pos.y),
-				world_id,
-				g_MousePosX, g_MousePosY);
-
 		SetRect( &font_rect, 0, 0, 400, 400 );
-		g_pFont->DrawTextA( NULL, debug_text, -1, &font_rect, DT_LEFT|DT_NOCLIP, 0xFFFFFF00 );
+		g_pFont->DrawTextA( NULL, g_Game->GetDebugText(), -1, &font_rect, DT_LEFT|DT_NOCLIP, 0xFFFFFF00 );
 
 		V( pd3dDevice->EndScene() );
 	}
