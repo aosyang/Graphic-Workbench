@@ -271,6 +271,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Engine\GWInputMouse.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Engine\RenderDevice.h"
 				>
 			</File>
@@ -328,6 +332,14 @@
 			</File>
 			<File
 				RelativePath=".\Game\GameStage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Game\GameStageEditor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Game\GameStageEditor.h"
 				>
 			</File>
 		</Filter>

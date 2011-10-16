@@ -11,7 +11,6 @@
 #include "GameMain.h"
 
 LPDIRECT3DDEVICE9 RenderSystem::m_sDevice = NULL;
-GameMain*		g_Game		= NULL;
 LPD3DXFONT		g_pFont;
 
 int				g_MousePosX = 0,
@@ -159,7 +158,7 @@ void CALLBACK OnDestroyDevice( void* pUserContext )
 
 void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext )
 {
-	g_Game->Update(fElapsedTime);
+	KleinGame()->Update(fElapsedTime);
 
 }
 
@@ -184,7 +183,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 	D3DXMatrixIdentity(&matWorld);
 	pd3dDevice->SetTransform( D3DTS_WORLD, &matWorld );
 
-	Vector3 cam_pos = g_Game->GetCameraPos();
+	Vector3 cam_pos = KleinGame()->GetCameraPos();
 
 	// Set up our view matrix. A view matrix can be defined given an eye point,
 	// a point to lookat, and a direction for which way is up. Here, we set the
@@ -220,11 +219,11 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 		pd3dDevice->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
 		pd3dDevice->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
 
-		g_Game->Render();
+		KleinGame()->Render();
 
 		RECT font_rect;
 		SetRect( &font_rect, 0, 0, 400, 400 );
-		g_pFont->DrawTextA( NULL, g_Game->GetDebugText(), -1, &font_rect, DT_LEFT|DT_NOCLIP, 0xFFFFFF00 );
+		g_pFont->DrawTextA( NULL, KleinGame()->GetDebugText(), -1, &font_rect, DT_LEFT|DT_NOCLIP, 0xFFFFFF00 );
 
 		V( pd3dDevice->EndScene() );
 	}
@@ -235,7 +234,7 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 	switch (uMsg)
 	{
 	case WM_MOUSEMOVE:
-		g_Game->SetMousePosition(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		KleinGame()->SetMousePosition(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		g_MousePosX = GET_X_LPARAM(lParam); 
 		g_MousePosY = GET_Y_LPARAM(lParam); 
 		break;
@@ -246,14 +245,14 @@ LRESULT CALLBACK MsgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bo
 
 void CALLBACK KeyboardProc( UINT nChar, bool bKeyDown, bool bAltDown, void* pUserContext )
 {
-	g_Game->SetKeyState(nChar, bKeyDown);
+	KleinGame()->SetKeyState(nChar, bKeyDown);
 }
 
 void CALLBACK MouseProc( bool bLeftButtonDown, bool bRightButtonDown, bool bMiddleButtonDown, bool bSideButton1Down,
 						 bool bSideButton2Down, int nMouseWheelDelta, int xPos, int yPos, void* pUserContext )
 {
-	g_Game->SetMouseBtnState(MBTN_LEFT, bLeftButtonDown);
-	g_Game->SetMouseBtnState(MBTN_RIGHT, bRightButtonDown);
+	KleinGame()->SetMouseBtnState(MBTN_LEFT, bLeftButtonDown);
+	KleinGame()->SetMouseBtnState(MBTN_RIGHT, bRightButtonDown);
 
 	//g_MousePosX = xPos;
 	//g_MousePosY = yPos;
@@ -261,11 +260,10 @@ void CALLBACK MouseProc( bool bLeftButtonDown, bool bRightButtonDown, bool bMidd
 
 void Startup()
 {
-	g_Game = new GameMain();
-	g_Game->Startup();
+	KleinGame()->Startup();
 }
 
 void Cleanup()
 {
-	SAFE_DELETE(g_Game);
+	KleinGame()->Shutdown();
 }

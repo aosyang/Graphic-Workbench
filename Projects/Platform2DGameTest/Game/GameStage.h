@@ -103,9 +103,12 @@ public:
 	void Reset();
 	void TestCollision(Character* character, const Vector3& vecRel);
 
-	TileUsageEnum GetTileTypeAtPoint(const Vector3 point);
+	STAGE_GEOM* GetTileAtPoint(const Vector3& point);
+	TileUsageEnum GetStageGeomUsage(STAGE_GEOM* geom);
 	void SetWorldview(int world_id);
 	GameWorldviewEnum GetWorldview() const { return m_ActiveWorld; }
+
+	STAGE_GEOM* AddStageGeom(int world_id, int layer_id, const BoundBox& bound, const char* tile_type_name);
 
 private:
 	

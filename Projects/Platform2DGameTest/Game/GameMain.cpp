@@ -6,12 +6,15 @@
 #include "GWCommon.h"
 #include "GameDef.h"
 
+#include "GameStageEditor.h"
+
 #include <d3dx9.h>
 
 GameMain::GameMain()
 : m_GameStage(NULL),
   m_Character(NULL),
-  m_EditorMode(false),
+  m_IsEditorMode(false),
+  m_GameStageEditor(NULL),
   m_MousePosX(0),
   m_MousePosY(0),
   m_CameraPos(Vector3::ZERO)
@@ -27,11 +30,11 @@ GameMain::GameMain()
 
 GameMain::~GameMain()
 {
-	Reset();
 }
 
 void GameMain::Reset()
 {
+	GW_SAFE_DELETE(m_GameStageEditor);
 	GW_SAFE_DELETE(m_GameStage);
 	GW_SAFE_DELETE(m_Character);
 }
@@ -42,13 +45,22 @@ void GameMain::Startup()
 	m_GameStage->LoadFromFile("stage.lua");
 
 	m_Character = new Character;
+
+	m_GameStageEditor = new GameStageEditor;
+	m_GameStageEditor->SetGameStage(m_GameStage);
+}
+
+void GameMain::Shutdown()
+{
+	Reset();
 }
 
 void GameMain::Update( float delta_time )
 {
 	m_Character->Update(delta_time);
 
-	TileUsageEnum player_pos_type = m_GameStage->GetTileTypeAtPoint(m_Character->WorldPosition());
+	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(m_Character->WorldPosition());
+	TileUsageEnum player_pos_type = geom ? m_GameStage->GetStageGeomUsage(geom) : TILE_USAGE_VOID;
 
 	Vector2 moveVector(0.0f, 0.0f);
 	if (m_KeyPressed[GW_KEY_LEFT]) moveVector += Vector2(-1.0f, 0.0f);
@@ -93,6 +105,11 @@ void GameMain::Update( float delta_time )
 	if (dist > 0.3f)
 		m_CameraPos += rel * dist * 0.05f;
 
+	if (m_MBtnPressed[MBTN_LEFT])
+	{
+		m_GameStageEditor->PaintTileAtCursor();
+	}
+
 	UpdateDebugText();
 }
 
@@ -102,41 +119,9 @@ void GameMain::Render()
 
 	m_Character->Render();
 
-	if (m_EditorMode)
+	if (m_IsEditorMode)
 	{
-		// Render tile position at cursor
-		float height = tanf(KLEIN_CAMERA_FOVY / 2.0f) * abs(KLEIN_CAMERA_ZPOS);
-		float width = height * KLEIN_SCREEN_ASPECT;
-
-		float step_x = (float)KLEIN_SCREEN_WIDTH / (width * 2);
-		float tile_x = ((float)m_MousePosX - (float)KLEIN_SCREEN_WIDTH * 0.5f)  / step_x;
-
-		float step_y = (float)KLEIN_SCREEN_HEIGHT / (height * 2);
-		float tile_y = -((float)m_MousePosY - (float)KLEIN_SCREEN_HEIGHT * 0.5f)  / step_y;
-
-		tile_x += m_CameraPos.x;
-		tile_y += m_CameraPos.y;
-
-		StageGeomWireframeVertex v[6] =
-		{
-			{ floorf(tile_x), floorf(tile_y), 0.0f, 0xFFFFF200 },
-			{ floorf(tile_x), ceilf(tile_y), 0.0f, 0xFFFFF200 },
-			{ ceilf(tile_x), ceilf(tile_y), 0.0f, 0xFFFFF200 },
-
-			{ ceilf(tile_x), ceilf(tile_y), 0.0f, 0xFFFFF200 },
-			{ ceilf(tile_x), floorf(tile_y), 0.0f, 0xFFFFF200 },
-			{ floorf(tile_x), floorf(tile_y), 0.0f, 0xFFFFF200 },
-		};
-
-		D3DXMATRIXA16 matWorld;
-		D3DXMatrixIdentity(&matWorld);
-		RenderSystem::Device()->SetTransform( D3DTS_WORLD, &matWorld );
-
-		RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-
-		RenderSystem::Device()->SetTexture(0, NULL);
-		RenderSystem::Device()->SetFVF(StageGeomWireframeFVF);
-		RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(StageGeomWireframeVertex));
+		m_GameStageEditor->Render();
 	}
 }
 
@@ -179,6 +164,12 @@ Vector3 GameMain::GetCameraPos() const
 	return m_CameraPos;
 }
 
+void GameMain::GetMousePos( int* x, int* y )
+{
+	if (x) *x = m_MousePosX;
+	if (y) *y = m_MousePosY;
+}
+
 const char* GameMain::GetDebugText() const
 {
 	return m_DebugText;
@@ -190,7 +181,7 @@ void GameMain::OnKeyPressed( int key_code )
 	{
 	case GW_KEY_SPACE:
 		// Toggle editor mode
-		m_EditorMode = !m_EditorMode;
+		m_IsEditorMode = !m_IsEditorMode;
 		break;
 	case GW_KEY_1:
 	case GW_KEY_2:
@@ -211,7 +202,12 @@ void GameMain::OnKeyReleased( int key_code )
 
 void GameMain::OnMouseBtnPressed( GWMouseButton mbtn_code )
 {
-
+	switch (mbtn_code)
+	{
+	case MBTN_LEFT:
+		m_GameStageEditor->PaintTileAtCursor();
+		break;
+	}
 }
 
 void GameMain::OnMouseBtnReleased( GWMouseButton mbtn_code )
@@ -236,5 +232,11 @@ void GameMain::UpdateDebugText()
 			(int)floor(char_pos.y), (int)ceil(char_pos.y),
 			world_id,
 			m_MousePosX, m_MousePosY);
+}
+
+GameMain* KleinGame()
+{
+	static GameMain game;
+	return &game;
 }
 
