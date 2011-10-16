@@ -19,9 +19,6 @@ public:
 
 	void PaintTileAtCursor();
 
-	void OnMouseBtnPressed(GWMouseButton mbtn_code, int x_pos, int y_pos);
-	void OnMouseBtnReleased(GWMouseButton mbtn_code, int x_pos, int y_pos);
-
 private:
 	Vector2 CursorToTilePos(int x_pos, int y_pos);
 

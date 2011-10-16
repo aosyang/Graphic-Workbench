@@ -105,9 +105,12 @@ void GameMain::Update( float delta_time )
 	if (dist > 0.3f)
 		m_CameraPos += rel * dist * 0.05f;
 
-	if (m_MBtnPressed[MBTN_LEFT])
+	if (m_IsEditorMode)
 	{
-		m_GameStageEditor->PaintTileAtCursor();
+		if (m_MBtnPressed[MBTN_LEFT])
+		{
+			m_GameStageEditor->PaintTileAtCursor();
+		}
 	}
 
 	UpdateDebugText();
@@ -205,7 +208,8 @@ void GameMain::OnMouseBtnPressed( GWMouseButton mbtn_code )
 	switch (mbtn_code)
 	{
 	case MBTN_LEFT:
-		m_GameStageEditor->PaintTileAtCursor();
+		if (m_IsEditorMode)
+			m_GameStageEditor->PaintTileAtCursor();
 		break;
 	}
 }

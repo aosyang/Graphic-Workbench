@@ -68,17 +68,6 @@ void GameStageEditor::PaintTileAtCursor()
 	}
 }
 
-void GameStageEditor::OnMouseBtnPressed( GWMouseButton mbtn_code, int x_pos, int y_pos )
-{
-
-
-}
-
-void GameStageEditor::OnMouseBtnReleased( GWMouseButton mbtn_code, int x_pos, int y_pos )
-{
-
-}
-
 Vector2 GameStageEditor::CursorToTilePos( int x_pos, int y_pos )
 {
 	Vector3 cam_pos = KleinGame()->GetCameraPos();
