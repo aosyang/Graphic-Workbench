@@ -24,26 +24,35 @@ void GameStageEditor::Render()
 
 	Vector2 tile_pos = CursorToTilePos(mouse_xpos, mouse_ypos);
 
-	StageGeomWireframeVertex v[6] =
-	{
-		{ floorf(tile_pos.x), floorf(tile_pos.y), 0.0f, 0xFFFFF200 },
-		{ floorf(tile_pos.x), ceilf(tile_pos.y), 0.0f, 0xFFFFF200 },
-		{ ceilf(tile_pos.x), ceilf(tile_pos.y), 0.0f, 0xFFFFF200 },
-
-		{ ceilf(tile_pos.x), ceilf(tile_pos.y), 0.0f, 0xFFFFF200 },
-		{ ceilf(tile_pos.x), floorf(tile_pos.y), 0.0f, 0xFFFFF200 },
-		{ floorf(tile_pos.x), floorf(tile_pos.y), 0.0f, 0xFFFFF200 },
-	};
-
 	D3DXMATRIXA16 matWorld;
 	D3DXMatrixIdentity(&matWorld);
 	RenderSystem::Device()->SetTransform( D3DTS_WORLD, &matWorld );
 
-	RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(Vector3(tile_pos, 0.0f));
+	if (geom)
+	{
+		DebugRenderStageGeom(geom);
+	}
+	else
+	{
+		StageGeomWireframeVertex v[6] =
+		{
+			{ floorf(tile_pos.x), floorf(tile_pos.y), 0.0f, 0xFFFFF200 },
+			{ floorf(tile_pos.x), ceilf(tile_pos.y), 0.0f, 0xFFFFF200 },
+			{ ceilf(tile_pos.x), ceilf(tile_pos.y), 0.0f, 0xFFFFF200 },
 
-	RenderSystem::Device()->SetTexture(0, NULL);
-	RenderSystem::Device()->SetFVF(StageGeomWireframeFVF);
-	RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(StageGeomWireframeVertex));
+			{ ceilf(tile_pos.x), ceilf(tile_pos.y), 0.0f, 0xFFFFF200 },
+			{ ceilf(tile_pos.x), floorf(tile_pos.y), 0.0f, 0xFFFFF200 },
+			{ floorf(tile_pos.x), floorf(tile_pos.y), 0.0f, 0xFFFFF200 },
+		};
+
+		RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+
+		RenderSystem::Device()->SetTexture(0, NULL);
+		RenderSystem::Device()->SetFVF(StageGeomWireframeFVF);
+		RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(StageGeomWireframeVertex));
+	}
+
 }
 
 void GameStageEditor::SetGameStage( GameStage* stage )
@@ -64,7 +73,23 @@ void GameStageEditor::PaintTileAtCursor()
 	if (!geom)
 	{
 		BoundBox box(floorf(tile_pos.x), floorf(tile_pos.y), ceilf(tile_pos.x), ceilf(tile_pos.y));
-		m_GameStage->AddStageGeom(GAME_WORLD_COMMON, 0, box, "StoneWall");
+		m_GameStage->AddStageGeom(GAME_WORLD_COMMON, 0, box, m_TileTypeToPaint.c_str());
+	}
+}
+
+void GameStageEditor::PickupTileTypeAtCursor()
+{
+	if (!m_GameStage) return;
+
+	int mouse_xpos, mouse_ypos;
+	KleinGame()->GetMousePos(&mouse_xpos, &mouse_ypos);
+
+	Vector2 tile_pos = CursorToTilePos(mouse_xpos, mouse_ypos);
+
+	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(Vector3(tile_pos, 0.0f));
+	if (geom)
+	{
+		m_TileTypeToPaint = m_GameStage->GetTileNameById(geom->tile_type_id);
 	}
 }
 

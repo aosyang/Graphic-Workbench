@@ -13,7 +13,7 @@
 GameMain::GameMain()
 : m_GameStage(NULL),
   m_Character(NULL),
-  m_IsEditorMode(false),
+  m_IsEditorMode(true),
   m_GameStageEditor(NULL),
   m_MousePosX(0),
   m_MousePosY(0),
@@ -57,47 +57,64 @@ void GameMain::Shutdown()
 
 void GameMain::Update( float delta_time )
 {
-	m_Character->Update(delta_time);
-
 	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(m_Character->WorldPosition());
 	TileUsageEnum player_pos_type = geom ? m_GameStage->GetStageGeomUsage(geom) : TILE_USAGE_VOID;
 
 	Vector2 moveVector(0.0f, 0.0f);
-	if (m_KeyPressed[GW_KEY_LEFT]) moveVector += Vector2(-1.0f, 0.0f);
-	if (m_KeyPressed[GW_KEY_RIGHT]) moveVector += Vector2(1.0f, 0.0f);
 
-	if (m_Character->IsClimbingLadder())
+	if (m_IsEditorMode)
 	{
-		if (m_KeyPressed[GW_KEY_UP]) moveVector += Vector2(0.0f, 1.0f);
-		if (m_KeyPressed[GW_KEY_DOWN]) moveVector += Vector2(0.0f, -1.0f);
+		// Free move in editor mode
+		if (m_KeyPressed[GW_KEY_A]) moveVector += Vector2(-1.0f, 0.0f);
+		if (m_KeyPressed[GW_KEY_D]) moveVector += Vector2(1.0f, 0.0f);
+		if (m_KeyPressed[GW_KEY_W]) moveVector += Vector2(0.0f, 1.0f);
+		if (m_KeyPressed[GW_KEY_S]) moveVector += Vector2(0.0f, -1.0f);
 
-		// Fall down if no ladder
-		if (player_pos_type != TILE_USAGE_LADDER)
+		moveVector.Normalize();
+		moveVector *= 0.5f;
+
+		m_Character->Translate(Vector3(moveVector, 0.0f));
+		m_Character->Velocity().y = 0.0f;
+	}
+	else 
+	{
+		if (m_KeyPressed[GW_KEY_LEFT]) moveVector += Vector2(-1.0f, 0.0f);
+		if (m_KeyPressed[GW_KEY_RIGHT]) moveVector += Vector2(1.0f, 0.0f);
+
+		if (m_Character->IsClimbingLadder())
 		{
-			m_Character->SetClimbingLadder(false);
+			if (m_KeyPressed[GW_KEY_UP]) moveVector += Vector2(0.0f, 1.0f);
+			if (m_KeyPressed[GW_KEY_DOWN]) moveVector += Vector2(0.0f, -1.0f);
+
+			// Fall down if no ladder
+			if (player_pos_type != TILE_USAGE_LADDER)
+			{
+				m_Character->SetClimbingLadder(false);
+			}
 		}
-	}
-	else
-	{
-		// Climb up if player stands near by a ladder
-		if (m_KeyPressed[GW_KEY_UP] && player_pos_type == TILE_USAGE_LADDER)
+		else
 		{
-			m_Character->SetClimbingLadder(true);
+			// Climb up if player stands near by a ladder
+			if (m_KeyPressed[GW_KEY_UP] && player_pos_type == TILE_USAGE_LADDER)
+			{
+				m_Character->SetClimbingLadder(true);
+			}
 		}
-	}
 
-	moveVector.Normalize();
-	if (m_Character->IsClimbingLadder())
-	{
-		// Slow down if climbing ladder
-		moveVector *= 0.08f;
-	}
-	else
-	{
-		moveVector *= 0.1f;
-	}
+		moveVector.Normalize();
+		if (m_Character->IsClimbingLadder())
+		{
+			// Slow down if climbing ladder
+			moveVector *= 0.08f;
+		}
+		else
+		{
+			moveVector *= 0.1f;
+		}
 
-	m_GameStage->TestCollision( m_Character, Vector3(moveVector, 0.0f) );
+		m_Character->Update(delta_time);
+		m_GameStage->TestCollision( m_Character, Vector3(moveVector, 0.0f) );
+	}
 
 	// Update camera position
 	Vector3 rel = m_Character->WorldPosition() - m_CameraPos;
@@ -110,6 +127,10 @@ void GameMain::Update( float delta_time )
 		if (m_MBtnPressed[MBTN_LEFT])
 		{
 			m_GameStageEditor->PaintTileAtCursor();
+		}
+		else if (m_MBtnPressed[MBTN_RIGHT])
+		{
+			m_GameStageEditor->PickupTileTypeAtCursor();
 		}
 	}
 

@@ -10,7 +10,7 @@ static float COL_TOLERANCE = 0.001f;
 float Character::m_sCharSize = 0.8f;
 
 Character::Character()
-: m_Position(7.0f, 5.0f, 0.0f),
+: m_Position(0.0f, 0.0f, 0.0f),
   m_Velocity(Vector3::ZERO),
   m_CanJump(false),
   m_ClimbingLadder(false)

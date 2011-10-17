@@ -61,6 +61,8 @@ STAGE_GEOM* CreateStageGeom(int world_id);
 STAGE_GEOM* GetFirstStageGeom(int world_id);
 STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom);
 
+void DebugRenderStageGeom(STAGE_GEOM* geom);
+
 struct StageGeomVertex
 {
 	float x, y, z;
@@ -99,6 +101,8 @@ public:
 	void SetWorldview(int world_id);
 	GameWorldviewEnum GetWorldview() const { return m_ActiveWorld; }
 
+	const char* GetTileNameById(int tile_id) const;
+
 	STAGE_GEOM* AddStageGeom(int world_id, int layer_id, const BoundBox& bound, const char* tile_type_name);
 
 private:
@@ -107,7 +111,6 @@ private:
 	void ScriptLoadGeometries(const LuaPlus::LuaObject* script, int world_id);
 
 	void RenderStageGeom(STAGE_GEOM* geom);
-	void DebugRenderStageGeom(STAGE_GEOM* geom);
 
 	TileUsageEnum GetTileUsageById(int id);
 

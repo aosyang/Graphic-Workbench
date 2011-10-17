@@ -92,6 +92,26 @@ STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom)
 	return geom->next;
 }
 
+void DebugRenderStageGeom( STAGE_GEOM* geom )
+{
+	StageGeomWireframeVertex v[6] =
+	{
+		{ geom->bound.xMin, geom->bound.yMin, 0.0f, 0xFFFFF200 },
+		{ geom->bound.xMin, geom->bound.yMax, 0.0f, 0xFFFFF200 },
+		{ geom->bound.xMax, geom->bound.yMax, 0.0f, 0xFFFFF200 },
+
+		{ geom->bound.xMax, geom->bound.yMax, 0.0f, 0xFFFFF200 },
+		{ geom->bound.xMax, geom->bound.yMin, 0.0f, 0xFFFFF200 },
+		{ geom->bound.xMin, geom->bound.yMin, 0.0f, 0xFFFFF200 },
+	};
+
+	RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+
+	RenderSystem::Device()->SetTexture(0, NULL);
+	RenderSystem::Device()->SetFVF(StageGeomWireframeFVF);
+	RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(StageGeomWireframeVertex));
+}
+
 GameStage::GameStage()
 : m_ActiveWorld(GAME_WORLD_COMMON),
   m_TileTypeIndex(0)
@@ -189,6 +209,11 @@ bool GameStage::SaveToFile( const char* filename )
 				geom_script.SetString(6, iter->first.c_str());
 				break;
 			}
+		}
+
+		if (iter==m_TileName2Id.end())
+		{
+			geom_script.SetString(6, "");
 		}
 
 		i++;
@@ -332,6 +357,18 @@ void GameStage::SetWorldview( int world_id )
 }
 
 
+
+const char* GameStage::GetTileNameById( int tile_id ) const
+{
+	std::map<std::string, int>::const_iterator iter;
+	for (iter=m_TileName2Id.begin(); iter!=m_TileName2Id.end(); iter++)
+	{
+		if (iter->second == tile_id)
+			return iter->first.c_str();
+	}
+
+	return NULL;
+}
 
 STAGE_GEOM* GameStage::AddStageGeom( int world_id, int layer_id, const BoundBox& bound, const char* tile_type_name )
 {
@@ -479,26 +516,6 @@ void GameStage::RenderStageGeom( STAGE_GEOM* geom )
 	RenderSystem::Device()->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
 
 	//DebugRenderStageGeom(geom);
-}
-
-void GameStage::DebugRenderStageGeom( STAGE_GEOM* geom )
-{
-	StageGeomWireframeVertex v[6] =
-	{
-		{ geom->bound.xMin, geom->bound.yMin, 0.0f, 0xFFFFF200 },
-		{ geom->bound.xMin, geom->bound.yMax, 0.0f, 0xFFFFF200 },
-		{ geom->bound.xMax, geom->bound.yMax, 0.0f, 0xFFFFF200 },
-
-		{ geom->bound.xMax, geom->bound.yMax, 0.0f, 0xFFFFF200 },
-		{ geom->bound.xMax, geom->bound.yMin, 0.0f, 0xFFFFF200 },
-		{ geom->bound.xMin, geom->bound.yMin, 0.0f, 0xFFFFF200 },
-	};
-
-	RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-
-	RenderSystem::Device()->SetTexture(0, NULL);
-	RenderSystem::Device()->SetFVF(StageGeomWireframeFVF);
-	RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(StageGeomWireframeVertex));
 }
 
 TileUsageEnum GameStage::GetTileUsageById( int id )
