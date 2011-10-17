@@ -36,29 +36,29 @@ typedef struct TileTypeInfo
 	TileUsageEnum		usage;
 } TILE_TYPE_INFO;
 
+enum GameWorldviewEnum
+{
+	//GAME_WORLD_COMMON,
+	GAME_WORLD_0,
+	GAME_WORLD_1,
+	//GAME_WORLD_2,
+	GAME_WORLD_COUNT,
+};
+
 // -----------------------------------------------------------
 // Stage geometry structure and methods
 // -----------------------------------------------------------
 typedef struct StageGeom
 {
 	BoundBox					bound;
-	int							tile_type_id;
+	int							tile_type_id[GAME_WORLD_COUNT];
 	LPDIRECT3DVERTEXBUFFER9		vbuffer;
 
 	StageGeom*					next;
 } STAGE_GEOM;
 
-enum GameWorldviewEnum
-{
-	GAME_WORLD_COMMON,
-	GAME_WORLD_0,
-	GAME_WORLD_1,
-	GAME_WORLD_2,
-	GAME_WORLD_COUNT,
-};
-
-STAGE_GEOM* CreateStageGeom(int world_id);
-STAGE_GEOM* GetFirstStageGeom(int world_id);
+STAGE_GEOM* CreateStageGeom();
+STAGE_GEOM* GetFirstStageGeom();
 STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom);
 
 void DebugRenderStageGeom(STAGE_GEOM* geom);
@@ -100,15 +100,16 @@ public:
 	TileUsageEnum GetStageGeomUsage(STAGE_GEOM* geom);
 	void SetWorldview(int world_id);
 	GameWorldviewEnum GetWorldview() const { return m_ActiveWorld; }
+	int GetTileIdByName(const char* tile_name) const;
 
 	const char* GetTileNameById(int tile_id) const;
 
-	STAGE_GEOM* AddStageGeom(int world_id, int layer_id, const BoundBox& bound, const char* tile_type_name);
+	STAGE_GEOM* AddStageGeom(int layer_id, const BoundBox& bound, const char* tile_type_name[GAME_WORLD_COUNT]);
 
 private:
 	
-	void ScriptLoadTileTypes(const LuaPlus::LuaObject* script, int world_id);
-	void ScriptLoadGeometries(const LuaPlus::LuaObject* script, int world_id);
+	void ScriptLoadTileTypes(const LuaPlus::LuaObject* script);
+	void ScriptLoadGeometries(const LuaPlus::LuaObject* script);
 
 	void RenderStageGeom(STAGE_GEOM* geom);
 

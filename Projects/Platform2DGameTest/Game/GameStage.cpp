@@ -42,10 +42,10 @@ const char* TileUsageToString( TileUsageEnum usage )
 
 char GameWorldviewKeyWord[GAME_WORLD_COUNT][32] =
 {
-	"GameWorldCommon",
+	//"GameWorldCommon",
 	"GameWorld0",
 	"GameWorld1",
-	"GameWorld2",
+	//"GameWorld2",
 };
 
 typedef struct StageGeomListType
@@ -53,38 +53,35 @@ typedef struct StageGeomListType
 	STAGE_GEOM*				StageGeomHead;
 	STAGE_GEOM*				StageGeomTail;
 	int						geom_count;
-
-	std::map<int, TILE_TYPE_INFO>
-							world_tile_types;
 } STAGE_GEOM_LIST;
 
-static STAGE_GEOM_LIST StageGeomList[GAME_WORLD_COUNT] = { { NULL, NULL, 0 } };
+static STAGE_GEOM_LIST StageGeomList = { NULL, NULL, 0 };
 
 // Stage geometry methods
-STAGE_GEOM* CreateStageGeom(int world_id)
+STAGE_GEOM* CreateStageGeom()
 {
 	STAGE_GEOM* geom = new STAGE_GEOM();
 	geom->next = NULL;
 
-	if (StageGeomList[world_id].StageGeomTail == NULL)
+	if (StageGeomList.StageGeomTail == NULL)
 	{
 		// Build new linked list
-		StageGeomList[world_id].StageGeomHead = geom;
-		StageGeomList[world_id].StageGeomTail = geom;
+		StageGeomList.StageGeomHead = geom;
+		StageGeomList.StageGeomTail = geom;
 	}
 	else
 	{
 		// Add new geometry to the tail
-		StageGeomList[world_id].StageGeomTail->next = geom;
-		StageGeomList[world_id].StageGeomTail = geom;
+		StageGeomList.StageGeomTail->next = geom;
+		StageGeomList.StageGeomTail = geom;
 	}
 
 	return geom;
 }
 
-STAGE_GEOM* GetFirstStageGeom(int world_id)
+STAGE_GEOM* GetFirstStageGeom()
 {
-	return StageGeomList[world_id].StageGeomHead;
+	return StageGeomList.StageGeomHead;
 }
 
 STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom)
@@ -113,7 +110,7 @@ void DebugRenderStageGeom( STAGE_GEOM* geom )
 }
 
 GameStage::GameStage()
-: m_ActiveWorld(GAME_WORLD_COMMON),
+: m_ActiveWorld((GameWorldviewEnum)0),
   m_TileTypeIndex(0)
 {
 
@@ -136,25 +133,15 @@ bool GameStage::LoadFromFile( const char* filename )
 
 		LuaObject stage_script = state->GetGlobals()["Stage"];
 
-		for (int i=0; i<GAME_WORLD_COUNT; i++)
-		{
-			LuaObject world_script = stage_script[GameWorldviewKeyWord[i]];
+		//int layers = stage["Layers"].GetInteger();
 
-			if (world_script.IsNil())
-				continue;
+		// Load tile types
+		LuaObject tiletype_script = stage_script["TileTypes"];
+		ScriptLoadTileTypes(&tiletype_script);
 
-			//int layers = stage["Layers"].GetInteger();
-
-			// Load tile types
-			LuaObject tiletype_script = world_script["TileTypes"];
-			ScriptLoadTileTypes(&tiletype_script, i);
-
-			// Load geometries for the stage
-			LuaObject geom_script = world_script["Geometries"];
-			ScriptLoadGeometries(&geom_script, i);
-
-			// Load tile types for each worldview
-		}
+		// Load geometries for the stage
+		LuaObject geom_script = stage_script["Geometries"];
+		ScriptLoadGeometries(&geom_script);
 
 		result = true;
 	}
@@ -168,8 +155,8 @@ bool GameStage::SaveToFile( const char* filename )
 
 	LuaObject stage_script = state->GetGlobals().CreateTable("Stage");
 
-	LuaObject world_script = stage_script.CreateTable(GameWorldviewKeyWord[0]);
-	LuaObject tile_type_script = world_script.CreateTable("TileTypes");
+	//LuaObject world_script = stage_script.CreateTable(GameWorldviewKeyWord[0]);
+	LuaObject tile_type_script = stage_script.CreateTable("TileTypes");
 
 	// Write tile types
 	int i = 1;
@@ -187,13 +174,26 @@ bool GameStage::SaveToFile( const char* filename )
 		i++;
 	}
 
-	LuaObject geom_group_script = world_script.CreateTable("Geometries");
+	LuaObject geom_group_script = stage_script.CreateTable("Geometries");
 
 	i = 1;
 	// Write geometries
 	STAGE_GEOM* geom;
-	for (geom = GetFirstStageGeom(GAME_WORLD_COMMON); geom!=NULL; geom = GetNextStageGeom(geom))
+	for (geom = GetFirstStageGeom(); geom!=NULL; geom = GetNextStageGeom(geom))
 	{
+		// Don't output if tile is null in all worlds
+		bool ignore_geom = true;
+		for (int j=0; j<GAME_WORLD_COUNT; j++)
+		{
+			if (geom->tile_type_id[j] != -1)
+			{
+				ignore_geom = false;
+				break;
+			}
+		}
+
+		if (ignore_geom) continue;
+
 		LuaObject geom_script = geom_group_script.CreateTable(i);
 
 		geom_script.SetInteger(1, 0);
@@ -202,18 +202,21 @@ bool GameStage::SaveToFile( const char* filename )
 		geom_script.SetNumber(4, geom->bound.yMin);
 		geom_script.SetNumber(5, geom->bound.yMax);
 
-		for (iter=m_TileName2Id.begin(); iter!=m_TileName2Id.end(); iter++)
+		for (int j=0; j<GAME_WORLD_COUNT; j++)
 		{
-			if (iter->second == geom->tile_type_id)
+			for (iter=m_TileName2Id.begin(); iter!=m_TileName2Id.end(); iter++)
 			{
-				geom_script.SetString(6, iter->first.c_str());
-				break;
+				if (iter->second == geom->tile_type_id[j])
+				{
+					geom_script.SetString(6 + j, iter->first.c_str());
+					break;
+				}
 			}
-		}
 
-		if (iter==m_TileName2Id.end())
-		{
-			geom_script.SetString(6, "");
+			if (iter==m_TileName2Id.end())
+			{
+				geom_script.SetString(6 + j, "");
+			}
 		}
 
 		i++;
@@ -225,42 +228,29 @@ bool GameStage::SaveToFile( const char* filename )
 void GameStage::RenderStage()
 {
 	STAGE_GEOM* geom;
-	for (geom = GetFirstStageGeom(GAME_WORLD_COMMON); geom != NULL; geom = GetNextStageGeom(geom))
+	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 	{
 		RenderStageGeom(geom);
-	}
-
-	// Got an extra world to render
-	if (m_ActiveWorld>GAME_WORLD_COMMON && m_ActiveWorld<GAME_WORLD_COUNT)
-	{
-		for (geom = GetFirstStageGeom(m_ActiveWorld); geom != NULL; geom = GetNextStageGeom(geom))
-		{
-			RenderStageGeom(geom);
-		}
 	}
 }
 
 void GameStage::Reset()
 {
-	for ( int i = 0; i < GAME_WORLD_COUNT; i++ )
+	STAGE_GEOM* geom;
+	for (geom = GetFirstStageGeom(); geom != NULL; )
 	{
-		STAGE_GEOM* geom;
-		for (geom = GetFirstStageGeom(i); geom != NULL; )
-		{
-			geom->vbuffer->Release();
+		geom->vbuffer->Release();
 
-			STAGE_GEOM* old_geom = geom;
-			geom = GetNextStageGeom(geom);
-			delete old_geom;
-		}
-
-		StageGeomList[i].StageGeomHead = NULL;
-		StageGeomList[i].StageGeomTail = NULL;
-		StageGeomList[i].geom_count = 0;
-		StageGeomList[i].world_tile_types.clear();
+		STAGE_GEOM* old_geom = geom;
+		geom = GetNextStageGeom(geom);
+		delete old_geom;
 	}
 
-	m_ActiveWorld = GAME_WORLD_COMMON;
+	StageGeomList.StageGeomHead = NULL;
+	StageGeomList.StageGeomTail = NULL;
+	StageGeomList.geom_count = 0;
+
+	m_ActiveWorld = (GameWorldviewEnum)0;
 
 	m_TileTypeIndex = 0;
 	m_TileName2Id.clear();
@@ -277,25 +267,13 @@ void GameStage::TestCollision( Character* character, const Vector3& vecRel )
 	STAGE_GEOM* geom;
 
 	// Collect collision objects
-	for (geom = GetFirstStageGeom(GAME_WORLD_COMMON); geom != NULL; geom = GetNextStageGeom(geom))
+	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 	{
-		if ( GetTileUsageById(geom->tile_type_id) != TILE_USAGE_SOLID )
+		if ( GetTileUsageById(geom->tile_type_id[m_ActiveWorld]) != TILE_USAGE_SOLID )
 			continue;
 
 		if (character->TestCollision(geom, rel))
 			col_group.push_back(geom);
-	}
-
-	if (m_ActiveWorld != GAME_WORLD_COMMON)
-	{
-		for (geom = GetFirstStageGeom(m_ActiveWorld); geom != NULL; geom = GetNextStageGeom(geom))
-		{
-			if ( GetTileUsageById(geom->tile_type_id) != TILE_USAGE_SOLID )
-				continue;
-
-			if (character->TestCollision(geom, rel))
-				col_group.push_back(geom);
-		}
 	}
 
 	if (!col_group.empty())
@@ -328,16 +306,7 @@ void GameStage::TestCollision( Character* character, const Vector3& vecRel )
 STAGE_GEOM* GameStage::GetTileAtPoint( const Vector3& point )
 {
 	STAGE_GEOM* geom;
-	if (m_ActiveWorld != GAME_WORLD_COMMON)
-	{
-		for (geom = GetFirstStageGeom(GAME_WORLD_COMMON); geom != NULL; geom = GetNextStageGeom(geom))
-		{
-			if ( geom->bound.IsPointInsideBox(point.x, point.y) )
-				return geom;
-		}
-	}
-
-	for (geom = GetFirstStageGeom(GAME_WORLD_COMMON); geom != NULL; geom = GetNextStageGeom(geom))
+	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 	{
 		if ( geom->bound.IsPointInsideBox(point.x, point.y) )
 			return geom;
@@ -348,7 +317,7 @@ STAGE_GEOM* GameStage::GetTileAtPoint( const Vector3& point )
 
 TileUsageEnum GameStage::GetStageGeomUsage( STAGE_GEOM* geom )
 {
-	return GetTileUsageById(geom->tile_type_id);
+	return GetTileUsageById(geom->tile_type_id[m_ActiveWorld]);
 }
 
 void GameStage::SetWorldview( int world_id )
@@ -370,9 +339,18 @@ const char* GameStage::GetTileNameById( int tile_id ) const
 	return NULL;
 }
 
-STAGE_GEOM* GameStage::AddStageGeom( int world_id, int layer_id, const BoundBox& bound, const char* tile_type_name )
+int GameStage::GetTileIdByName( const char* tile_name ) const
 {
-	STAGE_GEOM* geom = CreateStageGeom(world_id);
+	std::map<std::string, int>::const_iterator iter;
+	if ( (iter = m_TileName2Id.find(tile_name)) != m_TileName2Id.end() )
+		return iter->second;
+
+	return -1;
+}
+
+STAGE_GEOM* GameStage::AddStageGeom( int layer_id, const BoundBox& bound, const char* tile_type_name[GAME_WORLD_COUNT] )
+{
+	STAGE_GEOM* geom = CreateStageGeom();
 
 	float geom_depth = (float)layer_id;
 
@@ -399,15 +377,18 @@ STAGE_GEOM* GameStage::AddStageGeom( int world_id, int layer_id, const BoundBox&
 	};
 
 	// Find texture id by name
-	int geom_tile_type = -1;
-	TileUsageEnum t = TILE_USAGE_VOID;
-	if (m_TileName2Id.find(tile_type_name)!=m_TileName2Id.end())
+	for (int i=0; i<GAME_WORLD_COUNT; i++)
 	{
-		geom_tile_type = m_TileName2Id[tile_type_name];
+		int geom_tile_type = -1;
+		TileUsageEnum t = TILE_USAGE_VOID;
+		if (m_TileName2Id.find(tile_type_name[i])!=m_TileName2Id.end())
+		{
+			geom_tile_type = m_TileName2Id[tile_type_name[i]];
+		}
+		geom->tile_type_id[i] = geom_tile_type;
 	}
 
 	geom->bound = bound;
-	geom->tile_type_id = geom_tile_type;
 
 	RenderSystem::Device()->CreateVertexBuffer(sizeof(StageGeomVertex) * 6, D3DUSAGE_WRITEONLY,
 		D3DFVF_XYZ|D3DFVF_TEX1, D3DPOOL_DEFAULT, &geom->vbuffer, NULL);
@@ -420,7 +401,7 @@ STAGE_GEOM* GameStage::AddStageGeom( int world_id, int layer_id, const BoundBox&
 	return geom;
 }
 
-void GameStage::ScriptLoadTileTypes( const LuaPlus::LuaObject* script, int world_id )
+void GameStage::ScriptLoadTileTypes( const LuaPlus::LuaObject* script )
 {
 	if (script->IsNil()) return;
 
@@ -444,57 +425,54 @@ void GameStage::ScriptLoadTileTypes( const LuaPlus::LuaObject* script, int world
 
 		tile_info.tex_id = texID;
 
-		// Only load tile types overridden by this worldview
-		if ( world_id != GAME_WORLD_COMMON && m_TileName2Id.find(tile_name) != m_TileName2Id.end() )
-		{
-			// We've already got this tile in common world, override!
-			int tile_id = m_TileName2Id[tile_name];
-			StageGeomList[world_id].world_tile_types[tile_id] = tile_info;
-		}
-		else
-		{
-			// Add tile type to stage containers
-			m_TileName2Id[tile_name] = m_TileTypeIndex;
-			m_TileId2TypeInfo[m_TileTypeIndex] = tile_info;
-			m_TileTypeIndex++;
-		}
+		// Add tile type to stage containers
+		m_TileName2Id[tile_name] = m_TileTypeIndex;
+		m_TileId2TypeInfo[m_TileTypeIndex] = tile_info;
+		m_TileTypeIndex++;
 	}
 }
 
-void GameStage::ScriptLoadGeometries( const LuaPlus::LuaObject* script, int world_id )
+void GameStage::ScriptLoadGeometries( const LuaPlus::LuaObject* script )
 {
 	if (script->IsNil()) return;
 
-	int geom_count = StageGeomList[world_id].geom_count = script->GetTableCount();
+	int geom_count = StageGeomList.geom_count = script->GetTableCount();
 
 	for (int i=0; i<geom_count; i++)
 	{
 		BoundBox box;
+
+		int elem_count = (*script)[i+1].GetCount();
 
 		int layer = (*script)[i+1][1].GetInteger();
 		box.xMin = (float)(*script)[i+1][2].GetInteger();
 		box.xMax = (float)(*script)[i+1][3].GetInteger();
 		box.yMin = (float)(*script)[i+1][4].GetInteger();
 		box.yMax = (float)(*script)[i+1][5].GetInteger();
-		const char* tile_type_name = (*script)[i+1][6].GetString();
+		const char* tile_type_name[GAME_WORLD_COUNT];
+		for (int j=0; j<GAME_WORLD_COUNT; j++)
+		{
+			// In case we don't have enough string
+			if (6+j <= elem_count)
+			{
+				tile_type_name[j] = (*script)[i+1][6+j].GetString();
+			}
+			else
+				tile_type_name[j] = "";
+		}
 
-		AddStageGeom(world_id, layer, box, tile_type_name);
+		AddStageGeom(layer, box, tile_type_name);
 	}
 }
 
 void GameStage::RenderStageGeom( STAGE_GEOM* geom )
 {
-	int tile_id = geom->tile_type_id;
-	int tex_id = m_TileId2TypeInfo[tile_id].tex_id;
+	int tile_id = geom->tile_type_id[m_ActiveWorld];
 
-	if (m_ActiveWorld!=GAME_WORLD_COMMON)
-	{
-		if ( StageGeomList[m_ActiveWorld].world_tile_types.find(tile_id) !=
-			 StageGeomList[m_ActiveWorld].world_tile_types.end() )
-		{
-			tex_id = StageGeomList[m_ActiveWorld].world_tile_types[tile_id].tex_id;
-		}
-	}
+	// Don't render tile with no type
+	if (tile_id == -1) return;
+
+	int tex_id = m_TileId2TypeInfo[tile_id].tex_id;
 
 	if (tex_id!=-1)
 	{
@@ -520,15 +498,6 @@ void GameStage::RenderStageGeom( STAGE_GEOM* geom )
 
 TileUsageEnum GameStage::GetTileUsageById( int id )
 {
-	if ( m_ActiveWorld != GAME_WORLD_COMMON )
-	{
-		if ( StageGeomList[m_ActiveWorld].world_tile_types.find(id)
-			 != StageGeomList[m_ActiveWorld].world_tile_types.end() )
-		{
-			return StageGeomList[m_ActiveWorld].world_tile_types[id].usage;
-		}
-	}
-
 	if ( m_TileId2TypeInfo.find(id) != m_TileId2TypeInfo.end() )
 	{
 		return m_TileId2TypeInfo[id].usage;

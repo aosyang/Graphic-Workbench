@@ -209,9 +209,9 @@ void GameMain::OnKeyPressed( int key_code )
 		break;
 	case GW_KEY_1:
 	case GW_KEY_2:
-	case GW_KEY_3:
-	case GW_KEY_4:
-		m_GameStage->SetWorldview(GAME_WORLD_COMMON + key_code - GW_KEY_1);
+	//case GW_KEY_3:
+	//case GW_KEY_4:
+		m_GameStage->SetWorldview(key_code - GW_KEY_1);
 		break;
 	case GW_KEY_Z:
 		m_Character->Jump();

@@ -70,10 +70,22 @@ void GameStageEditor::PaintTileAtCursor()
 	Vector2 tile_pos = CursorToTilePos(mouse_xpos, mouse_ypos);
 
 	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(Vector3(tile_pos, 0.0f));
+
+	// No geom found at point, create a new one
 	if (!geom)
 	{
 		BoundBox box(floorf(tile_pos.x), floorf(tile_pos.y), ceilf(tile_pos.x), ceilf(tile_pos.y));
-		m_GameStage->AddStageGeom(GAME_WORLD_COMMON, 0, box, m_TileTypeToPaint.c_str());
+
+		const char* tile_type_name[GAME_WORLD_COUNT];
+		for (int i=0; i<GAME_WORLD_COUNT; i++)
+			tile_type_name[i] = "";
+
+		tile_type_name[m_GameStage->GetWorldview()] = m_TileTypeToPaint.c_str();
+		m_GameStage->AddStageGeom(0, box, tile_type_name);
+	}
+	else
+	{
+		geom->tile_type_id[m_GameStage->GetWorldview()] = m_GameStage->GetTileIdByName(m_TileTypeToPaint.c_str());
 	}
 }
 
@@ -89,8 +101,16 @@ void GameStageEditor::PickupTileTypeAtCursor()
 	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(Vector3(tile_pos, 0.0f));
 	if (geom)
 	{
-		m_TileTypeToPaint = m_GameStage->GetTileNameById(geom->tile_type_id);
+		const char* tile_name = m_GameStage->GetTileNameById(geom->tile_type_id[m_GameStage->GetWorldview()]);
+
+		if (tile_name)
+		{
+			m_TileTypeToPaint = tile_name;
+			return;
+		}
 	}
+
+	m_TileTypeToPaint = "";
 }
 
 Vector2 GameStageEditor::CursorToTilePos( int x_pos, int y_pos )
