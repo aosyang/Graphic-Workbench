@@ -10,6 +10,11 @@ class GameStageEditor;
 class GameStage;
 class Character;
 
+enum PrototypeFeatureEnum
+{
+	PROTO_FEATURE_CIRCLE_OF_TRUE_VIEW		= 0x00000001,
+};
+
 class GameMain
 {
 public:
@@ -29,9 +34,14 @@ public:
 	void SetMousePosition(int x_pos, int y_pos);
 
 	Vector3 GetCameraPos() const;
+	Vector3 GetPlayerPos() const;
 	void GetMousePos(int* x, int* y);
 
 	const char* GetDebugText() const;
+
+	void ProtoFeatureBitSet(int bits, bool val);
+	void ProtoFeatureFlipBit(int bits);
+	bool TestProtoFeatureBit(int bits) const;
 
 private:
 	void OnKeyPressed(int key_code);
@@ -44,7 +54,7 @@ private:
 
 private:
 	GameStage*			m_GameStage;
-	Character*			m_Character;
+	Character*			m_Player;
 
 	bool				m_KeyPressed[0xFF];		// Keep the press state of each key
 	bool				m_MBtnPressed[MBTN_COUNT];
@@ -55,6 +65,8 @@ private:
 	char				m_DebugText[256];
 
 	Vector3				m_CameraPos;
+
+	int					m_ProtoFeatureBits;
 };
 
 GameMain* KleinGame();

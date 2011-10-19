@@ -8,6 +8,8 @@
 
 using namespace LuaPlus;
 
+#include "GameMain.h"
+
 typedef struct TileUsageTable
 {
 	TileUsageEnum	usage;
@@ -308,7 +310,7 @@ STAGE_GEOM* GameStage::GetTileAtPoint( const Vector3& point )
 	STAGE_GEOM* geom;
 	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 	{
-		if ( geom->bound.IsPointInsideBox(point.x, point.y) )
+		if ( geom->bound.IsPointInsideBox(Vector2(point.x, point.y)) )
 			return geom;
 	}
 
@@ -467,7 +469,18 @@ void GameStage::ScriptLoadGeometries( const LuaPlus::LuaObject* script )
 
 void GameStage::RenderStageGeom( STAGE_GEOM* geom )
 {
-	int tile_id = geom->tile_type_id[m_ActiveWorld];
+	int world_id = m_ActiveWorld;
+
+	if (KleinGame()->TestProtoFeatureBit(PROTO_FEATURE_CIRCLE_OF_TRUE_VIEW))
+	{
+		Vector2 geom_centre = geom->bound.GetCentrePoint();
+		float sqrd_dist = (Vector3(geom_centre, 0.0f) - KleinGame()->GetPlayerPos()).SqrdLen();
+
+		// Revert geoms far from player
+		if (sqrd_dist > 25) world_id = 1 - world_id;
+	}
+
+	int tile_id = geom->tile_type_id[world_id];
 
 	// Don't render tile with no type
 	if (tile_id == -1) return;

@@ -1,15 +1,20 @@
 #include "BoundBox.h"
 #include "Math/GWVectors.h"
 
-bool BoundBox::IsPointInsideBox( float x, float y ) const
+bool BoundBox::IsPointInsideBox( const Vector2& point ) const
 {
-	return xMin < x && xMax > x && yMin < y && yMax > y;
+	return xMin < point.x && xMax > point.x && yMin < point.y && yMax > point.y;
 }
 
 bool BoundBox::TestBoxCollision( const BoundBox& box ) const
 {
 	return this->xMax > box.xMin && this->xMin < box.xMax &&
 		   this->yMax > box.yMin && this->yMin < box.yMax;
+}
+
+Vector2 BoundBox::GetCentrePoint() const
+{
+	return Vector2(0.5f * (xMin + xMax), 0.5f * (yMin + yMax));
 }
 
 BoundBox BoundBox::Translate( const Vector3& rel ) const

@@ -12,12 +12,13 @@
 
 GameMain::GameMain()
 : m_GameStage(NULL),
-  m_Character(NULL),
+  m_Player(NULL),
   m_IsEditorMode(true),
   m_GameStageEditor(NULL),
   m_MousePosX(0),
   m_MousePosY(0),
-  m_CameraPos(Vector3::ZERO)
+  m_CameraPos(Vector3::ZERO),
+  m_ProtoFeatureBits(0)
 {
 	for (int i=0; i<0xFF; i++)
 		m_KeyPressed[i] = false;
@@ -36,7 +37,7 @@ void GameMain::Reset()
 {
 	GW_SAFE_DELETE(m_GameStageEditor);
 	GW_SAFE_DELETE(m_GameStage);
-	GW_SAFE_DELETE(m_Character);
+	GW_SAFE_DELETE(m_Player);
 }
 
 void GameMain::Startup()
@@ -44,7 +45,7 @@ void GameMain::Startup()
 	m_GameStage = new GameStage;
 	m_GameStage->LoadFromFile("Stage.lua");
 
-	m_Character = new Character;
+	m_Player = new Character;
 
 	m_GameStageEditor = new GameStageEditor;
 	m_GameStageEditor->SetGameStage(m_GameStage);
@@ -57,7 +58,7 @@ void GameMain::Shutdown()
 
 void GameMain::Update( float delta_time )
 {
-	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(m_Character->WorldPosition());
+	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(m_Player->WorldPosition());
 	TileUsageEnum player_pos_type = geom ? m_GameStage->GetStageGeomUsage(geom) : TILE_USAGE_VOID;
 
 	Vector2 moveVector(0.0f, 0.0f);
@@ -73,15 +74,15 @@ void GameMain::Update( float delta_time )
 		moveVector.Normalize();
 		moveVector *= 0.5f;
 
-		m_Character->Translate(Vector3(moveVector, 0.0f));
-		m_Character->Velocity().y = 0.0f;
+		m_Player->Translate(Vector3(moveVector, 0.0f));
+		m_Player->Velocity().y = 0.0f;
 	}
 	else 
 	{
 		if (m_KeyPressed[GW_KEY_LEFT]) moveVector += Vector2(-1.0f, 0.0f);
 		if (m_KeyPressed[GW_KEY_RIGHT]) moveVector += Vector2(1.0f, 0.0f);
 
-		if (m_Character->IsClimbingLadder())
+		if (m_Player->IsClimbingLadder())
 		{
 			if (m_KeyPressed[GW_KEY_UP]) moveVector += Vector2(0.0f, 1.0f);
 			if (m_KeyPressed[GW_KEY_DOWN]) moveVector += Vector2(0.0f, -1.0f);
@@ -89,7 +90,7 @@ void GameMain::Update( float delta_time )
 			// Fall down if no ladder
 			if (player_pos_type != TILE_USAGE_LADDER)
 			{
-				m_Character->SetClimbingLadder(false);
+				m_Player->SetClimbingLadder(false);
 			}
 		}
 		else
@@ -97,12 +98,12 @@ void GameMain::Update( float delta_time )
 			// Climb up if player stands near by a ladder
 			if (m_KeyPressed[GW_KEY_UP] && player_pos_type == TILE_USAGE_LADDER)
 			{
-				m_Character->SetClimbingLadder(true);
+				m_Player->SetClimbingLadder(true);
 			}
 		}
 
 		moveVector.Normalize();
-		if (m_Character->IsClimbingLadder())
+		if (m_Player->IsClimbingLadder())
 		{
 			// Slow down if climbing ladder
 			moveVector *= 0.08f;
@@ -112,12 +113,12 @@ void GameMain::Update( float delta_time )
 			moveVector *= 0.1f;
 		}
 
-		m_Character->Update(delta_time);
-		m_GameStage->TestCollision( m_Character, Vector3(moveVector, 0.0f) );
+		m_Player->Update(delta_time);
+		m_GameStage->TestCollision( m_Player, Vector3(moveVector, 0.0f) );
 	}
 
 	// Update camera position
-	Vector3 rel = m_Character->WorldPosition() - m_CameraPos;
+	Vector3 rel = m_Player->WorldPosition() - m_CameraPos;
 	float dist = sqrtf(rel.SqrdLen());
 	if (dist > 0.3f)
 		m_CameraPos += rel * dist * 0.05f;
@@ -141,7 +142,7 @@ void GameMain::Render()
 {
 	m_GameStage->RenderStage();
 
-	m_Character->Render();
+	m_Player->Render();
 
 	if (m_IsEditorMode)
 	{
@@ -188,6 +189,11 @@ Vector3 GameMain::GetCameraPos() const
 	return m_CameraPos;
 }
 
+Vector3 GameMain::GetPlayerPos() const
+{
+	return m_Player->WorldPosition();
+}
+
 void GameMain::GetMousePos( int* x, int* y )
 {
 	if (x) *x = m_MousePosX;
@@ -214,7 +220,10 @@ void GameMain::OnKeyPressed( int key_code )
 		m_GameStage->SetWorldview(key_code - GW_KEY_1);
 		break;
 	case GW_KEY_Z:
-		m_Character->Jump();
+		m_Player->Jump();
+		break;
+	case GW_KEY_C:
+		ProtoFeatureFlipBit(PROTO_FEATURE_CIRCLE_OF_TRUE_VIEW);
 		break;
 	case GW_KEY_P:
 		if (m_IsEditorMode)
@@ -248,7 +257,7 @@ void GameMain::OnMouseBtnReleased( GWMouseButton mbtn_code )
 void GameMain::UpdateDebugText()
 {
 	// Update debug info
-	Vector3 char_pos = m_Character->WorldPosition();
+	Vector3 char_pos = m_Player->WorldPosition();
 	int world_id = (int)m_GameStage->GetWorldview();
 
 	// Draw debug text
@@ -262,6 +271,28 @@ void GameMain::UpdateDebugText()
 			(int)floor(char_pos.y), (int)ceil(char_pos.y),
 			world_id,
 			m_MousePosX, m_MousePosY);
+}
+
+void GameMain::ProtoFeatureBitSet( int bits, bool val )
+{
+	if (val)
+	{
+		m_ProtoFeatureBits |= bits;
+	}
+	else
+	{
+		m_ProtoFeatureBits &= ~bits;
+	}
+}
+
+void GameMain::ProtoFeatureFlipBit( int bits )
+{
+	m_ProtoFeatureBits ^= bits;
+}
+
+bool GameMain::TestProtoFeatureBit( int bits ) const
+{
+	return (bits & m_ProtoFeatureBits) != 0;
 }
 
 GameMain* KleinGame()
