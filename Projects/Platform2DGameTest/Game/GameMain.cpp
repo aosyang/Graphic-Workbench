@@ -124,14 +124,20 @@ void GameMain::Update( float delta_time )
 		m_CameraPos += rel * dist * 0.05f;
 
 	if (m_IsEditorMode)
-	{
-		if (m_MBtnPressed[MBTN_LEFT])
+	{	
+		if ( m_MBtnPressed[MBTN_LEFT] && !m_MBtnPressed[MBTN_RIGHT])//Edit by YLL
+		//if (m_MBtnPressed[MBTN_LEFT])
 		{
 			m_GameStageEditor->PaintTileAtCursor();
 		}
-		else if (m_MBtnPressed[MBTN_RIGHT])
+		else if ( m_MBtnPressed[MBTN_RIGHT] )
 		{
-			m_GameStageEditor->PickupTileTypeAtCursor();
+			m_GameStageEditor->StartPicking();//Edit by YLL for right click pick mode
+			//m_GameStageEditor->PickupTileTypeAtCursor();
+		}
+		else 
+		{
+			m_GameStageEditor->EndPicking();//Add by YLL for right click pick mode
 		}
 	}
 

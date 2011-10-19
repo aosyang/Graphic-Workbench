@@ -19,6 +19,10 @@ public:
 	void SetGameStage(GameStage* stage);
 	GameStage* GetGameStage() const { return m_GameStage; }
 
+	//Add by YLL for right click picking mode
+	void StartPicking( bool bStart = true );
+	void EndPicking(){ StartPicking( false ); }
+
 	void PaintTileAtCursor();
 	void PickupTileTypeAtCursor();
 
@@ -27,6 +31,8 @@ private:
 
 	GameStage*			m_GameStage;
 	std::string			m_TileTypeToPaint;
+
+	bool				m_bPicking;
 };
 
 #endif // GameStageEditor_h__

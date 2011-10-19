@@ -82,6 +82,8 @@ struct StageGeomWireframeVertex
 // -----------------------------------------------------------
 // Game stage
 // -----------------------------------------------------------
+//Add by YLL
+#define TILE_TYPE_INFO_MAP std::map<int, TILE_TYPE_INFO>
 class GameStage
 {
 public:
@@ -96,6 +98,8 @@ public:
 	void Reset();
 	void TestCollision(Character* character, const Vector3& vecRel);
 
+	TILE_TYPE_INFO_MAP& GetTileTypeInfo(){ return m_TileId2TypeInfo; }//Add by YLL for stage editor
+	TextureManager& GetTextureManager(){ return m_TextureMgr; }//Add by YLL for stage editor
 	STAGE_GEOM* GetTileAtPoint(const Vector3& point);
 	TileUsageEnum GetStageGeomUsage(STAGE_GEOM* geom);
 	void SetWorldview(int world_id);
@@ -122,7 +126,8 @@ private:
 	int							m_TileTypeIndex;
 	std::map<std::string, int>
 								m_TileName2Id;
-	std::map<int, TILE_TYPE_INFO>
+	//Edit by YLL //std::map<int, TILE_TYPE_INFO>
+	TILE_TYPE_INFO_MAP
 								m_TileId2TypeInfo;
 };
 

@@ -7,7 +7,7 @@
 #include <d3dx9.h>
 
 GameStageEditor::GameStageEditor()
-: m_GameStage(NULL)
+: m_GameStage(NULL),m_bPicking(false)
 {
 
 }
@@ -28,12 +28,13 @@ void GameStageEditor::Render()
 	D3DXMatrixIdentity(&matWorld);
 	RenderSystem::Device()->SetTransform( D3DTS_WORLD, &matWorld );
 
-	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(Vector3(tile_pos, 0.0f));
-	if (geom)
-	{
-		DebugRenderStageGeom(geom);
-	}
-	else
+	//STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(Vector3(tile_pos, 0.0f));
+	//if (geom)
+	//{
+	//	DebugRenderStageGeom(geom);
+	//}
+	//else
+	if ( m_bPicking )
 	{
 		StageGeomWireframeVertex v[6] =
 		{
@@ -51,6 +52,47 @@ void GameStageEditor::Render()
 		RenderSystem::Device()->SetTexture(0, NULL);
 		RenderSystem::Device()->SetFVF(StageGeomWireframeFVF);
 		RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(StageGeomWireframeVertex));
+
+		TILE_TYPE_INFO_MAP& mapTileType = m_GameStage->GetTileTypeInfo();
+		int nTileType = mapTileType.size();
+
+		LPDIRECT3DVERTEXBUFFER9 vbuffer;
+		RenderSystem::Device()->CreateVertexBuffer(sizeof(StageGeomVertex) * 6, D3DUSAGE_WRITEONLY,
+			D3DFVF_XYZ|D3DFVF_TEX1, D3DPOOL_DEFAULT, &vbuffer, NULL);
+
+		int nTileLayoutWidth = nTileType > 5 ? 5 : nTileType;
+		for ( int i = 0; i < nTileType; ++i)
+		{
+			
+			float xBias = float(i % nTileLayoutWidth - (nTileLayoutWidth - 1) / 2);
+			float yBias = float(i / nTileLayoutWidth ) + 1.0f;
+
+			StageGeomVertex v[6] =
+			{
+				{ floorf(tile_pos.x) + xBias, floorf(tile_pos.y)+ yBias, 0.0f, 0.0f, 0.0f },
+				{ floorf(tile_pos.x) + xBias, ceilf(tile_pos.y) + yBias, 0.0f, 0.0f, 1.0f },
+				{ ceilf(tile_pos.x)  + xBias, ceilf(tile_pos.y) + yBias, 0.0f, 1.0f, 1.0f },
+
+				{ ceilf(tile_pos.x) + xBias, ceilf(tile_pos.y)  + yBias, 0.0f, 1.0f, 1.0f },
+				{ ceilf(tile_pos.x) + xBias, floorf(tile_pos.y) + yBias, 0.0f, 1.0f, 0.0f },
+				{ floorf(tile_pos.x)+ xBias, floorf(tile_pos.y) + yBias, 0.0f, 0.0f, 0.0f },
+			};
+			void* pData;
+			vbuffer->Lock(0, sizeof(StageGeomVertex) * 6, (void**)&pData, 0);
+			memcpy(pData, v, sizeof(StageGeomVertex) * 6);
+			vbuffer->Unlock();
+			
+			LPDIRECT3DTEXTURE9 tex = m_GameStage->GetTextureManager().GetD3DTexture(mapTileType[i].tex_id);
+			RenderSystem::Device()->SetTexture(0, tex);
+			RenderSystem::Device()->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
+			RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+			RenderSystem::Device()->SetStreamSource(0, vbuffer, 0, sizeof(StageGeomVertex));
+			RenderSystem::Device()->SetFVF(StageGeomFVF);
+			RenderSystem::Device()->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
+
+		}
+		vbuffer->Unlock();
+		vbuffer->Release();
 	}
 
 }
@@ -58,6 +100,24 @@ void GameStageEditor::Render()
 void GameStageEditor::SetGameStage( GameStage* stage )
 {
 	m_GameStage = stage;
+
+}
+
+
+void GameStageEditor::StartPicking( bool bStart )
+{
+	if ( m_bPicking != bStart )
+	{
+		m_bPicking = bStart;
+		if ( m_bPicking )
+		{
+			//TODO:start picking stuff
+		}
+		else
+		{
+			//TODO:stop picking stuff
+		}
+	}
 }
 
 void GameStageEditor::PaintTileAtCursor()
