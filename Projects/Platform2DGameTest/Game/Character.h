@@ -7,14 +7,6 @@
 
 typedef struct StageGeom STAGE_GEOM;
 
-struct ActorSpriteVertex
-{
-	float x, y, z;
-	DWORD color;
-};
-
-#define ActorSpriteFVF D3DFVF_XYZ|D3DFVF_DIFFUSE
-
 class Character
 {
 public:

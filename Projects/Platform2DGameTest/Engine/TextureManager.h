@@ -5,6 +5,9 @@
 #include <string>
 
 #include "RenderDevice.h"
+#include <d3d9.h>
+
+#include "GWSingleton.h"
 
 typedef struct TextureInfoType
 {
@@ -12,11 +15,10 @@ typedef struct TextureInfoType
 	LPDIRECT3DTEXTURE9	d3d_tex;
 } TEXTURE_INFO;
 
-class TextureManager
+class TextureManager : public GWSingleton<TextureManager>
 {
+	friend class GWSingleton<TextureManager>;
 public:
-	TextureManager();
-	~TextureManager();
 
 	void Reset();
 
@@ -25,6 +27,9 @@ public:
 	const char* GetTextureName(int id) const;
 
 	bool LoadTextureFromFile( const char* filename );
+
+private:
+	TextureManager();
 
 private:
 	int									m_TextureID;

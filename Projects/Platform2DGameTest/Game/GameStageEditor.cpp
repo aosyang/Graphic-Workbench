@@ -36,29 +36,13 @@ void GameStageEditor::Render()
 	//else
 	if ( m_bPicking )
 	{
-		StageGeomWireframeVertex v[6] =
-		{
-			{ floorf(tile_pos.x), floorf(tile_pos.y), 0.0f, 0xFFFFF200 },
-			{ floorf(tile_pos.x), ceilf(tile_pos.y), 0.0f, 0xFFFFF200 },
-			{ ceilf(tile_pos.x), ceilf(tile_pos.y), 0.0f, 0xFFFFF200 },
+		RenderSystem::DrawColoredSprite(Vector2(floorf(tile_pos.x), floorf(tile_pos.y)),
+										Vector2(ceilf(tile_pos.x), ceilf(tile_pos.y)),
+										0xFFFFF200, true);
 
-			{ ceilf(tile_pos.x), ceilf(tile_pos.y), 0.0f, 0xFFFFF200 },
-			{ ceilf(tile_pos.x), floorf(tile_pos.y), 0.0f, 0xFFFFF200 },
-			{ floorf(tile_pos.x), floorf(tile_pos.y), 0.0f, 0xFFFFF200 },
-		};
-
-		RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-
-		RenderSystem::Device()->SetTexture(0, NULL);
-		RenderSystem::Device()->SetFVF(StageGeomWireframeFVF);
-		RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(StageGeomWireframeVertex));
 
 		TILE_TYPE_INFO_MAP& mapTileType = m_GameStage->GetTileTypeInfo();
 		int nTileType = mapTileType.size();
-
-		LPDIRECT3DVERTEXBUFFER9 vbuffer;
-		RenderSystem::Device()->CreateVertexBuffer(sizeof(StageGeomVertex) * 6, D3DUSAGE_WRITEONLY,
-			D3DFVF_XYZ|D3DFVF_TEX1, D3DPOOL_DEFAULT, &vbuffer, NULL);
 
 		int nTileLayoutWidth = nTileType > 5 ? 5 : nTileType;
 		for ( int i = 0; i < nTileType; ++i)
@@ -67,32 +51,11 @@ void GameStageEditor::Render()
 			float xBias = float(i % nTileLayoutWidth - (nTileLayoutWidth - 1) / 2);
 			float yBias = float(i / nTileLayoutWidth ) + 1.0f;
 
-			StageGeomVertex v[6] =
-			{
-				{ floorf(tile_pos.x) + xBias, floorf(tile_pos.y)+ yBias, 0.0f, 0.0f, 0.0f },
-				{ floorf(tile_pos.x) + xBias, ceilf(tile_pos.y) + yBias, 0.0f, 0.0f, 1.0f },
-				{ ceilf(tile_pos.x)  + xBias, ceilf(tile_pos.y) + yBias, 0.0f, 1.0f, 1.0f },
-
-				{ ceilf(tile_pos.x) + xBias, ceilf(tile_pos.y)  + yBias, 0.0f, 1.0f, 1.0f },
-				{ ceilf(tile_pos.x) + xBias, floorf(tile_pos.y) + yBias, 0.0f, 1.0f, 0.0f },
-				{ floorf(tile_pos.x)+ xBias, floorf(tile_pos.y) + yBias, 0.0f, 0.0f, 0.0f },
-			};
-			void* pData;
-			vbuffer->Lock(0, sizeof(StageGeomVertex) * 6, (void**)&pData, 0);
-			memcpy(pData, v, sizeof(StageGeomVertex) * 6);
-			vbuffer->Unlock();
-			
-			LPDIRECT3DTEXTURE9 tex = m_GameStage->GetTextureManager().GetD3DTexture(mapTileType[i].tex_id);
-			RenderSystem::Device()->SetTexture(0, tex);
-			RenderSystem::Device()->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
-			RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-			RenderSystem::Device()->SetStreamSource(0, vbuffer, 0, sizeof(StageGeomVertex));
-			RenderSystem::Device()->SetFVF(StageGeomFVF);
-			RenderSystem::Device()->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
+			RenderSystem::DrawSprite(Vector2(floorf(tile_pos.x) + xBias, floorf(tile_pos.y)+ yBias),
+									 Vector2(ceilf(tile_pos.x)  + xBias, ceilf(tile_pos.y) + yBias),
+									 mapTileType[i].tex_id);
 
 		}
-		vbuffer->Unlock();
-		vbuffer->Release();
 	}
 
 }

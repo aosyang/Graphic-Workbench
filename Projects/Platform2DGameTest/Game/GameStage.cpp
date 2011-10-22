@@ -1,4 +1,5 @@
 #include "GameStage.h"
+#include "TextureManager.h"
 
 #include "../DXUT/DXUT.h"
 #include <string>
@@ -93,22 +94,9 @@ STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom)
 
 void DebugRenderStageGeom( STAGE_GEOM* geom )
 {
-	StageGeomWireframeVertex v[6] =
-	{
-		{ geom->bound.xMin, geom->bound.yMin, 0.0f, 0xFFFFF200 },
-		{ geom->bound.xMin, geom->bound.yMax, 0.0f, 0xFFFFF200 },
-		{ geom->bound.xMax, geom->bound.yMax, 0.0f, 0xFFFFF200 },
-
-		{ geom->bound.xMax, geom->bound.yMax, 0.0f, 0xFFFFF200 },
-		{ geom->bound.xMax, geom->bound.yMin, 0.0f, 0xFFFFF200 },
-		{ geom->bound.xMin, geom->bound.yMin, 0.0f, 0xFFFFF200 },
-	};
-
-	RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-
-	RenderSystem::Device()->SetTexture(0, NULL);
-	RenderSystem::Device()->SetFVF(StageGeomWireframeFVF);
-	RenderSystem::Device()->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(StageGeomWireframeVertex));
+	RenderSystem::DrawColoredSprite(Vector2(geom->bound.xMin, geom->bound.yMin),
+									Vector2(geom->bound.xMax, geom->bound.yMax),
+									0xFFFFF200, true);
 }
 
 GameStage::GameStage()
@@ -171,7 +159,7 @@ bool GameStage::SaveToFile( const char* filename )
 
 		tile_type_obj.SetString(1, iter->first.c_str());
 		tile_type_obj.SetString(2, TileUsageToString(m_TileId2TypeInfo[tile_id].usage));
-		tile_type_obj.SetString(3, m_TextureMgr.GetTextureName(tex_id));
+		tile_type_obj.SetString(3, TextureManager::Instance().GetTextureName(tex_id));
 
 		i++;
 	}
@@ -241,8 +229,6 @@ void GameStage::Reset()
 	STAGE_GEOM* geom;
 	for (geom = GetFirstStageGeom(); geom != NULL; )
 	{
-		geom->vbuffer->Release();
-
 		STAGE_GEOM* old_geom = geom;
 		geom = GetNextStageGeom(geom);
 		delete old_geom;
@@ -356,28 +342,6 @@ STAGE_GEOM* GameStage::AddStageGeom( int layer_id, const BoundBox& bound, const 
 
 	float geom_depth = (float)layer_id;
 
-	// build vertex buffer with vertex position as its own texture coordinate
-	StageGeomVertex v[6] =
-	{
-#if 0		// Use layer as depth
-		{ bound.xMin, bound.yMin, geom_depth, bound.xMin, bound.yMin },
-		{ bound.xMin, bound.yMax, geom_depth, bound.xMin, bound.yMax },
-		{ bound.xMax, bound.yMax, geom_depth, bound.xMax, bound.yMax },
-
-		{ bound.xMax, bound.yMax, geom_depth, bound.xMax, bound.yMax },
-		{ bound.xMax, bound.yMin, geom_depth, bound.xMax, bound.yMin },
-		{ bound.xMin, bound.yMin, geom_depth, bound.xMin, bound.yMin },
-#else
-		{ bound.xMin, bound.yMin, 0.0f, bound.xMin, bound.yMin },
-		{ bound.xMin, bound.yMax, 0.0f, bound.xMin, bound.yMax },
-		{ bound.xMax, bound.yMax, 0.0f, bound.xMax, bound.yMax },
-
-		{ bound.xMax, bound.yMax, 0.0f, bound.xMax, bound.yMax },
-		{ bound.xMax, bound.yMin, 0.0f, bound.xMax, bound.yMin },
-		{ bound.xMin, bound.yMin, 0.0f, bound.xMin, bound.yMin },
-#endif
-	};
-
 	// Find texture id by name
 	for (int i=0; i<GAME_WORLD_COUNT; i++)
 	{
@@ -391,14 +355,6 @@ STAGE_GEOM* GameStage::AddStageGeom( int layer_id, const BoundBox& bound, const 
 	}
 
 	geom->bound = bound;
-
-	RenderSystem::Device()->CreateVertexBuffer(sizeof(StageGeomVertex) * 6, D3DUSAGE_WRITEONLY,
-		D3DFVF_XYZ|D3DFVF_TEX1, D3DPOOL_DEFAULT, &geom->vbuffer, NULL);
-
-	void* pData;
-	geom->vbuffer->Lock(0, sizeof(StageGeomVertex) * 6, (void**)&pData, 0);
-	memcpy(pData, v, sizeof(StageGeomVertex) * 6);
-	geom->vbuffer->Unlock();
 
 	return geom;
 }
@@ -419,10 +375,10 @@ void GameStage::ScriptLoadTileTypes( const LuaPlus::LuaObject* script )
 		const char* tex_name = (*script)[i+1][3].GetString();
 
 		int texID = -1;
-		if ( (texID=m_TextureMgr.GetTextureID(tex_name)) == -1)
+		if ( (texID=TextureManager::Instance().GetTextureID(tex_name)) == -1)
 		{
-			if (m_TextureMgr.LoadTextureFromFile(tex_name))
-				texID = m_TextureMgr.GetTextureID(tex_name);
+			if (TextureManager::Instance().LoadTextureFromFile(tex_name))
+				texID = TextureManager::Instance().GetTextureID(tex_name);
 		}
 
 		tile_info.tex_id = texID;
@@ -487,24 +443,8 @@ void GameStage::RenderStageGeom( STAGE_GEOM* geom )
 
 	int tex_id = m_TileId2TypeInfo[tile_id].tex_id;
 
-	if (tex_id!=-1)
-	{
-		LPDIRECT3DTEXTURE9 tex = m_TextureMgr.GetD3DTexture(tex_id);
-		RenderSystem::Device()->SetTexture(0, tex);
-
-		// enable mip-map for texture
-		RenderSystem::Device()->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
-	}
-	else
-	{
-		RenderSystem::Device()->SetTexture(0, NULL);
-	}
-
-	RenderSystem::Device()->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-
-	RenderSystem::Device()->SetStreamSource(0, geom->vbuffer, 0, sizeof(StageGeomVertex));
-	RenderSystem::Device()->SetFVF(StageGeomFVF);
-	RenderSystem::Device()->DrawPrimitive(D3DPT_TRIANGLELIST, 0, 2);
+	RenderSystem::DrawSprite(Vector2(geom->bound.xMin, geom->bound.yMin),
+							 Vector2(geom->bound.xMax, geom->bound.yMax), tex_id);
 
 	//DebugRenderStageGeom(geom);
 }

@@ -275,6 +275,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Engine\GWSingleton.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Engine\RenderDevice.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Engine\RenderDevice.h"
 				>
 			</File>

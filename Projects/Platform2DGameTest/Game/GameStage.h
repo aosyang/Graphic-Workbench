@@ -2,7 +2,6 @@
 #define GameStage_h__
 
 #include "RenderDevice.h"
-#include "TextureManager.h"
 #include "BoundBox.h"
 #include "Character.h"
 
@@ -52,7 +51,6 @@ typedef struct StageGeom
 {
 	BoundBox					bound;
 	int							tile_type_id[GAME_WORLD_COUNT];
-	LPDIRECT3DVERTEXBUFFER9		vbuffer;
 
 	StageGeom*					next;
 } STAGE_GEOM;
@@ -62,22 +60,6 @@ STAGE_GEOM* GetFirstStageGeom();
 STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom);
 
 void DebugRenderStageGeom(STAGE_GEOM* geom);
-
-struct StageGeomVertex
-{
-	float x, y, z;
-	float u, v;
-};
-
-#define StageGeomFVF D3DFVF_XYZ|D3DFVF_TEX1
-
-struct StageGeomWireframeVertex
-{
-	float x, y, z;
-	DWORD color;
-};
-
-#define StageGeomWireframeFVF D3DFVF_XYZ|D3DFVF_DIFFUSE
 
 // -----------------------------------------------------------
 // Game stage
@@ -99,7 +81,6 @@ public:
 	void TestCollision(Character* character, const Vector3& vecRel);
 
 	TILE_TYPE_INFO_MAP& GetTileTypeInfo(){ return m_TileId2TypeInfo; }//Add by YLL for stage editor
-	TextureManager& GetTextureManager(){ return m_TextureMgr; }//Add by YLL for stage editor
 	STAGE_GEOM* GetTileAtPoint(const Vector3& point);
 	TileUsageEnum GetStageGeomUsage(STAGE_GEOM* geom);
 	void SetWorldview(int world_id);
@@ -120,7 +101,6 @@ private:
 	TileUsageEnum GetTileUsageById(int id);
 
 private:
-	TextureManager				m_TextureMgr;
 	GameWorldviewEnum			m_ActiveWorld;
 
 	int							m_TileTypeIndex;

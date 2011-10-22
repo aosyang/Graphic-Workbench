@@ -7,6 +7,7 @@
 #include "GameDef.h"
 
 #include "GameStageEditor.h"
+#include "TextureManager.h"
 
 #include <d3dx9.h>
 
@@ -38,6 +39,8 @@ void GameMain::Reset()
 	GW_SAFE_DELETE(m_GameStageEditor);
 	GW_SAFE_DELETE(m_GameStage);
 	GW_SAFE_DELETE(m_Player);
+
+	TextureManager::Instance().Reset();
 }
 
 void GameMain::Startup()

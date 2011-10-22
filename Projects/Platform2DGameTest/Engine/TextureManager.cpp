@@ -6,11 +6,6 @@ TextureManager::TextureManager()
 {
 }
 
-TextureManager::~TextureManager()
-{
-	Reset();
-}
-
 void TextureManager::Reset()
 {
 	TextureMap::iterator iter;
