@@ -92,7 +92,7 @@ void GameStageEditor::PaintTileAtCursor()
 
 	Vector2 tile_pos = CursorToTilePos(mouse_xpos, mouse_ypos);
 
-	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(Vector3(tile_pos, 0.0f));
+	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint( tile_pos );
 
 	// No geom found at point, create a new one
 	if (!geom)
@@ -121,7 +121,7 @@ void GameStageEditor::PickupTileTypeAtCursor()
 
 	Vector2 tile_pos = CursorToTilePos(mouse_xpos, mouse_ypos);
 
-	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(Vector3(tile_pos, 0.0f));
+	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint( tile_pos );
 	if (geom)
 	{
 		const char* tile_name = m_GameStage->GetTileNameById(geom->tile_type_id[m_GameStage->GetWorldview()]);
@@ -138,7 +138,7 @@ void GameStageEditor::PickupTileTypeAtCursor()
 
 Vector2 GameStageEditor::CursorToTilePos( int x_pos, int y_pos )
 {
-	Vector3 cam_pos = KleinGame()->GetCameraPos();
+	Vector2 cam_pos = KleinGame()->GetCameraPos();
 
 	// Render tile position at cursor
 	float height = tanf(KLEIN_CAMERA_FOVY / 2.0f) * abs(KLEIN_CAMERA_ZPOS);

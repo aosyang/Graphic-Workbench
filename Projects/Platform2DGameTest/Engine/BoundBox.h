@@ -1,8 +1,7 @@
 #ifndef BoundBox_h__
 #define BoundBox_h__
 
-class Vector2;
-class Vector3;
+#include "Math/GWVectors.h"
 
 class BoundBox
 {
@@ -14,6 +13,10 @@ public:
 		: xMin(0.0f), yMin(0.0f), xMax(0.0f), yMax(0.0f)
 	{}
 
+	BoundBox(const Vector2& vMin, const Vector2& vMax)
+		: xMin(vMin.x), yMin(vMin.y), xMax(vMax.x), yMax(vMax.y)
+	{}
+
 	BoundBox(float _xMin, float _yMin, float _xMax, float _yMax)
 		: xMin(_xMin), yMin(_yMin), xMax(_xMax), yMax(_yMax)
 	{}
@@ -22,7 +25,7 @@ public:
 	bool TestBoxCollision(const BoundBox& box) const;
 	Vector2 GetCentrePoint() const;
 
-	BoundBox Translate(const Vector3& rel) const;
+	BoundBox Translate(const Vector2& rel) const;
 };
 
 #endif // BoundBox_h__

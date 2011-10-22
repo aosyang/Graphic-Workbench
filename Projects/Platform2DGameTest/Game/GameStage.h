@@ -78,10 +78,10 @@ public:
 	// Render entire stage
 	void RenderStage();
 	void Reset();
-	void TestCollision(Character* character, const Vector3& vecRel);
+	void TestCollision(Character* character, const Vector2& vecRel);
 
 	TILE_TYPE_INFO_MAP& GetTileTypeInfo(){ return m_TileId2TypeInfo; }//Add by YLL for stage editor
-	STAGE_GEOM* GetTileAtPoint(const Vector3& point);
+	STAGE_GEOM* GetTileAtPoint(const Vector2& point);
 	TileUsageEnum GetStageGeomUsage(STAGE_GEOM* geom);
 	void SetWorldview(int world_id);
 	GameWorldviewEnum GetWorldview() const { return m_ActiveWorld; }

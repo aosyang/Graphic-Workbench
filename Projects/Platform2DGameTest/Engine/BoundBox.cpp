@@ -17,7 +17,7 @@ Vector2 BoundBox::GetCentrePoint() const
 	return Vector2(0.5f * (xMin + xMax), 0.5f * (yMin + yMax));
 }
 
-BoundBox BoundBox::Translate( const Vector3& rel ) const
+BoundBox BoundBox::Translate( const Vector2& rel ) const
 {
 	return BoundBox(this->xMin + rel.x,
 					this->yMin + rel.y,

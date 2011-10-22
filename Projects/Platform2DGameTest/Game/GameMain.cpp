@@ -18,7 +18,7 @@ GameMain::GameMain()
   m_GameStageEditor(NULL),
   m_MousePosX(0),
   m_MousePosY(0),
-  m_CameraPos(Vector3::ZERO),
+  m_CameraPos(Vector2::ZERO),
   m_ProtoFeatureBits(0)
 {
 	for (int i=0; i<0xFF; i++)
@@ -77,7 +77,7 @@ void GameMain::Update( float delta_time )
 		moveVector.Normalize();
 		moveVector *= 0.5f;
 
-		m_Player->Translate(Vector3(moveVector, 0.0f));
+		m_Player->Translate( moveVector );
 		m_Player->Velocity().y = 0.0f;
 	}
 	else 
@@ -117,11 +117,11 @@ void GameMain::Update( float delta_time )
 		}
 
 		m_Player->Update(delta_time);
-		m_GameStage->TestCollision( m_Player, Vector3(moveVector, 0.0f) );
+		m_GameStage->TestCollision( m_Player, moveVector );
 	}
 
 	// Update camera position
-	Vector3 rel = m_Player->WorldPosition() - m_CameraPos;
+	Vector2 rel = m_Player->WorldPosition() - m_CameraPos;
 	float dist = sqrtf(rel.SqrdLen());
 	if (dist > 0.3f)
 		m_CameraPos += rel * dist * 0.05f;
@@ -193,12 +193,12 @@ void GameMain::SetMousePosition( int x_pos, int y_pos )
 	m_MousePosY = y_pos;
 }
 
-Vector3 GameMain::GetCameraPos() const
+Vector2 GameMain::GetCameraPos() const
 {
 	return m_CameraPos;
 }
 
-Vector3 GameMain::GetPlayerPos() const
+Vector2 GameMain::GetPlayerPos() const
 {
 	return m_Player->WorldPosition();
 }
@@ -266,7 +266,7 @@ void GameMain::OnMouseBtnReleased( GWMouseButton mbtn_code )
 void GameMain::UpdateDebugText()
 {
 	// Update debug info
-	Vector3 char_pos = m_Player->WorldPosition();
+	Vector2 char_pos = m_Player->WorldPosition();
 	int world_id = (int)m_GameStage->GetWorldview();
 
 	// Draw debug text

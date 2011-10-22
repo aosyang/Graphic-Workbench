@@ -245,10 +245,10 @@ void GameStage::Reset()
 	m_TileId2TypeInfo.clear();
 }
 
-void GameStage::TestCollision( Character* character, const Vector3& vecRel )
+void GameStage::TestCollision( Character* character, const Vector2& vecRel )
 {
 	bool result = false;
-	Vector3 rel = vecRel + character->Velocity();
+	Vector2 rel = vecRel + character->Velocity();
 
 	std::vector<STAGE_GEOM*> col_group;
 
@@ -266,7 +266,7 @@ void GameStage::TestCollision( Character* character, const Vector3& vecRel )
 
 	if (!col_group.empty())
 	{
-		Vector3 rel_x, rel_y;
+		Vector2 rel_x, rel_y;
 		rel_x = rel;
 		rel_y = rel;
 
@@ -291,12 +291,12 @@ void GameStage::TestCollision( Character* character, const Vector3& vecRel )
 	character->Translate(rel);
 }
 
-STAGE_GEOM* GameStage::GetTileAtPoint( const Vector3& point )
+STAGE_GEOM* GameStage::GetTileAtPoint( const Vector2& point )
 {
 	STAGE_GEOM* geom;
 	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 	{
-		if ( geom->bound.IsPointInsideBox(Vector2(point.x, point.y)) )
+		if ( geom->bound.IsPointInsideBox( point ) )
 			return geom;
 	}
 
@@ -430,7 +430,7 @@ void GameStage::RenderStageGeom( STAGE_GEOM* geom )
 	if (KleinGame()->TestProtoFeatureBit(PROTO_FEATURE_CIRCLE_OF_TRUE_VIEW))
 	{
 		Vector2 geom_centre = geom->bound.GetCentrePoint();
-		float sqrd_dist = (Vector3(geom_centre, 0.0f) - KleinGame()->GetPlayerPos()).SqrdLen();
+		float sqrd_dist = ( geom_centre - KleinGame()->GetPlayerPos() ).SqrdLen();
 
 		// Revert geoms far from player
 		if (sqrd_dist > 25) world_id = 1 - world_id;

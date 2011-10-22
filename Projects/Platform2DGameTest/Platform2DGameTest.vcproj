@@ -311,6 +311,14 @@
 			Name="Game"
 			>
 			<File
+				RelativePath=".\Game\Actor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Game\Actor.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Game\AppMain.cpp"
 				>
 			</File>

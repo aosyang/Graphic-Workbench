@@ -27,6 +27,7 @@ public:
 	inline Vector2 operator*= (float val) { x *= val; y *= val; return *this; }
 
 	void Normalize();
+	inline float SqrdLen() const { return x * x + y * y; }
 
 	static const Vector2 ZERO;
 };

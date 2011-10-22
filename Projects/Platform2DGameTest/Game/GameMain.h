@@ -33,8 +33,8 @@ public:
 	void SetMouseBtnState(GWMouseButton mbtn_code, bool btn_down);
 	void SetMousePosition(int x_pos, int y_pos);
 
-	Vector3 GetCameraPos() const;
-	Vector3 GetPlayerPos() const;
+	Vector2 GetCameraPos() const;
+	Vector2 GetPlayerPos() const;
 	void GetMousePos(int* x, int* y);
 
 	const char* GetDebugText() const;
@@ -64,7 +64,7 @@ private:
 	GameStageEditor*	m_GameStageEditor;
 	char				m_DebugText[256];
 
-	Vector3				m_CameraPos;
+	Vector2				m_CameraPos;
 
 	int					m_ProtoFeatureBits;
 };

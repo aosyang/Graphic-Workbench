@@ -183,7 +183,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 	D3DXMatrixIdentity(&matWorld);
 	pd3dDevice->SetTransform( D3DTS_WORLD, &matWorld );
 
-	Vector3 cam_pos = KleinGame()->GetCameraPos();
+	Vector2 cam_pos = KleinGame()->GetCameraPos();
 
 	// Set up our view matrix. A view matrix can be defined given an eye point,
 	// a point to lookat, and a direction for which way is up. Here, we set the
