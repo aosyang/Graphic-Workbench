@@ -5,27 +5,89 @@
 
 #include <d3dx9.h>
 
+static Actor*	ActorListHead = NULL;
+static Actor*	ActorListTail = NULL;
+
+Actor* GetFirstActor()
+{
+	return ActorListHead;
+}
+
+Actor* GetNextActor( Actor* actor )
+{
+	return actor->next;
+}
+
+void AddActorToGame( Actor* actor )
+{
+	if (ActorListTail == NULL)
+	{
+		// Build new linked list
+		ActorListHead = actor;
+		ActorListTail = actor;
+	}
+	else
+	{
+		// Add new actor to the tail
+		ActorListTail->next = actor;
+		ActorListTail = actor;
+	}
+}
+
+void RemoveActorFromGame( Actor* actor )
+{
+	if ( actor == NULL ) return;
+
+	Actor* actor_elem = GetFirstActor();
+
+	if ( ActorListHead == actor )
+	{
+		if ( ActorListTail == ActorListHead )
+		{
+			// Last element, clean the list
+			ActorListHead = ActorListTail = NULL;
+		}
+		else
+		{
+			ActorListHead = ActorListHead->next;
+		}
+		
+		delete actor;
+
+		return;
+	}
+
+	while ( actor_elem )
+	{
+		if ( actor_elem->next == actor )
+		{
+			actor_elem->next = actor->next;
+
+			// Move tail pointer forward if tail removed
+			if ( ActorListTail == actor )
+				ActorListTail = actor_elem;
+
+			delete actor;
+			return;
+		}
+
+		actor_elem = GetNextActor( actor_elem );
+	}
+}
+
 Actor::Actor()
 : m_Position(0.0f, 0.0f),
-  m_Velocity(Vector2::ZERO)
+  m_Velocity(Vector2::ZERO),
+  m_MoveController(0.0f, 0.0f),
+  next(NULL)
 {
-	m_Bound = BoundBox(-0.5f, -0.5f, 0.5f, 0.5f);
 }
 
-void Actor::Render()
-{
-	D3DXMATRIXA16 transform;
-	D3DXMatrixTranslation(&transform, m_Position.x, m_Position.y, 0.0f);
-	RenderSystem::Device()->SetTransform( D3DTS_WORLD, &transform );
-
-	RenderSystem::DrawColoredSprite(Vector2(-0.5f, -0.5f), Vector2(0.5f, 0.5f), 0xF2FFF200);
-}
-
-bool Actor::TestCollision( STAGE_GEOM* stage_geom, const Vector2& new_pos_rel /*= Vector2::ZERO*/ ) const
+bool Actor::TestCollision( const BoundBox& bound, const Vector2& new_pos_rel /*= Vector2::ZERO*/ ) const
 {
 	BoundBox bb = m_Bound.Translate(m_Position + new_pos_rel);
 
-	return bb.TestBoxCollision(stage_geom->bound);
+	return bb.TestBoxCollision(bound);
 }
 
 bool Actor::DoCollisionMove( const BoundBox& other, const Vector2& input, Vector2* output )

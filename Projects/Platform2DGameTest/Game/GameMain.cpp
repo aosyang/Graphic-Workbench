@@ -38,7 +38,12 @@ void GameMain::Reset()
 {
 	GW_SAFE_DELETE(m_GameStageEditor);
 	GW_SAFE_DELETE(m_GameStage);
-	GW_SAFE_DELETE(m_Player);
+
+	Actor* actor;
+	while ( actor = GetFirstActor() )
+	{
+		RemoveActorFromGame( actor );
+	}
 
 	TextureManager::Instance().Reset();
 }
@@ -48,7 +53,12 @@ void GameMain::Startup()
 	m_GameStage = new GameStage;
 	m_GameStage->LoadFromFile("Stage.lua");
 
-	m_Player = new Character;
+	// Create player
+	m_Player = CreatePlayer();
+
+	// Create a patient for test
+	m_Patient = CreatePatient();
+	m_Patient->SetPosition( Vector2(5.0f, 0.0f) );
 
 	m_GameStageEditor = new GameStageEditor;
 	m_GameStageEditor->SetGameStage(m_GameStage);
@@ -61,10 +71,13 @@ void GameMain::Shutdown()
 
 void GameMain::Update( float delta_time )
 {
-	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(m_Player->WorldPosition());
+	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(m_Player->GetPosition());
 	TileUsageEnum player_pos_type = geom ? m_GameStage->GetStageGeomUsage(geom) : TILE_USAGE_VOID;
 
 	Vector2 moveVector(0.0f, 0.0f);
+
+	// Reset player movement control
+	m_Player->MoveController() = moveVector;
 
 	if (m_IsEditorMode)
 	{
@@ -98,10 +111,13 @@ void GameMain::Update( float delta_time )
 		}
 		else
 		{
-			// Climb up if player stands near by a ladder
-			if (m_KeyPressed[GW_KEY_UP] && player_pos_type == TILE_USAGE_LADDER)
+			if (m_KeyPressed[GW_KEY_UP])
 			{
-				m_Player->SetClimbingLadder(true);
+				// Climb up if player stands near by a ladder
+				if (player_pos_type == TILE_USAGE_LADDER)
+					m_Player->SetClimbingLadder(true);
+
+				// TODO: Interactive with actors
 			}
 		}
 
@@ -116,12 +132,20 @@ void GameMain::Update( float delta_time )
 			moveVector *= 0.1f;
 		}
 
-		m_Player->Update(delta_time);
-		m_GameStage->TestCollision( m_Player, moveVector );
+		m_Player->MoveController() = moveVector;
+
+		Actor* actor = GetFirstActor();
+		while ( actor )
+		{
+			actor->Update( delta_time );
+			m_GameStage->TestCollision( actor );
+
+			actor = GetNextActor( actor );
+		}
 	}
 
 	// Update camera position
-	Vector2 rel = m_Player->WorldPosition() - m_CameraPos;
+	Vector2 rel = m_Player->GetPosition() - m_CameraPos;
 	float dist = sqrtf(rel.SqrdLen());
 	if (dist > 0.3f)
 		m_CameraPos += rel * dist * 0.05f;
@@ -150,6 +174,15 @@ void GameMain::Update( float delta_time )
 void GameMain::Render()
 {
 	m_GameStage->RenderStage();
+
+	// Render actors
+	Actor* actor = GetFirstActor();
+	while ( actor )
+	{
+		actor->Render();
+
+		actor = GetNextActor( actor );
+	}
 
 	m_Player->Render();
 
@@ -200,7 +233,7 @@ Vector2 GameMain::GetCameraPos() const
 
 Vector2 GameMain::GetPlayerPos() const
 {
-	return m_Player->WorldPosition();
+	return m_Player->GetPosition();
 }
 
 void GameMain::GetMousePos( int* x, int* y )
@@ -266,7 +299,7 @@ void GameMain::OnMouseBtnReleased( GWMouseButton mbtn_code )
 void GameMain::UpdateDebugText()
 {
 	// Update debug info
-	Vector2 char_pos = m_Player->WorldPosition();
+	Vector2 char_pos = m_Player->GetPosition();
 	int world_id = (int)m_GameStage->GetWorldview();
 
 	// Draw debug text

@@ -8,7 +8,8 @@
 
 class GameStageEditor;
 class GameStage;
-class Character;
+class Player;
+class Patient;
 
 enum PrototypeFeatureEnum
 {
@@ -54,7 +55,8 @@ private:
 
 private:
 	GameStage*			m_GameStage;
-	Character*			m_Player;
+	Player*				m_Player;
+	Patient*			m_Patient;
 
 	bool				m_KeyPressed[0xFF];		// Keep the press state of each key
 	bool				m_MBtnPressed[MBTN_COUNT];

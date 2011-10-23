@@ -5,9 +5,25 @@
 #include <d3dx9.h>
 
 // define size of a character
-float Character::m_sCharSize = 0.8f;
+float Player::m_sCharSize = 0.8f;
 
-Character::Character()
+Player* CreatePlayer()
+{
+	Player* player = new Player;
+	AddActorToGame(player);
+
+	return player;
+}
+
+Patient* CreatePatient()
+{
+	Patient* patient = new Patient;
+	AddActorToGame(patient);
+
+	return patient;
+}
+
+Player::Player()
 : m_CanJump(false),
   m_ClimbingLadder(false)
 {
@@ -15,7 +31,7 @@ Character::Character()
 						0.5f * m_sCharSize, 0.5f * m_sCharSize);
 }
 
-void Character::Render()
+void Player::Render()
 {
 	D3DXMATRIXA16 transform;
 	D3DXMatrixTranslation(&transform, m_Position.x, m_Position.y, 0.0f);
@@ -26,7 +42,7 @@ void Character::Render()
 									0xFFFFF200);
 }
 
-void Character::Update( float delta_time )
+void Player::Update( float delta_time )
 {
 	if (m_ClimbingLadder)
 	{
@@ -41,7 +57,7 @@ void Character::Update( float delta_time )
 	m_CanJump = false;
 }
 
-void Character::Jump()
+void Player::Jump()
 {
 	if (m_ClimbingLadder)
 	{
@@ -53,13 +69,24 @@ void Character::Jump()
 	}
 }
 
-void Character::OnHitTop()
-{
-	Actor::OnHitTop();
-}
-
-void Character::OnHitGround()
+void Player::OnHitGround()
 {
 	Actor::OnHitGround();
 	m_CanJump = true;
+}
+
+Patient::Patient()
+{
+	m_Bound = BoundBox(-0.45f, -0.45f, 0.45f, 0.45f);
+}
+
+void Patient::Render()
+{
+	D3DXMATRIXA16 transform;
+	D3DXMatrixTranslation(&transform, m_Position.x, m_Position.y, 0.0f);
+	RenderSystem::Device()->SetTransform( D3DTS_WORLD, &transform );
+
+	RenderSystem::DrawColoredSprite(Vector2(-0.45f, -0.45f),
+									Vector2(0.45f, 0.45f),
+									0xFF00FFF2);
 }

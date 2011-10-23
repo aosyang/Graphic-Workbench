@@ -5,13 +5,20 @@
 
 typedef struct StageGeom STAGE_GEOM;
 
-class Character : public Actor
+class Player;
+class Patient;
+
+Player* CreatePlayer();
+Patient* CreatePatient();
+
+class Player : public Actor
 {
+	friend Player* CreatePlayer();
 public:
-	Character();
+	Player();
 
 	virtual void Render();
-	virtual void Character::Update( float delta_time );
+	virtual void Update( float delta_time );
 
 	void Jump();
 
@@ -20,13 +27,22 @@ public:
 
 private:
 
-	void OnHitTop();
 	void OnHitGround();
 
 	bool				m_CanJump;
 	bool				m_ClimbingLadder;
 
 	static float		m_sCharSize;
+};
+
+class Patient : public Actor
+{
+	friend Patient* CreatePatient();
+public:
+	virtual void Render();
+
+protected:
+	Patient();
 };
 
 #endif // Character_h__

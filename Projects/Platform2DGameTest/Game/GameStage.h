@@ -3,7 +3,7 @@
 
 #include "RenderDevice.h"
 #include "BoundBox.h"
-#include "Character.h"
+#include "Actor.h"
 
 #include <map>
 #include <string>
@@ -78,7 +78,7 @@ public:
 	// Render entire stage
 	void RenderStage();
 	void Reset();
-	void TestCollision(Character* character, const Vector2& vecRel);
+	void TestCollision(Actor* character);
 
 	TILE_TYPE_INFO_MAP& GetTileTypeInfo(){ return m_TileId2TypeInfo; }//Add by YLL for stage editor
 	STAGE_GEOM* GetTileAtPoint(const Vector2& point);

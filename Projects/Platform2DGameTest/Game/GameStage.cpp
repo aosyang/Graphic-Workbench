@@ -245,10 +245,10 @@ void GameStage::Reset()
 	m_TileId2TypeInfo.clear();
 }
 
-void GameStage::TestCollision( Character* character, const Vector2& vecRel )
+void GameStage::TestCollision( Actor* actor )
 {
 	bool result = false;
-	Vector2 rel = vecRel + character->Velocity();
+	Vector2 rel = actor->MoveController() + actor->Velocity();
 
 	std::vector<STAGE_GEOM*> col_group;
 
@@ -260,7 +260,7 @@ void GameStage::TestCollision( Character* character, const Vector2& vecRel )
 		if ( GetTileUsageById(geom->tile_type_id[m_ActiveWorld]) != TILE_USAGE_SOLID )
 			continue;
 
-		if (character->TestCollision(geom, rel))
+		if (actor->TestCollision(geom->bound, rel))
 			col_group.push_back(geom);
 	}
 
@@ -277,18 +277,18 @@ void GameStage::TestCollision( Character* character, const Vector2& vecRel )
 		// Test collision move in x dir and y dir separately
 		for ( iter = col_group.begin(); iter != col_group.end(); iter++ )
 		{
-			result |= character->DoCollisionMove((*iter)->bound, rel_y, &rel_y);
+			result |= actor->DoCollisionMove((*iter)->bound, rel_y, &rel_y);
 		}
 
 		rel = rel_x + rel_y;
 
 		for ( iter = col_group.begin(); iter != col_group.end(); iter++ )
 		{
-			result |= character->DoCollisionMove((*iter)->bound, rel, &rel);
+			result |= actor->DoCollisionMove((*iter)->bound, rel, &rel);
 		}
 	}
 
-	character->Translate(rel);
+	actor->Translate(rel);
 }
 
 STAGE_GEOM* GameStage::GetTileAtPoint( const Vector2& point )
