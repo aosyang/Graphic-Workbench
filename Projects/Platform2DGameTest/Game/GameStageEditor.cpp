@@ -7,7 +7,9 @@
 #include <d3dx9.h>
 
 GameStageEditor::GameStageEditor()
-: m_GameStage(NULL),m_bPicking(false)
+: m_GameStage(NULL),
+  m_bPicking(false),
+  m_TileMenuPos(0.0f, 0.0f)
 {
 
 }
@@ -36,28 +38,24 @@ void GameStageEditor::Render()
 	//else
 	if ( m_bPicking )
 	{
-		RenderSystem::DrawColoredSprite(Vector2(floorf(tile_pos.x), floorf(tile_pos.y)),
-										Vector2(ceilf(tile_pos.x), ceilf(tile_pos.y)),
-										0xFFFFF200, true);
-
-
 		TILE_TYPE_INFO_MAP& mapTileType = m_GameStage->GetTileTypeInfo();
 		int nTileType = mapTileType.size();
 
 		int nTileLayoutWidth = nTileType > 5 ? 5 : nTileType;
 		for ( int i = 0; i < nTileType; ++i)
 		{
-			
 			float xBias = float(i % nTileLayoutWidth - (nTileLayoutWidth - 1) / 2);
 			float yBias = float(i / nTileLayoutWidth ) + 1.0f;
 
-			RenderSystem::DrawSprite(Vector2(floorf(tile_pos.x) + xBias, floorf(tile_pos.y)+ yBias),
-									 Vector2(ceilf(tile_pos.x)  + xBias, ceilf(tile_pos.y) + yBias),
+			RenderSystem::DrawSprite(Vector2(floorf(m_TileMenuPos.x) + xBias, floorf(m_TileMenuPos.y)+ yBias),
+									 Vector2(ceilf(m_TileMenuPos.x)  + xBias, ceilf(m_TileMenuPos.y) + yBias),
 									 mapTileType[i].tex_id);
-
 		}
-	}
 
+		RenderSystem::DrawColoredSprite(Vector2(floorf(tile_pos.x), floorf(tile_pos.y)),
+										Vector2(ceilf(tile_pos.x), ceilf(tile_pos.y)),
+										0xFFFFF200, true);
+	}
 }
 
 void GameStageEditor::SetGameStage( GameStage* stage )
@@ -72,13 +70,45 @@ void GameStageEditor::StartPicking( bool bStart )
 	if ( m_bPicking != bStart )
 	{
 		m_bPicking = bStart;
+
+		int mouse_xpos, mouse_ypos;
+		KleinGame()->GetMousePos(&mouse_xpos, &mouse_ypos);
+		Vector2 tile_pos = CursorToTilePos(mouse_xpos, mouse_ypos);
+
 		if ( m_bPicking )
 		{
-			//TODO:start picking stuff
+			// start picking stuff
+
+			m_TileMenuPos = tile_pos;
 		}
 		else
 		{
-			//TODO:stop picking stuff
+			// stop picking stuff
+			TILE_TYPE_INFO_MAP& mapTileType = m_GameStage->GetTileTypeInfo();
+			int nTileType = mapTileType.size();
+
+			int nTileLayoutWidth = nTileType > 5 ? 5 : nTileType;
+			int i;
+			for ( i = 0; i < nTileType; ++i)
+			{
+				float xBias = float(i % nTileLayoutWidth - (nTileLayoutWidth - 1) / 2);
+				float yBias = float(i / nTileLayoutWidth ) + 1.0f;
+
+				if ( tile_pos.x >= floorf(m_TileMenuPos.x) + xBias &&
+					 tile_pos.x <= ceilf(m_TileMenuPos.x)  + xBias &&
+					 tile_pos.y >= floorf(m_TileMenuPos.y) + yBias &&
+					 tile_pos.y <= ceilf(m_TileMenuPos.y) + yBias )
+				{
+					m_TileTypeToPaint = m_GameStage->GetTileNameById(i);
+					break;
+				}
+			}
+
+			// Nothing picked, pick null
+			if ( i == nTileType )
+			{
+				m_TileTypeToPaint = "";
+			}
 		}
 	}
 }

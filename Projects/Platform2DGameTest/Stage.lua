@@ -1776,7 +1776,7 @@ Stage =
 	
 		{
 			"FIRE",
-			"SOLID",
+			"HURT",
 			"Data/Fire.tga",
 		},
 	},

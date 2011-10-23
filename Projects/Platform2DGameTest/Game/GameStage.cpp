@@ -21,6 +21,7 @@ TILE_USAGE_TABLE tile_usage_table[] =
 {
 	{ TILE_USAGE_SOLID,			"SOLID"		},
 	{ TILE_USAGE_LADDER,		"LADDER"	},
+	{ TILE_USAGE_TRIGGER_HURT,	"HURT"		},
 	{ TILE_USAGE_END,			""			},
 };
 

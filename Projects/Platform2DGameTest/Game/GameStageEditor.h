@@ -33,6 +33,7 @@ private:
 	std::string			m_TileTypeToPaint;
 
 	bool				m_bPicking;
+	Vector2				m_TileMenuPos;
 };
 
 #endif // GameStageEditor_h__
