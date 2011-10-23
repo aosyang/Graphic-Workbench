@@ -1,6 +1,7 @@
 #include "Character.h"
 #include "BoundBox.h"
 #include "GameStage.h"
+#include "GameMain.h"
 
 #include <d3dx9.h>
 
@@ -76,6 +77,7 @@ void Player::OnHitGround()
 }
 
 Patient::Patient()
+: m_WorldId(1)
 {
 	m_Bound = BoundBox(-0.45f, -0.45f, 0.45f, 0.45f);
 }
@@ -89,4 +91,9 @@ void Patient::Render()
 	RenderSystem::DrawColoredSprite(Vector2(-0.45f, -0.45f),
 									Vector2(0.45f, 0.45f),
 									0xFF00FFF2);
+}
+
+void Patient::Interactive()
+{
+	KleinGame()->SetWorldview(m_WorldId);
 }

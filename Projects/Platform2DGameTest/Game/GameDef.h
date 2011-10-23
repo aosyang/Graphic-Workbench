@@ -12,4 +12,13 @@
 
 #define KLEIN_COLLISION_TOLERANCE	(0.001f)
 
+enum GameWorldviewEnum
+{
+	//GAME_WORLD_COMMON,
+	GAME_WORLD_0,
+	GAME_WORLD_1,
+	//GAME_WORLD_2,
+	GAME_WORLD_COUNT,
+};
+
 #endif // GameDef_h__

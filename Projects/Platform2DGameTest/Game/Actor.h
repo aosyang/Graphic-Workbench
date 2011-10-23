@@ -37,6 +37,8 @@ public:
 	void SetPosition( const Vector2& pos ) { m_Position = pos; }
 	const Vector2& GetPosition() const { return m_Position; }
 
+	virtual void Interactive();
+
 protected:
 	Actor();
 	virtual ~Actor() {}

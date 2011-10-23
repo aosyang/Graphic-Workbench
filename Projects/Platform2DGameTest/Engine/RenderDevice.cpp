@@ -15,13 +15,13 @@ void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, int tex
 {
 	TexturedSpriteVertex v[6] =
 	{
-		{ vMin.x, vMin.y, depth, vMin.x, vMin.y },
-		{ vMin.x, vMax.y, depth, vMin.x, vMax.y },
-		{ vMax.x, vMax.y, depth, vMax.x, vMax.y },
+		{ vMin.x, vMin.y, depth, vMin.x, vMax.y },
+		{ vMin.x, vMax.y, depth, vMin.x, vMin.y },
+		{ vMax.x, vMax.y, depth, vMax.x, vMin.y },
 
-		{ vMax.x, vMax.y, depth, vMax.x, vMax.y },
-		{ vMax.x, vMin.y, depth, vMax.x, vMin.y },
-		{ vMin.x, vMin.y, depth, vMin.x, vMin.y },
+		{ vMax.x, vMax.y, depth, vMax.x, vMin.y },
+		{ vMax.x, vMin.y, depth, vMax.x, vMax.y },
+		{ vMin.x, vMin.y, depth, vMin.x, vMax.y },
 	};
 
 

@@ -103,12 +103,12 @@ void GameStageEditor::PaintTileAtCursor()
 		for (int i=0; i<GAME_WORLD_COUNT; i++)
 			tile_type_name[i] = "";
 
-		tile_type_name[m_GameStage->GetWorldview()] = m_TileTypeToPaint.c_str();
+		tile_type_name[KleinGame()->GetWorldview()] = m_TileTypeToPaint.c_str();
 		m_GameStage->AddStageGeom(0, box, tile_type_name);
 	}
 	else
 	{
-		geom->tile_type_id[m_GameStage->GetWorldview()] = m_GameStage->GetTileIdByName(m_TileTypeToPaint.c_str());
+		geom->tile_type_id[KleinGame()->GetWorldview()] = m_GameStage->GetTileIdByName(m_TileTypeToPaint.c_str());
 	}
 }
 
@@ -124,7 +124,7 @@ void GameStageEditor::PickupTileTypeAtCursor()
 	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint( tile_pos );
 	if (geom)
 	{
-		const char* tile_name = m_GameStage->GetTileNameById(geom->tile_type_id[m_GameStage->GetWorldview()]);
+		const char* tile_name = m_GameStage->GetTileNameById(geom->tile_type_id[KleinGame()->GetWorldview()]);
 
 		if (tile_name)
 		{

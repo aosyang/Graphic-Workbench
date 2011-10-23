@@ -100,8 +100,7 @@ void DebugRenderStageGeom( STAGE_GEOM* geom )
 }
 
 GameStage::GameStage()
-: m_ActiveWorld((GameWorldviewEnum)0),
-  m_TileTypeIndex(0)
+: m_TileTypeIndex(0)
 {
 
 }
@@ -238,8 +237,6 @@ void GameStage::Reset()
 	StageGeomList.StageGeomTail = NULL;
 	StageGeomList.geom_count = 0;
 
-	m_ActiveWorld = (GameWorldviewEnum)0;
-
 	m_TileTypeIndex = 0;
 	m_TileName2Id.clear();
 	m_TileId2TypeInfo.clear();
@@ -257,7 +254,7 @@ void GameStage::TestCollision( Actor* actor )
 	// Collect collision objects
 	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 	{
-		if ( GetTileUsageById(geom->tile_type_id[m_ActiveWorld]) != TILE_USAGE_SOLID )
+		if ( GetTileUsageById(geom->tile_type_id[KleinGame()->GetWorldview()]) != TILE_USAGE_SOLID )
 			continue;
 
 		if (actor->TestCollision(geom->bound, rel))
@@ -305,14 +302,8 @@ STAGE_GEOM* GameStage::GetTileAtPoint( const Vector2& point )
 
 TileUsageEnum GameStage::GetStageGeomUsage( STAGE_GEOM* geom )
 {
-	return GetTileUsageById(geom->tile_type_id[m_ActiveWorld]);
+	return GetTileUsageById(geom->tile_type_id[KleinGame()->GetWorldview()]);
 }
-
-void GameStage::SetWorldview( int world_id )
-{
-	m_ActiveWorld = (GameWorldviewEnum)world_id;
-}
-
 
 
 const char* GameStage::GetTileNameById( int tile_id ) const
@@ -425,7 +416,7 @@ void GameStage::ScriptLoadGeometries( const LuaPlus::LuaObject* script )
 
 void GameStage::RenderStageGeom( STAGE_GEOM* geom )
 {
-	int world_id = m_ActiveWorld;
+	int world_id = KleinGame()->GetWorldview();
 
 	if (KleinGame()->TestProtoFeatureBit(PROTO_FEATURE_CIRCLE_OF_TRUE_VIEW))
 	{

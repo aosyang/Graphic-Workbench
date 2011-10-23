@@ -1,6 +1,8 @@
 #ifndef GameMain_h__
 #define GameMain_h__
 
+#include "GameDef.h"
+
 #include "GWInputKeyboard.h"
 #include "GWInputMouse.h"
 
@@ -44,6 +46,9 @@ public:
 	void ProtoFeatureFlipBit(int bits);
 	bool TestProtoFeatureBit(int bits) const;
 
+	void SetWorldview(int world_id);
+	GameWorldviewEnum GetWorldview() const { return m_ActiveWorld; }
+
 private:
 	void OnKeyPressed(int key_code);
 	void OnKeyReleased(int key_code);
@@ -69,6 +74,8 @@ private:
 	Vector2				m_CameraPos;
 
 	int					m_ProtoFeatureBits;
+
+	GameWorldviewEnum			m_ActiveWorld;
 };
 
 GameMain* KleinGame();

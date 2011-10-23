@@ -19,7 +19,8 @@ GameMain::GameMain()
   m_MousePosX(0),
   m_MousePosY(0),
   m_CameraPos(Vector2::ZERO),
-  m_ProtoFeatureBits(0)
+  m_ProtoFeatureBits(0),
+  m_ActiveWorld((GameWorldviewEnum)0)
 {
 	for (int i=0; i<0xFF; i++)
 		m_KeyPressed[i] = false;
@@ -115,9 +116,22 @@ void GameMain::Update( float delta_time )
 			{
 				// Climb up if player stands near by a ladder
 				if (player_pos_type == TILE_USAGE_LADDER)
+				{
 					m_Player->SetClimbingLadder(true);
+				}
+				else
+				{
+					// Interactive with actors
+					Actor* actor = GetFirstActor();
+					do 
+					{
+						if ( actor == m_Player ) continue;
 
-				// TODO: Interactive with actors
+						if ( m_Player->TestCollision( actor->GetWorldBoundBox() ) )
+							actor->Interactive();
+
+					} while ( actor = GetNextActor( actor ) );
+				}
 			}
 		}
 
@@ -151,7 +165,7 @@ void GameMain::Update( float delta_time )
 		m_CameraPos += rel * dist * 0.05f;
 
 	if (m_IsEditorMode)
-	{	
+	{
 		if ( m_MBtnPressed[MBTN_LEFT] && !m_MBtnPressed[MBTN_RIGHT])//Edit by YLL
 		//if (m_MBtnPressed[MBTN_LEFT])
 		{
@@ -247,6 +261,11 @@ const char* GameMain::GetDebugText() const
 	return m_DebugText;
 }
 
+void GameMain::SetWorldview( int world_id )
+{
+	m_ActiveWorld = (GameWorldviewEnum)world_id;
+}
+
 void GameMain::OnKeyPressed( int key_code )
 {
 	switch (key_code)
@@ -259,7 +278,7 @@ void GameMain::OnKeyPressed( int key_code )
 	case GW_KEY_2:
 	//case GW_KEY_3:
 	//case GW_KEY_4:
-		m_GameStage->SetWorldview(key_code - GW_KEY_1);
+		SetWorldview(key_code - GW_KEY_1);
 		break;
 	case GW_KEY_Z:
 		m_Player->Jump();
@@ -300,7 +319,7 @@ void GameMain::UpdateDebugText()
 {
 	// Update debug info
 	Vector2 char_pos = m_Player->GetPosition();
-	int world_id = (int)m_GameStage->GetWorldview();
+	int world_id = (int)GetWorldview();
 
 	// Draw debug text
 	sprintf(m_DebugText,

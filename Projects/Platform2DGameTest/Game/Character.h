@@ -41,8 +41,12 @@ class Patient : public Actor
 public:
 	virtual void Render();
 
+	virtual void Interactive();
+
 protected:
 	Patient();
+
+	int		m_WorldId;
 };
 
 #endif // Character_h__

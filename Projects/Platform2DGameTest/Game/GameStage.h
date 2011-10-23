@@ -4,6 +4,7 @@
 #include "RenderDevice.h"
 #include "BoundBox.h"
 #include "Actor.h"
+#include "GameDef.h"
 
 #include <map>
 #include <string>
@@ -34,15 +35,6 @@ typedef struct TileTypeInfo
 	int					tex_id;
 	TileUsageEnum		usage;
 } TILE_TYPE_INFO;
-
-enum GameWorldviewEnum
-{
-	//GAME_WORLD_COMMON,
-	GAME_WORLD_0,
-	GAME_WORLD_1,
-	//GAME_WORLD_2,
-	GAME_WORLD_COUNT,
-};
 
 // -----------------------------------------------------------
 // Stage geometry structure and methods
@@ -83,8 +75,6 @@ public:
 	TILE_TYPE_INFO_MAP& GetTileTypeInfo(){ return m_TileId2TypeInfo; }//Add by YLL for stage editor
 	STAGE_GEOM* GetTileAtPoint(const Vector2& point);
 	TileUsageEnum GetStageGeomUsage(STAGE_GEOM* geom);
-	void SetWorldview(int world_id);
-	GameWorldviewEnum GetWorldview() const { return m_ActiveWorld; }
 	int GetTileIdByName(const char* tile_name) const;
 
 	const char* GetTileNameById(int tile_id) const;
@@ -101,8 +91,6 @@ private:
 	TileUsageEnum GetTileUsageById(int id);
 
 private:
-	GameWorldviewEnum			m_ActiveWorld;
-
 	int							m_TileTypeIndex;
 	std::map<std::string, int>
 								m_TileName2Id;

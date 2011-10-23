@@ -184,6 +184,10 @@ void Actor::Translate( const Vector2& vecRel )
 	m_Position += vecRel;
 }
 
+void Actor::Interactive()
+{
+}
+
 void Actor::OnHitTop()
 {
 	// Bumped my head, stop moving upward

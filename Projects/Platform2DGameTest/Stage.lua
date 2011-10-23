@@ -1773,6 +1773,12 @@ Stage =
 			"SOLID",
 			"Data/Terrain.tga",
 		},
+	
+		{
+			"FIRE",
+			"SOLID",
+			"Data/Fire.tga",
+		},
 	},
 }
 
