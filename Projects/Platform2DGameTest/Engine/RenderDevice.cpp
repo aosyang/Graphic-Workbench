@@ -1,7 +1,9 @@
 #include "RenderDevice.h"
 #include "TextureManager.h"
+#include "../Game/GameDef.h"
 
 #include <d3d9.h>
+#include <d3dx9.h>
 
 #define TexturedSpriteFVF D3DFVF_XYZ|D3DFVF_TEX1
 
@@ -54,6 +56,24 @@ struct ColoredVertex
 	DWORD color;
 };
 
+void RenderSystem::Initialize( IDirect3DDevice9* device )
+{
+	m_sDevice = device;
+
+	D3DXCreateFont( device, 16, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
+					OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+					L"Arial", &m_sFont );
+}
+
+void RenderSystem::Destroy()
+{
+	if (m_sFont)
+	{
+		m_sFont->Release();
+		m_sFont = NULL;
+	}
+}
+
 void RenderSystem::DrawColoredSprite( const Vector2& vMin, const Vector2& vMax, DWORD color /*= 0xFFFFFFFF*/, float depth /*= 0.0f*/ )
 {
 	ColoredVertex v[6] =
@@ -92,3 +112,12 @@ void RenderSystem::DrawWireframeRect( const Vector2& vMin, const Vector2& vMax, 
 	m_sDevice->SetFVF(ColoredSpriteVertexFVF);
 	m_sDevice->DrawPrimitiveUP(D3DPT_LINESTRIP, 4, v, sizeof(ColoredVertex));
 }
+
+void RenderSystem::DrawText( const char* text, int x, int y, DWORD color /*= 0xFFFFFFFF */ )
+{
+	RECT font_rect;
+	SetRect( &font_rect, x, y, KLEIN_SCREEN_WIDTH, KLEIN_SCREEN_HEIGHT );
+	m_sFont->DrawTextA( NULL, text, -1, &font_rect, DT_LEFT|DT_NOCLIP, color );
+}
+
+ID3DXFont* RenderSystem::m_sFont = NULL;

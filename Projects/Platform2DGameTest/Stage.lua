@@ -1757,6 +1757,12 @@ Stage =
 	{
 		
 		{
+			"FIRE",
+			"HURT",
+			"Data/Fire.tga",
+		},
+		
+		{
 			"Ladder",
 			"LADDER",
 			"Data/Grid_Ladders.tga",
@@ -1772,12 +1778,6 @@ Stage =
 			"Terrain",
 			"SOLID",
 			"Data/Terrain.tga",
-		},
-	
-		{
-			"FIRE",
-			"HURT",
-			"Data/Fire.tga",
 		},
 	},
 }

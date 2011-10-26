@@ -3,10 +3,23 @@
 
 #include "Math/GWVectors.h"
 #include "GWInputMouse.h"
+#include "BoundBox.h"
 
 #include <string>
 
 class GameStage;
+
+enum PaintToolType
+{
+	PAINT_TOOL_PENCIL,
+	PAINT_TOOL_BRUSH,
+};
+
+enum PaintToolState
+{
+	TOOL_STATE_IDLE,
+	TOOL_STATE_DRAWING,
+};
 
 class GameStageEditor
 {
@@ -23,8 +36,13 @@ public:
 	void StartPicking( bool bStart = true );
 	void EndPicking(){ StartPicking( false ); }
 
+	void StartPainting();
+	void EndPainting();
 	void PaintTileAtCursor();
 	void PickupTileTypeAtCursor();
+
+	void SetPaintTool(PaintToolType tool) { m_PaintTool = tool; }
+	PaintToolType GetPaintTool() const { return m_PaintTool; }
 
 	void ZoomView(int zoom);
 
@@ -40,6 +58,11 @@ private:
 	Vector2				m_TileMenuPos;
 
 	float				m_Fovy;
+
+	PaintToolType		m_PaintTool;
+	BoundBox			m_SelectedArea;
+
+	PaintToolState		m_ToolState;
 };
 
 #endif // GameStageEditor_h__

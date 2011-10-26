@@ -11,7 +11,6 @@
 #include "GameMain.h"
 
 LPDIRECT3DDEVICE9 RenderSystem::m_sDevice = NULL;
-LPD3DXFONT		g_pFont;
 
 int				g_MousePosX = 0,
 				g_MousePosY = 0;
@@ -130,10 +129,6 @@ HRESULT CALLBACK OnCreateDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_
 
 	RenderSystem::Initialize( pd3dDevice );
 	pd3dDevice->SetRenderState( D3DRS_LIGHTING, FALSE );
-
-	V_RETURN( D3DXCreateFont( pd3dDevice, 16, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-							  OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
-							  L"Arial", &g_pFont ) );
 	return S_OK;
 }
 
@@ -141,19 +136,15 @@ HRESULT CALLBACK OnResetDevice( IDirect3DDevice9* pd3dDevice, const D3DSURFACE_D
 {
 	//HRESULT hr;
 
-	g_pFont->OnResetDevice();
-
 	return S_OK;
 }
 
 void CALLBACK OnLostDevice( void* pUserContext )
 {
-	g_pFont->OnLostDevice();
 }
 
 void CALLBACK OnDestroyDevice( void* pUserContext )
 {
-	SAFE_RELEASE( g_pFont );
 }
 
 void CALLBACK OnFrameMove( double fTime, float fElapsedTime, void* pUserContext )
@@ -221,10 +212,6 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 
 		KleinGame()->Render();
 
-		RECT font_rect;
-		SetRect( &font_rect, 0, 0, 400, 400 );
-		g_pFont->DrawTextA( NULL, KleinGame()->GetDebugText(), -1, &font_rect, DT_LEFT|DT_NOCLIP, 0xFFFFFF00 );
-
 		V( pd3dDevice->EndScene() );
 	}
 }
@@ -267,4 +254,5 @@ void Startup()
 void Cleanup()
 {
 	KleinGame()->Shutdown();
+	RenderSystem::Destroy();
 }

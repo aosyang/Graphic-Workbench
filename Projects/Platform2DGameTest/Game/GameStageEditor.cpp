@@ -10,7 +10,9 @@ GameStageEditor::GameStageEditor()
 : m_GameStage(NULL),
   m_bPicking(false),
   m_TileMenuPos(0.0f, 0.0f),
-  m_Fovy(GW_MATH_PI / 3)
+  m_Fovy(GW_MATH_PI / 3),
+  m_PaintTool(PAINT_TOOL_PENCIL),
+  m_ToolState(TOOL_STATE_IDLE)
 {
 
 }
@@ -80,9 +82,49 @@ void GameStageEditor::Render()
 
 	}
 
-	RenderSystem::DrawWireframeRect(Vector2(floorf(tile_pos.x), floorf(tile_pos.y)),
-									Vector2(ceilf(tile_pos.x), ceilf(tile_pos.y)),
-									0xFFFFF200);
+	DWORD color;
+	switch (m_PaintTool)
+	{
+	case PAINT_TOOL_PENCIL:
+		color = 0xFFFFF200;
+
+		// Draw cursor tile rect
+		RenderSystem::DrawWireframeRect(Vector2(floorf(tile_pos.x), floorf(tile_pos.y)),
+										Vector2(ceilf(tile_pos.x), ceilf(tile_pos.y)),
+										color);
+
+		break;
+	case PAINT_TOOL_BRUSH:
+		{
+			color = 0xFF00E6FF;
+
+			if (m_ToolState == TOOL_STATE_DRAWING)
+			{
+				Vector2 vMin(min( m_SelectedArea.xMin, floorf(tile_pos.x) ),
+							 min( m_SelectedArea.yMin, floorf(tile_pos.y) ) );
+				Vector2 vMax(max( m_SelectedArea.xMax, ceilf(tile_pos.x) ),
+							 max( m_SelectedArea.yMax, ceilf(tile_pos.y) ) );
+
+				RenderSystem::DrawWireframeRect(vMin, vMax, color);
+			}
+			else
+			{
+				// Draw selected area
+				RenderSystem::DrawWireframeRect(Vector2(m_SelectedArea.xMin, m_SelectedArea.yMin),
+												Vector2(m_SelectedArea.xMax, m_SelectedArea.yMax),
+												color);
+
+				// Draw cursor tile rect
+				RenderSystem::DrawWireframeRect(Vector2(floorf(tile_pos.x), floorf(tile_pos.y)),
+												Vector2(ceilf(tile_pos.x), ceilf(tile_pos.y)),
+												color);
+			}
+
+		}
+		break;
+	default:
+		break;
+	}
 }
 
 void GameStageEditor::SetGameStage( GameStage* stage )
@@ -136,6 +178,12 @@ void GameStageEditor::StartPicking( bool bStart )
 			{
 				m_TileTypeToPaint = "";
 			}
+
+			// Fill selected area with tile just picked
+			if ( m_PaintTool == PAINT_TOOL_BRUSH )
+			{
+
+			}
 		}
 	}
 }
@@ -149,23 +197,33 @@ void GameStageEditor::PaintTileAtCursor()
 
 	Vector2 tile_pos = CursorToTilePos(mouse_xpos, mouse_ypos);
 
-	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint( tile_pos );
-
-	// No geom found at point, create a new one
-	if (!geom)
+	switch (m_PaintTool)
 	{
-		BoundBox box(floorf(tile_pos.x), floorf(tile_pos.y), ceilf(tile_pos.x), ceilf(tile_pos.y));
+	case PAINT_TOOL_PENCIL:
+		{
 
-		const char* tile_type_name[GAME_WORLD_COUNT];
-		for (int i=0; i<GAME_WORLD_COUNT; i++)
-			tile_type_name[i] = "";
+			STAGE_GEOM* geom = m_GameStage->GetTileAtPoint( tile_pos );
 
-		tile_type_name[KleinGame()->GetWorldview()] = m_TileTypeToPaint.c_str();
-		m_GameStage->AddStageGeom(0, box, tile_type_name);
-	}
-	else
-	{
-		geom->tile_type_id[KleinGame()->GetWorldview()] = m_GameStage->GetTileIdByName(m_TileTypeToPaint.c_str());
+			// No geom found at point, create a new one
+			if (!geom)
+			{
+				BoundBox box(floorf(tile_pos.x), floorf(tile_pos.y), ceilf(tile_pos.x), ceilf(tile_pos.y));
+
+				const char* tile_type_name[GAME_WORLD_COUNT];
+				for (int i=0; i<GAME_WORLD_COUNT; i++)
+					tile_type_name[i] = "";
+
+				tile_type_name[KleinGame()->GetWorldview()] = m_TileTypeToPaint.c_str();
+				m_GameStage->AddStageGeom(0, box, tile_type_name);
+			}
+			else
+			{
+				geom->tile_type_id[KleinGame()->GetWorldview()] = m_GameStage->GetTileIdByName(m_TileTypeToPaint.c_str());
+			}
+		}
+		break;
+	default:
+		break;
 	}
 }
 
@@ -228,4 +286,50 @@ Vector2 GameStageEditor::CursorToTilePos( int x_pos, int y_pos )
 	tile_y += cam_pos.y;
 
 	return Vector2(tile_x, tile_y);
+}
+
+void GameStageEditor::StartPainting()
+{
+	int mouse_xpos, mouse_ypos;
+	KleinGame()->GetMousePos(&mouse_xpos, &mouse_ypos);
+
+	Vector2 tile_pos = CursorToTilePos(mouse_xpos, mouse_ypos);
+
+	switch (m_PaintTool)
+	{
+	case PAINT_TOOL_BRUSH:
+		m_SelectedArea.xMin = floorf(tile_pos.x);
+		m_SelectedArea.xMax = ceilf(tile_pos.x);
+		m_SelectedArea.yMin = floorf(tile_pos.y);
+		m_SelectedArea.yMax = ceilf(tile_pos.y);
+
+		break;
+	default:
+		break;
+	}
+
+	m_ToolState = TOOL_STATE_DRAWING;
+}
+
+void GameStageEditor::EndPainting()
+{
+	int mouse_xpos, mouse_ypos;
+	KleinGame()->GetMousePos(&mouse_xpos, &mouse_ypos);
+
+	Vector2 tile_pos = CursorToTilePos(mouse_xpos, mouse_ypos);
+
+	switch (m_PaintTool)
+	{
+	case PAINT_TOOL_BRUSH:
+		m_SelectedArea.xMin = min( m_SelectedArea.xMin, floorf(tile_pos.x) );
+		m_SelectedArea.xMax = max( m_SelectedArea.xMax, ceilf(tile_pos.x) );
+		m_SelectedArea.yMin = min( m_SelectedArea.yMin, floorf(tile_pos.y) );
+		m_SelectedArea.yMax = max( m_SelectedArea.yMax, ceilf(tile_pos.y) );
+
+		break;
+	default:
+		break;
+	}
+
+	m_ToolState = TOOL_STATE_IDLE;
 }

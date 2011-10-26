@@ -28,8 +28,6 @@ GameMain::GameMain()
 
 	for (int i=0; i<MBTN_COUNT; i++)
 		m_MBtnPressed[i] = false;
-
-	memset(m_DebugText, 0, sizeof(m_DebugText));
 }
 
 GameMain::~GameMain()
@@ -167,7 +165,6 @@ void GameMain::Update( float delta_time )
 
 	UpdateEditorControl();
 
-	UpdateDebugText();
 	ClearMouseWheelState();
 }
 
@@ -190,6 +187,8 @@ void GameMain::Render()
 	{
 		m_GameStageEditor->Render();
 	}
+
+	DrawDebugText();
 }
 
 void GameMain::SetKeyState( int key_code, bool key_down )
@@ -242,10 +241,6 @@ void GameMain::GetMousePos( int* x, int* y )
 	if (y) *y = m_MousePosY;
 }
 
-const char* GameMain::GetDebugText() const
-{
-	return m_DebugText;
-}
 
 void GameMain::SetWorldview( int world_id )
 {
@@ -266,10 +261,16 @@ void GameMain::OnKeyPressed( int key_code )
 		m_IsEditorMode = !m_IsEditorMode;
 		break;
 	case GW_KEY_1:
+		m_GameStageEditor->SetPaintTool(PAINT_TOOL_PENCIL);
+		break;
 	case GW_KEY_2:
-	//case GW_KEY_3:
-	//case GW_KEY_4:
-		SetWorldview(key_code - GW_KEY_1);
+		m_GameStageEditor->SetPaintTool(PAINT_TOOL_BRUSH);
+		break;
+	case GW_KEY_9:
+		SetWorldview(0);
+		break;
+	case GW_KEY_0:
+		SetWorldview(1);
 		break;
 	case GW_KEY_Z:
 		m_Player->Jump();
@@ -296,14 +297,20 @@ void GameMain::OnMouseBtnPressed( GWMouseButton mbtn_code )
 	{
 	case MBTN_LEFT:
 		if (m_IsEditorMode)
-			m_GameStageEditor->PaintTileAtCursor();
+			m_GameStageEditor->StartPainting();
 		break;
 	}
 }
 
 void GameMain::OnMouseBtnReleased( GWMouseButton mbtn_code )
 {
-
+	switch (mbtn_code)
+	{
+	case MBTN_LEFT:
+		if (m_IsEditorMode)
+			m_GameStageEditor->EndPainting();
+		break;
+	}
 }
 
 void GameMain::ClearMouseWheelState()
@@ -330,17 +337,19 @@ void GameMain::UpdateEditorControl()
 		m_GameStageEditor->EndPicking();//Add by YLL for right click pick mode
 	}
 
-	m_GameStageEditor->ZoomView( m_MouseWheel / 120.0f );
+	m_GameStageEditor->ZoomView( m_MouseWheel / 120 );
 }
 
-void GameMain::UpdateDebugText()
+void GameMain::DrawDebugText()
 {
+	char debug_text[256];
+
 	// Update debug info
 	Vector2 char_pos = m_Player->GetPosition();
 	int world_id = (int)GetWorldview();
 
 	// Draw debug text
-	sprintf(m_DebugText,
+	sprintf(debug_text,
 			"pos: %f, %f\n"
 			"Block: x( %d ~ %d ) - y( %d ~ %d )\n"
 			"World: %d\n"
@@ -350,6 +359,8 @@ void GameMain::UpdateDebugText()
 			(int)floor(char_pos.y), (int)ceil(char_pos.y),
 			world_id,
 			m_MousePosX, m_MousePosY, m_MouseWheel);
+
+	RenderSystem::DrawText(debug_text, 0, 0, 0xFFFFFF00);
 }
 
 void GameMain::ProtoFeatureBitSet( int bits, bool val )

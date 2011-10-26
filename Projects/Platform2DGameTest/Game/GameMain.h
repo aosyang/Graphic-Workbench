@@ -41,8 +41,6 @@ public:
 	Vector2 GetPlayerPos() const;
 	void GetMousePos(int* x, int* y);
 
-	const char* GetDebugText() const;
-
 	void ProtoFeatureBitSet(int bits, bool val);
 	void ProtoFeatureFlipBit(int bits);
 	bool TestProtoFeatureBit(int bits) const;
@@ -63,7 +61,7 @@ private:
 
 	void UpdateEditorControl();
 
-	void UpdateDebugText();
+	void DrawDebugText();
 
 private:
 	GameStage*			m_GameStage;
@@ -77,7 +75,6 @@ private:
 
 	bool				m_IsEditorMode;
 	GameStageEditor*	m_GameStageEditor;
-	char				m_DebugText[256];
 
 	Vector2				m_CameraPos;
 
