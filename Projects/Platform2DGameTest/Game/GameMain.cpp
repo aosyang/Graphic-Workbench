@@ -16,6 +16,7 @@ GameMain::GameMain()
   m_Player(NULL),
   m_IsEditorMode(true),
   m_GameStageEditor(NULL),
+  m_MouseWheel(0),
   m_MousePosX(0),
   m_MousePosY(0),
   m_CameraPos(Vector2::ZERO),
@@ -164,25 +165,10 @@ void GameMain::Update( float delta_time )
 	if (dist > 0.3f)
 		m_CameraPos += rel * dist * 0.05f;
 
-	if (m_IsEditorMode)
-	{
-		if ( m_MBtnPressed[MBTN_LEFT] && !m_MBtnPressed[MBTN_RIGHT])//Edit by YLL
-		//if (m_MBtnPressed[MBTN_LEFT])
-		{
-			m_GameStageEditor->PaintTileAtCursor();
-		}
-		else if ( m_MBtnPressed[MBTN_RIGHT] )
-		{
-			m_GameStageEditor->StartPicking();//Edit by YLL for right click pick mode
-			//m_GameStageEditor->PickupTileTypeAtCursor();
-		}
-		else 
-		{
-			m_GameStageEditor->EndPicking();//Add by YLL for right click pick mode
-		}
-	}
+	UpdateEditorControl();
 
 	UpdateDebugText();
+	ClearMouseWheelState();
 }
 
 void GameMain::Render()
@@ -266,6 +252,11 @@ void GameMain::SetWorldview( int world_id )
 	m_ActiveWorld = (GameWorldviewEnum)world_id;
 }
 
+float GameMain::GetFovy() const
+{
+	return m_IsEditorMode ? m_GameStageEditor->GetFovy() : KLEIN_CAMERA_FOVY;
+}
+
 void GameMain::OnKeyPressed( int key_code )
 {
 	switch (key_code)
@@ -315,6 +306,33 @@ void GameMain::OnMouseBtnReleased( GWMouseButton mbtn_code )
 
 }
 
+void GameMain::ClearMouseWheelState()
+{
+	m_MouseWheel = 0;
+}
+
+void GameMain::UpdateEditorControl()
+{
+	if (!m_IsEditorMode) return;
+
+	if ( m_MBtnPressed[MBTN_LEFT] && !m_MBtnPressed[MBTN_RIGHT])//Edit by YLL
+		//if (m_MBtnPressed[MBTN_LEFT])
+	{
+		m_GameStageEditor->PaintTileAtCursor();
+	}
+	else if ( m_MBtnPressed[MBTN_RIGHT] )
+	{
+		m_GameStageEditor->StartPicking();//Edit by YLL for right click pick mode
+		//m_GameStageEditor->PickupTileTypeAtCursor();
+	}
+	else 
+	{
+		m_GameStageEditor->EndPicking();//Add by YLL for right click pick mode
+	}
+
+	m_GameStageEditor->ZoomView( m_MouseWheel / 120.0f );
+}
+
 void GameMain::UpdateDebugText()
 {
 	// Update debug info
@@ -326,12 +344,12 @@ void GameMain::UpdateDebugText()
 			"pos: %f, %f\n"
 			"Block: x( %d ~ %d ) - y( %d ~ %d )\n"
 			"World: %d\n"
-			"Mouse: %d %d",
+			"Mouse: %d %d %d",
 			char_pos.x, char_pos.y,
 			(int)floor(char_pos.x), (int)ceil(char_pos.x),
 			(int)floor(char_pos.y), (int)ceil(char_pos.y),
 			world_id,
-			m_MousePosX, m_MousePosY);
+			m_MousePosX, m_MousePosY, m_MouseWheel);
 }
 
 void GameMain::ProtoFeatureBitSet( int bits, bool val )

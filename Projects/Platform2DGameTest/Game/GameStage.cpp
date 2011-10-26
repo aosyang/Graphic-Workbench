@@ -95,9 +95,9 @@ STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom)
 
 void DebugRenderStageGeom( STAGE_GEOM* geom )
 {
-	RenderSystem::DrawColoredSprite(Vector2(geom->bound.xMin, geom->bound.yMin),
+	RenderSystem::DrawWireframeRect(Vector2(geom->bound.xMin, geom->bound.yMin),
 									Vector2(geom->bound.xMax, geom->bound.yMax),
-									0xFFFFF200, true);
+									0xFFFFF200);
 }
 
 GameStage::GameStage()

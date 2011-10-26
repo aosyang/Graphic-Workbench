@@ -9,7 +9,8 @@
 GameStageEditor::GameStageEditor()
 : m_GameStage(NULL),
   m_bPicking(false),
-  m_TileMenuPos(0.0f, 0.0f)
+  m_TileMenuPos(0.0f, 0.0f),
+  m_Fovy(GW_MATH_PI / 3)
 {
 
 }
@@ -30,12 +31,6 @@ void GameStageEditor::Render()
 	D3DXMatrixIdentity(&matWorld);
 	RenderSystem::Device()->SetTransform( D3DTS_WORLD, &matWorld );
 
-	//STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(Vector3(tile_pos, 0.0f));
-	//if (geom)
-	//{
-	//	DebugRenderStageGeom(geom);
-	//}
-	//else
 	if ( m_bPicking )
 	{
 		TILE_TYPE_INFO_MAP& mapTileType = m_GameStage->GetTileTypeInfo();
@@ -83,10 +78,11 @@ void GameStageEditor::Render()
 									 mapTileType[i].tex_id);
 		}
 
-		RenderSystem::DrawColoredSprite(Vector2(floorf(tile_pos.x), floorf(tile_pos.y)),
-										Vector2(ceilf(tile_pos.x), ceilf(tile_pos.y)),
-										0xFFFFF200, true);
 	}
+
+	RenderSystem::DrawWireframeRect(Vector2(floorf(tile_pos.x), floorf(tile_pos.y)),
+									Vector2(ceilf(tile_pos.x), ceilf(tile_pos.y)),
+									0xFFFFF200);
 }
 
 void GameStageEditor::SetGameStage( GameStage* stage )
@@ -197,12 +193,29 @@ void GameStageEditor::PickupTileTypeAtCursor()
 	m_TileTypeToPaint = "";
 }
 
+void GameStageEditor::ZoomView( int zoom )
+{
+	if (zoom == 0) return;
+
+	float height = tanf(m_Fovy / 2.0f) * abs(KLEIN_CAMERA_ZPOS);
+
+	for (int i=0; i<abs(zoom); i++)
+	{
+		if (zoom > 0)
+			height /= 1.5f;
+		else
+			height *= 1.5f;
+	}
+
+	m_Fovy = atanf( height / abs(KLEIN_CAMERA_ZPOS) ) * 2.0f;
+}
+
 Vector2 GameStageEditor::CursorToTilePos( int x_pos, int y_pos )
 {
 	Vector2 cam_pos = KleinGame()->GetCameraPos();
 
 	// Render tile position at cursor
-	float height = tanf(KLEIN_CAMERA_FOVY / 2.0f) * abs(KLEIN_CAMERA_ZPOS);
+	float height = tanf(KleinGame()->GetFovy() / 2.0f) * abs(KLEIN_CAMERA_ZPOS);
 	float width = height * KLEIN_SCREEN_ASPECT;
 
 	float step_x = (float)KLEIN_SCREEN_WIDTH / (width * 2);

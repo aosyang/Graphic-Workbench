@@ -14,7 +14,8 @@ public:
 	static IDirect3DDevice9* Device() { return m_sDevice; }
 
 	static void DrawSprite(const Vector2& vMin, const Vector2& vMax, int tex_id = -1, float depth = 0.0f);
-	static void DrawColoredSprite(const Vector2& vMin, const Vector2& vMax, DWORD color = 0xFFFFFFFF, bool wireframe = false, float depth = 0.0f);
+	static void DrawColoredSprite(const Vector2& vMin, const Vector2& vMax, DWORD color = 0xFFFFFFFF, float depth = 0.0f);
+	static void DrawWireframeRect(const Vector2& vMin, const Vector2& vMax, DWORD color = 0xFFFFFFFF, float depth = 0.0f);
 
 private:
 	static IDirect3DDevice9* m_sDevice;

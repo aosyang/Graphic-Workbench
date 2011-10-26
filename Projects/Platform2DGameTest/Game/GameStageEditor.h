@@ -26,6 +26,10 @@ public:
 	void PaintTileAtCursor();
 	void PickupTileTypeAtCursor();
 
+	void ZoomView(int zoom);
+
+	float GetFovy() const { return m_Fovy; }
+
 private:
 	Vector2 CursorToTilePos(int x_pos, int y_pos);
 
@@ -34,6 +38,8 @@ private:
 
 	bool				m_bPicking;
 	Vector2				m_TileMenuPos;
+
+	float				m_Fovy;
 };
 
 #endif // GameStageEditor_h__

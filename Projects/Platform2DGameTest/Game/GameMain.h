@@ -35,6 +35,7 @@ public:
 	void SetKeyState(int key_code, bool key_down);
 	void SetMouseBtnState(GWMouseButton mbtn_code, bool btn_down);
 	void SetMousePosition(int x_pos, int y_pos);
+	void SetMouseWheelValue(int wheel) { m_MouseWheel = wheel; }
 
 	Vector2 GetCameraPos() const;
 	Vector2 GetPlayerPos() const;
@@ -49,12 +50,18 @@ public:
 	void SetWorldview(int world_id);
 	GameWorldviewEnum GetWorldview() const { return m_ActiveWorld; }
 
+	float GetFovy() const;
+
 private:
 	void OnKeyPressed(int key_code);
 	void OnKeyReleased(int key_code);
 
 	void OnMouseBtnPressed(GWMouseButton mbtn_code);
 	void OnMouseBtnReleased(GWMouseButton mbtn_code);
+
+	void ClearMouseWheelState();
+
+	void UpdateEditorControl();
 
 	void UpdateDebugText();
 
@@ -65,6 +72,7 @@ private:
 
 	bool				m_KeyPressed[0xFF];		// Keep the press state of each key
 	bool				m_MBtnPressed[MBTN_COUNT];
+	int					m_MouseWheel;
 	int					m_MousePosX, m_MousePosY;
 
 	bool				m_IsEditorMode;

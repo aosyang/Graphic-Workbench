@@ -5,7 +5,7 @@
 
 #define TexturedSpriteFVF D3DFVF_XYZ|D3DFVF_TEX1
 
-struct TexturedSpriteVertex
+struct TexturedVertex
 {
 	float x, y, z;
 	float u, v;
@@ -13,7 +13,7 @@ struct TexturedSpriteVertex
 
 void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, int tex_id /*= -1*/, float depth /*= 0.0f*/ )
 {
-	TexturedSpriteVertex v[6] =
+	TexturedVertex v[6] =
 	{
 		{ vMin.x, vMin.y, depth, vMin.x, vMax.y },
 		{ vMin.x, vMax.y, depth, vMin.x, vMin.y },
@@ -41,22 +41,22 @@ void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, int tex
 	m_sDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 
 	m_sDevice->SetFVF(TexturedSpriteFVF);
-	m_sDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(TexturedSpriteVertex));
+	m_sDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(TexturedVertex));
 
 }
 
 
 #define ColoredSpriteVertexFVF D3DFVF_XYZ|D3DFVF_DIFFUSE
 
-struct ColoredSpriteVertex
+struct ColoredVertex
 {
 	float x, y, z;
 	DWORD color;
 };
 
-void RenderSystem::DrawColoredSprite( const Vector2& vMin, const Vector2& vMax, DWORD color /*= 0xFFFFFFFF*/, bool wireframe /*= false*/, float depth /*= 0.0f*/ )
+void RenderSystem::DrawColoredSprite( const Vector2& vMin, const Vector2& vMax, DWORD color /*= 0xFFFFFFFF*/, float depth /*= 0.0f*/ )
 {
-	ColoredSpriteVertex v[6] =
+	ColoredVertex v[6] =
 	{
 		{ vMin.x, vMin.y, depth, color },
 		{ vMin.x, vMax.y, depth, color },
@@ -69,7 +69,26 @@ void RenderSystem::DrawColoredSprite( const Vector2& vMin, const Vector2& vMax, 
 
 	m_sDevice->SetTexture(0, NULL);
 
-	m_sDevice->SetRenderState(D3DRS_FILLMODE, wireframe ? D3DFILL_WIREFRAME : D3DFILL_SOLID);
+	m_sDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
 	m_sDevice->SetFVF(ColoredSpriteVertexFVF);
-	m_sDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(ColoredSpriteVertex));
+	m_sDevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(ColoredVertex));
+}
+
+void RenderSystem::DrawWireframeRect( const Vector2& vMin, const Vector2& vMax, DWORD color /*= 0xFFFFFFFF*/, float depth /*= 0.0f*/ )
+{
+	ColoredVertex v[6] =
+	{
+		{ vMin.x, vMin.y, depth, color },
+		{ vMin.x, vMax.y, depth, color },
+		{ vMax.x, vMax.y, depth, color },
+
+		{ vMax.x, vMin.y, depth, color },
+		{ vMin.x, vMin.y, depth, color },
+	};
+
+	m_sDevice->SetTexture(0, NULL);
+
+	m_sDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+	m_sDevice->SetFVF(ColoredSpriteVertexFVF);
+	m_sDevice->DrawPrimitiveUP(D3DPT_LINESTRIP, 4, v, sizeof(ColoredVertex));
 }

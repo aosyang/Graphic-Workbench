@@ -205,7 +205,7 @@ void CALLBACK OnFrameRender( IDirect3DDevice9* pd3dDevice, double fTime, float f
 	// the aspect ratio, and the near and far clipping planes (which define at
 	// what distances geometry should be no longer be rendered).
 	D3DXMATRIXA16 matProj;
-	D3DXMatrixPerspectiveFovLH( &matProj, KLEIN_CAMERA_FOVY, KLEIN_SCREEN_ASPECT, 1.0f, 100.0f );
+	D3DXMatrixPerspectiveFovLH( &matProj, KleinGame()->GetFovy(), KLEIN_SCREEN_ASPECT, 1.0f, 100.0f );
 	pd3dDevice->SetTransform( D3DTS_PROJECTION, &matProj );
 
 	// Clear the render target and the zbuffer 
@@ -253,6 +253,7 @@ void CALLBACK MouseProc( bool bLeftButtonDown, bool bRightButtonDown, bool bMidd
 {
 	KleinGame()->SetMouseBtnState(MBTN_LEFT, bLeftButtonDown);
 	KleinGame()->SetMouseBtnState(MBTN_RIGHT, bRightButtonDown);
+	KleinGame()->SetMouseWheelValue( nMouseWheelDelta );
 
 	//g_MousePosX = xPos;
 	//g_MousePosY = yPos;
