@@ -55,7 +55,11 @@ private:
 	std::string			m_TileTypeToPaint;
 
 	bool				m_bPicking;
-	Vector2				m_TileMenuPos;
+	Vector2				m_PopupMenuPos;
+	int					m_PopupMenuScreenPosX,
+						m_PopupMenuScreenPosY;
+
+	int					m_PickingAreaTrigger;
 
 	float				m_Fovy;
 

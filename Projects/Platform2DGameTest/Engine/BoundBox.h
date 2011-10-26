@@ -25,6 +25,9 @@ public:
 	bool TestBoxCollision(const BoundBox& box) const;
 	Vector2 GetCentrePoint() const;
 
+	Vector2 vMin() const { return Vector2(xMin, yMin); }
+	Vector2 vMax() const { return Vector2(xMax, yMax); }
+
 	BoundBox Translate(const Vector2& rel) const;
 };
 

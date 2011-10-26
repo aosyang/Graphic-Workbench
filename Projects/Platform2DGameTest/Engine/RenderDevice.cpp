@@ -60,7 +60,7 @@ void RenderSystem::Initialize( IDirect3DDevice9* device )
 {
 	m_sDevice = device;
 
-	D3DXCreateFont( device, 16, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
+	D3DXCreateFont( device, KLEIN_FONT_HEIGHT, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
 					OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
 					L"Arial", &m_sFont );
 }

@@ -59,6 +59,10 @@ private:
 
 	void ClearMouseWheelState();
 
+	void UpdateCamera();
+	void UpdateActors( float delta_time );
+	void HandlePlayerTriggerInteractivities();
+	void HandlePlayerActorInteractivities();
 	void UpdateEditorControl();
 
 	void DrawDebugText();

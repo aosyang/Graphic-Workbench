@@ -3,13 +3,17 @@
 #include "GameDef.h"
 #include "GameStage.h"
 #include "GameMain.h"
+#include "AreaTrigger.h"
 
 #include <d3dx9.h>
 
 GameStageEditor::GameStageEditor()
 : m_GameStage(NULL),
   m_bPicking(false),
-  m_TileMenuPos(0.0f, 0.0f),
+  m_PopupMenuPos(0.0f, 0.0f),
+  m_PopupMenuScreenPosX(0),
+  m_PopupMenuScreenPosY(0),
+  m_PickingAreaTrigger(-1),
   m_Fovy(GW_MATH_PI / 3),
   m_PaintTool(PAINT_TOOL_PENCIL),
   m_ToolState(TOOL_STATE_IDLE)
@@ -29,55 +33,90 @@ void GameStageEditor::Render()
 
 	Vector2 tile_pos = CursorToTilePos(mouse_xpos, mouse_ypos);
 
+	m_PickingAreaTrigger = -1;
+
 	D3DXMATRIXA16 matWorld;
 	D3DXMatrixIdentity(&matWorld);
 	RenderSystem::Device()->SetTransform( D3DTS_WORLD, &matWorld );
 
 	if ( m_bPicking )
 	{
-		TILE_TYPE_INFO_MAP& mapTileType = m_GameStage->GetTileTypeInfo();
-		int nTileType = mapTileType.size();
-
-		int nTileLayoutWidth = nTileType > 5 ? 5 : nTileType;
-		Vector2 vec_min, vec_max;
-
-		for ( int i = 0; i < nTileType; ++i)
+		switch (m_PaintTool)
 		{
-			float xBias = float(i % nTileLayoutWidth - (nTileLayoutWidth - 1) / 2);
-			float yBias = float(i / nTileLayoutWidth ) + 1.0f;
-
-			if ( i==0 )
+		case PAINT_TOOL_PENCIL:
 			{
-				vec_min.x = floorf(m_TileMenuPos.x) + xBias;
-				vec_min.y = floorf(m_TileMenuPos.y) + yBias;
-				vec_max.x = ceilf(m_TileMenuPos.x)  + xBias;
-				vec_max.y = ceilf(m_TileMenuPos.y) + yBias;
+				TILE_TYPE_INFO_MAP& mapTileType = m_GameStage->GetTileTypeInfo();
+				int nTileType = mapTileType.size();
+
+				int nTileLayoutWidth = nTileType > 5 ? 5 : nTileType;
+				Vector2 vec_min, vec_max;
+
+				for ( int i = 0; i < nTileType; ++i)
+				{
+					float xBias = float(i % nTileLayoutWidth - (nTileLayoutWidth - 1) / 2);
+					float yBias = float(i / nTileLayoutWidth ) + 1.0f;
+
+					if ( i==0 )
+					{
+						vec_min.x = floorf(m_PopupMenuPos.x) + xBias;
+						vec_min.y = floorf(m_PopupMenuPos.y) + yBias;
+						vec_max.x = ceilf(m_PopupMenuPos.x)  + xBias;
+						vec_max.y = ceilf(m_PopupMenuPos.y) + yBias;
+					}
+					else
+					{
+						vec_min.x = min(vec_min.x, floorf(m_PopupMenuPos.x) + xBias);
+						vec_min.y = min(vec_min.y, floorf(m_PopupMenuPos.y) + yBias);
+						vec_max.x = max(vec_max.x, ceilf(m_PopupMenuPos.x)  + xBias);
+						vec_max.y = max(vec_max.y, ceilf(m_PopupMenuPos.y) + yBias);
+					}
+				}
+
+				if ( nTileType )
+				{
+					// Draw background of tile picking tool box
+					RenderSystem::DrawColoredSprite(vec_min - Vector2(0.3f, 0.3f),
+						vec_max + Vector2(0.3f, 0.3f),
+						0xBF00BF7F);
+				}
+
+				for ( int i = 0; i < nTileType; ++i)
+				{
+					float xBias = float(i % nTileLayoutWidth - (nTileLayoutWidth - 1) / 2);
+					float yBias = float(i / nTileLayoutWidth ) + 1.0f;
+
+					RenderSystem::DrawSprite(Vector2(floorf(m_PopupMenuPos.x) + xBias, floorf(m_PopupMenuPos.y)+ yBias),
+						Vector2(ceilf(m_PopupMenuPos.x)  + xBias, ceilf(m_PopupMenuPos.y) + yBias),
+						mapTileType[i].tex_id);
+				}
 			}
-			else
+			break;
+		case PAINT_TOOL_BRUSH:
 			{
-				vec_min.x = min(vec_min.x, floorf(m_TileMenuPos.x) + xBias);
-				vec_min.y = min(vec_min.y, floorf(m_TileMenuPos.y) + yBias);
-				vec_max.x = max(vec_max.x, ceilf(m_TileMenuPos.x)  + xBias);
-				vec_max.y = max(vec_max.y, ceilf(m_TileMenuPos.y) + yBias);
+				//DrawText
+				TriggerFuncTable* table = GetTriggerFuncTable();
+
+				for (int i=0; table[i].callback; i++)
+				{
+					char text[256];
+					if (mouse_ypos > m_PopupMenuScreenPosY + KLEIN_FONT_HEIGHT * i &&
+						mouse_ypos < m_PopupMenuScreenPosY + KLEIN_FONT_HEIGHT * (i + 1))
+					{
+						sprintf(text, "%s <", table[i].name);
+						m_PickingAreaTrigger = i;
+					}
+					else
+					{
+						sprintf(text, "%s", table[i].name);
+					}
+
+					RenderSystem::DrawText(text, m_PopupMenuScreenPosX,
+											m_PopupMenuScreenPosY + KLEIN_FONT_HEIGHT * i);
+				}
 			}
-		}
-
-		if ( nTileType )
-		{
-			// Draw background of tile picking tool box
-			RenderSystem::DrawColoredSprite(vec_min - Vector2(0.3f, 0.3f),
-											vec_max + Vector2(0.3f, 0.3f),
-											0xBF00BF7F);
-		}
-
-		for ( int i = 0; i < nTileType; ++i)
-		{
-			float xBias = float(i % nTileLayoutWidth - (nTileLayoutWidth - 1) / 2);
-			float yBias = float(i / nTileLayoutWidth ) + 1.0f;
-
-			RenderSystem::DrawSprite(Vector2(floorf(m_TileMenuPos.x) + xBias, floorf(m_TileMenuPos.y)+ yBias),
-									 Vector2(ceilf(m_TileMenuPos.x)  + xBias, ceilf(m_TileMenuPos.y) + yBias),
-									 mapTileType[i].tex_id);
+			break;
+		default:
+			break;
 		}
 
 	}
@@ -110,14 +149,17 @@ void GameStageEditor::Render()
 			else
 			{
 				// Draw selected area
-				RenderSystem::DrawWireframeRect(Vector2(m_SelectedArea.xMin, m_SelectedArea.yMin),
-												Vector2(m_SelectedArea.xMax, m_SelectedArea.yMax),
+				RenderSystem::DrawWireframeRect(m_SelectedArea.vMin(),
+												m_SelectedArea.vMax(),
 												color);
 
-				// Draw cursor tile rect
-				RenderSystem::DrawWireframeRect(Vector2(floorf(tile_pos.x), floorf(tile_pos.y)),
-												Vector2(ceilf(tile_pos.x), ceilf(tile_pos.y)),
-												color);
+				if ( !m_bPicking )
+				{
+					// Draw cursor tile rect
+					RenderSystem::DrawWireframeRect(Vector2(floorf(tile_pos.x), floorf(tile_pos.y)),
+													Vector2(ceilf(tile_pos.x), ceilf(tile_pos.y)),
+													color);
+				}
 			}
 
 		}
@@ -148,7 +190,9 @@ void GameStageEditor::StartPicking( bool bStart )
 		{
 			// start picking stuff
 
-			m_TileMenuPos = tile_pos;
+			m_PopupMenuScreenPosX = mouse_xpos;
+			m_PopupMenuScreenPosY = mouse_ypos;
+			m_PopupMenuPos = tile_pos;
 		}
 		else
 		{
@@ -163,10 +207,10 @@ void GameStageEditor::StartPicking( bool bStart )
 				float xBias = float(i % nTileLayoutWidth - (nTileLayoutWidth - 1) / 2);
 				float yBias = float(i / nTileLayoutWidth ) + 1.0f;
 
-				if ( tile_pos.x >= floorf(m_TileMenuPos.x) + xBias &&
-					 tile_pos.x <= ceilf(m_TileMenuPos.x)  + xBias &&
-					 tile_pos.y >= floorf(m_TileMenuPos.y) + yBias &&
-					 tile_pos.y <= ceilf(m_TileMenuPos.y) + yBias )
+				if ( tile_pos.x >= floorf(m_PopupMenuPos.x) + xBias &&
+					 tile_pos.x <= ceilf(m_PopupMenuPos.x)  + xBias &&
+					 tile_pos.y >= floorf(m_PopupMenuPos.y) + yBias &&
+					 tile_pos.y <= ceilf(m_PopupMenuPos.y) + yBias )
 				{
 					m_TileTypeToPaint = m_GameStage->GetTileNameById(i);
 					break;
@@ -182,7 +226,22 @@ void GameStageEditor::StartPicking( bool bStart )
 			// Fill selected area with tile just picked
 			if ( m_PaintTool == PAINT_TOOL_BRUSH )
 			{
+				if ( m_PickingAreaTrigger != -1 )
+				{
+					AREA_TRIGGER* trigger = new AREA_TRIGGER;
 
+					trigger->bound = m_SelectedArea;
+					trigger->world_id = KleinGame()->GetWorldview();
+					trigger->callback = NULL;
+					trigger->next = NULL;
+
+					if ( GetTriggerFuncTable()[m_PickingAreaTrigger].callback )
+					{
+						trigger->callback = GetTriggerFuncTable()[m_PickingAreaTrigger].callback;
+					}
+
+					AddAreaTriggerToGame(trigger);
+				}
 			}
 		}
 	}

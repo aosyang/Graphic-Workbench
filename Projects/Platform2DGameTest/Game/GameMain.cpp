@@ -9,6 +9,8 @@
 #include "GameStageEditor.h"
 #include "TextureManager.h"
 
+#include "AreaTrigger.h"
+
 #include <d3dx9.h>
 
 GameMain::GameMain()
@@ -43,6 +45,12 @@ void GameMain::Reset()
 	while ( actor = GetFirstActor() )
 	{
 		RemoveActorFromGame( actor );
+	}
+
+	AREA_TRIGGER* trigger;
+	while ( trigger = GetFirstAreaTrigger() )
+	{
+		RemoveAreaTriggerFromGame( trigger );
 	}
 
 	TextureManager::Instance().Reset();
@@ -120,16 +128,7 @@ void GameMain::Update( float delta_time )
 				}
 				else
 				{
-					// Interactive with actors
-					Actor* actor = GetFirstActor();
-					do 
-					{
-						if ( actor == m_Player ) continue;
-
-						if ( m_Player->TestCollision( actor->GetWorldBoundBox() ) )
-							actor->Interactive();
-
-					} while ( actor = GetNextActor( actor ) );
+					HandlePlayerActorInteractivities();
 				}
 			}
 		}
@@ -147,21 +146,11 @@ void GameMain::Update( float delta_time )
 
 		m_Player->MoveController() = moveVector;
 
-		Actor* actor = GetFirstActor();
-		while ( actor )
-		{
-			actor->Update( delta_time );
-			m_GameStage->TestCollision( actor );
-
-			actor = GetNextActor( actor );
-		}
+		HandlePlayerTriggerInteractivities();
+		UpdateActors(delta_time);
 	}
 
-	// Update camera position
-	Vector2 rel = m_Player->GetPosition() - m_CameraPos;
-	float dist = sqrtf(rel.SqrdLen());
-	if (dist > 0.3f)
-		m_CameraPos += rel * dist * 0.05f;
+	UpdateCamera();
 
 	UpdateEditorControl();
 
@@ -171,6 +160,11 @@ void GameMain::Update( float delta_time )
 void GameMain::Render()
 {
 	m_GameStage->RenderStage();
+
+	if (m_IsEditorMode)
+	{
+		DebugDrawTriggers(m_ActiveWorld);
+	}
 
 	// Render actors
 	Actor* actor = GetFirstActor();
@@ -383,6 +377,56 @@ void GameMain::ProtoFeatureFlipBit( int bits )
 bool GameMain::TestProtoFeatureBit( int bits ) const
 {
 	return (bits & m_ProtoFeatureBits) != 0;
+}
+
+void GameMain::HandlePlayerActorInteractivities()
+{
+	// Interactive with actors
+	Actor* actor = GetFirstActor();
+	do 
+	{
+		if ( actor == m_Player ) continue;
+
+		if ( m_Player->TestCollision( actor->GetWorldBoundBox() ) )
+			actor->Interactive();
+
+	} while ( actor = GetNextActor( actor ) );
+}
+
+void GameMain::UpdateActors( float delta_time )
+{
+	Actor* actor = GetFirstActor();
+	while ( actor )
+	{
+		actor->Update( delta_time );
+		m_GameStage->TestCollision( actor );
+
+		actor = GetNextActor( actor );
+	}
+}
+
+void GameMain::UpdateCamera()
+{
+	// Update camera position
+	Vector2 rel = m_Player->GetPosition() - m_CameraPos;
+	float dist = sqrtf(rel.SqrdLen());
+	if (dist > 0.3f)
+		m_CameraPos += rel * dist * 0.05f;
+}
+
+void GameMain::HandlePlayerTriggerInteractivities()
+{
+	AREA_TRIGGER* trigger = GetFirstAreaTrigger();
+
+	while (trigger)
+	{
+		if (trigger->callback &&
+			trigger->world_id == (int)m_ActiveWorld &&
+			m_Player->GetWorldBoundBox().TestBoxCollision(trigger->bound))
+			(*trigger->callback)(trigger, m_Player);
+
+		trigger = GetNextAreaTrigger(trigger);
+	}
 }
 
 GameMain* KleinGame()

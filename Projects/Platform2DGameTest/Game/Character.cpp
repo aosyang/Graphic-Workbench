@@ -66,7 +66,7 @@ void Player::Jump()
 	}
 	else if (m_CanJump)
 	{
-		m_Velocity = Vector2(0.0f, 0.35f);
+		m_Velocity.y = 0.35f;
 	}
 }
 

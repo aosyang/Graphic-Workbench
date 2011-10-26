@@ -323,6 +323,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Game\AreaTrigger.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Game\AreaTrigger.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Game\Character.cpp"
 				>
 			</File>
