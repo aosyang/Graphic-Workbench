@@ -35,4 +35,6 @@ void RemoveAreaTriggerFromGame( AREA_TRIGGER* area_trigger );
 void DebugDrawTriggers(int world_id);
 
 void TriggerHurtFireFunc(AREA_TRIGGER* trigger, Actor* actor);
+void TriggerForceUpwardFunc(AREA_TRIGGER* trigger, Actor* actor);
+
 #endif // AreaTrigger_h__

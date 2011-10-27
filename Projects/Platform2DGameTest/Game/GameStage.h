@@ -86,11 +86,15 @@ private:
 	
 	void ScriptLoadTileTypes(const LuaPlus::LuaObject* script);
 	void ScriptLoadGeometries(const LuaPlus::LuaObject* script);
+	void ScriptLoadTriggers(const LuaPlus::LuaObject* script);
+
+	void ScriptSaveGeometries( LuaPlus::LuaObject* script );
+	void ScriptSaveTileTypes( LuaPlus::LuaObject* script );
+	void ScriptSaveTriggers( LuaPlus::LuaObject* script );
 
 	void RenderStageGeom(STAGE_GEOM* geom);
 
 	TileUsageEnum GetTileUsageById(int id);
-
 private:
 	int							m_TileTypeIndex;
 	std::map<std::string, int>

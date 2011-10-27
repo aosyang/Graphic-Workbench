@@ -7,6 +7,7 @@
 TriggerFuncTable trigger_func_table[] =
 {
 	{ "TRIGGER_HURT_FIRE",			TriggerHurtFireFunc },
+	{ "TRIGGER_FORCE_UPWARD",		TriggerForceUpwardFunc	},
 	{ "",							NULL				},
 };
 
@@ -52,6 +53,8 @@ AREA_TRIGGER* GetNextAreaTrigger( AREA_TRIGGER* area_trigger )
 
 void AddAreaTriggerToGame( AREA_TRIGGER* area_trigger )
 {
+	area_trigger->next = NULL;
+
 	if (AreaTriggerListTail == NULL)
 	{
 		// Build new linked list
@@ -122,5 +125,9 @@ void DebugDrawTriggers( int world_id )
 
 void TriggerHurtFireFunc( AREA_TRIGGER* trigger, Actor* actor )
 {
-	actor->Velocity().y = 0.35f;
+}
+
+void TriggerForceUpwardFunc( AREA_TRIGGER* trigger, Actor* actor )
+{
+	actor->Velocity().y += 0.05f;
 }
