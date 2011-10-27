@@ -36,5 +36,6 @@ void DebugDrawTriggers(int world_id);
 
 void TriggerHurtFireFunc(AREA_TRIGGER* trigger, Actor* actor);
 void TriggerForceUpwardFunc(AREA_TRIGGER* trigger, Actor* actor);
-AREA_TRIGGER* PickAreaTriggerAtPoint(const Vector2& pos);
+AREA_TRIGGER* PickAreaTriggerAtPoint(const Vector2& pos, int world_id);
+
 #endif // AreaTrigger_h__

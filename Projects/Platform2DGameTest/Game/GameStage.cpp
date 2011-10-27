@@ -477,6 +477,7 @@ void GameStage::ScriptSaveTriggers( LuaPlus::LuaObject* script )
 		trig_script.SetString(6, TriggerFuncToString(trigger->callback));
 
 		trigger = GetNextAreaTrigger(trigger);
+		i++;
 	}
 }
 

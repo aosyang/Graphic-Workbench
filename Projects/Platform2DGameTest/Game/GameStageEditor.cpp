@@ -167,7 +167,7 @@ void GameStageEditor::Render()
 
 				if ( !m_bPicking )
 				{
-					AREA_TRIGGER* trigger = PickAreaTriggerAtPoint(tile_pos);
+					AREA_TRIGGER* trigger = PickAreaTriggerAtPoint(tile_pos, KleinGame()->GetWorldview());
 
 					if (trigger)
 					{
@@ -417,7 +417,7 @@ void GameStageEditor::EndPainting()
 	{
 	case PAINT_TOOL_BRUSH:
 		{
-			m_SelectedAreaTrigger = PickAreaTriggerAtPoint(tile_pos);
+			m_SelectedAreaTrigger = PickAreaTriggerAtPoint(tile_pos, KleinGame()->GetWorldview());
 
 			if (m_SelectedAreaTrigger)
 			{

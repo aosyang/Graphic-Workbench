@@ -4,11 +4,29 @@ Stage =
 	{
 		
 		{
+			-5,
+			1,
+			2,
+			6,
 			0,
+			"TRIGGER_FORCE_UPWARD",
+		},
+		
+		{
+			5,
+			6,
+			-7,
+			-4,
 			0,
-			0,
-			0,
-			0,
+			"TRIGGER_FORCE_UPWARD",
+		},
+		
+		{
+			-3,
+			-1,
+			-7,
+			8,
+			1,
 			"TRIGGER_FORCE_UPWARD",
 		},
 	},
