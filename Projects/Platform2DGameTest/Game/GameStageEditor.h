@@ -59,6 +59,7 @@ private:
 	Vector2				m_PopupMenuPos;
 	int					m_PopupMenuScreenPosX,
 						m_PopupMenuScreenPosY;
+	bool				m_RemoveTrigger;
 
 	int					m_ToolBoxSelectedTriggerNameIndex;
 	AreaTrigger*		m_SelectedAreaTrigger;

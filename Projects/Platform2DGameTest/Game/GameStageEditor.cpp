@@ -13,6 +13,7 @@ GameStageEditor::GameStageEditor()
   m_PopupMenuPos(0.0f, 0.0f),
   m_PopupMenuScreenPosX(0),
   m_PopupMenuScreenPosY(0),
+  m_RemoveTrigger(false),
   m_ToolBoxSelectedTriggerNameIndex(-1),
   m_SelectedAreaTrigger(NULL),
   m_Fovy(GW_MATH_PI / 3),
@@ -93,15 +94,33 @@ void GameStageEditor::Render()
 		case PAINT_TOOL_BRUSH:
 			{
 				// Draw trigger names
+				char text[256];
+
 				TriggerFuncTable* table = GetTriggerFuncTable();
 
 				m_ToolBoxSelectedTriggerNameIndex = -1;
+				m_RemoveTrigger = false;
+
+				// Delete area trigger
+				if (mouse_ypos > m_PopupMenuScreenPosY + KLEIN_FONT_HEIGHT * -2 &&
+					mouse_ypos < m_PopupMenuScreenPosY + KLEIN_FONT_HEIGHT * -1 &&
+					mouse_xpos > m_PopupMenuScreenPosX)
+				{
+					sprintf(text, "Remove <");
+					m_RemoveTrigger = true;
+				}
+				else
+				{
+					sprintf(text, "Remove");
+				}
+				RenderSystem::DrawText(text, m_PopupMenuScreenPosX,
+										m_PopupMenuScreenPosY + KLEIN_FONT_HEIGHT * -2);
 
 				for (int i=0; table[i].callback; i++)
 				{
-					char text[256];
 					if (mouse_ypos > m_PopupMenuScreenPosY + KLEIN_FONT_HEIGHT * i &&
-						mouse_ypos < m_PopupMenuScreenPosY + KLEIN_FONT_HEIGHT * (i + 1))
+						mouse_ypos < m_PopupMenuScreenPosY + KLEIN_FONT_HEIGHT * (i + 1) &&
+						mouse_xpos > m_PopupMenuScreenPosX)
 					{
 						sprintf(text, "%s <", table[i].name);
 						m_ToolBoxSelectedTriggerNameIndex = i;
@@ -278,6 +297,14 @@ void GameStageEditor::StartPicking( bool bStart )
 						AddAreaTriggerToGame(trigger);
 					}
 				}
+				else
+				{
+					if (m_SelectedAreaTrigger && m_RemoveTrigger)
+					{
+						RemoveAreaTriggerFromGame(m_SelectedAreaTrigger);
+						m_SelectedAreaTrigger = NULL;
+					}
+				}
 			}
 		}
 	}
@@ -419,12 +446,9 @@ void GameStageEditor::EndPainting()
 		{
 			m_SelectedAreaTrigger = PickAreaTriggerAtPoint(tile_pos, KleinGame()->GetWorldview());
 
-			if (m_SelectedAreaTrigger)
+			if (!m_SelectedAreaTrigger)
 			{
-
-			}
-			else
-			{
+				// Update selected area
 				m_SelectedArea.xMin = min( m_SelectedArea.xMin, floorf(tile_pos.x) );
 				m_SelectedArea.xMax = max( m_SelectedArea.xMax, ceilf(tile_pos.x) );
 				m_SelectedArea.yMin = min( m_SelectedArea.yMin, floorf(tile_pos.y) );
