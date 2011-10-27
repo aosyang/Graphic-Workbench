@@ -123,6 +123,22 @@ void DebugDrawTriggers( int world_id )
 	}
 }
 
+AREA_TRIGGER* PickAreaTriggerAtPoint(const Vector2& pos)
+{
+	AREA_TRIGGER* trigger = GetFirstAreaTrigger();
+	while (trigger)
+	{
+		if (trigger->bound.IsPointInsideBox(pos))
+		{
+			return trigger;
+		}
+
+		trigger = GetNextAreaTrigger(trigger);
+	}
+
+	return NULL;
+}
+
 void TriggerHurtFireFunc( AREA_TRIGGER* trigger, Actor* actor )
 {
 }

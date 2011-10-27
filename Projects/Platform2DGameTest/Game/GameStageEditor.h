@@ -8,6 +8,7 @@
 #include <string>
 
 class GameStage;
+struct AreaTrigger;
 
 enum PaintToolType
 {
@@ -59,7 +60,8 @@ private:
 	int					m_PopupMenuScreenPosX,
 						m_PopupMenuScreenPosY;
 
-	int					m_PickingAreaTrigger;
+	int					m_ToolBoxSelectedTriggerNameIndex;
+	AreaTrigger*		m_SelectedAreaTrigger;
 
 	float				m_Fovy;
 

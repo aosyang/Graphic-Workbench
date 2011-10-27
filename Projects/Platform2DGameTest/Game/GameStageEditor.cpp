@@ -13,7 +13,8 @@ GameStageEditor::GameStageEditor()
   m_PopupMenuPos(0.0f, 0.0f),
   m_PopupMenuScreenPosX(0),
   m_PopupMenuScreenPosY(0),
-  m_PickingAreaTrigger(-1),
+  m_ToolBoxSelectedTriggerNameIndex(-1),
+  m_SelectedAreaTrigger(NULL),
   m_Fovy(GW_MATH_PI / 3),
   m_PaintTool(PAINT_TOOL_PENCIL),
   m_ToolState(TOOL_STATE_IDLE)
@@ -32,8 +33,6 @@ void GameStageEditor::Render()
 	KleinGame()->GetMousePos(&mouse_xpos, &mouse_ypos);
 
 	Vector2 tile_pos = CursorToTilePos(mouse_xpos, mouse_ypos);
-
-	m_PickingAreaTrigger = -1;
 
 	D3DXMATRIXA16 matWorld;
 	D3DXMatrixIdentity(&matWorld);
@@ -93,8 +92,10 @@ void GameStageEditor::Render()
 			break;
 		case PAINT_TOOL_BRUSH:
 			{
-				//DrawText
+				// Draw trigger names
 				TriggerFuncTable* table = GetTriggerFuncTable();
+
+				m_ToolBoxSelectedTriggerNameIndex = -1;
 
 				for (int i=0; table[i].callback; i++)
 				{
@@ -103,7 +104,7 @@ void GameStageEditor::Render()
 						mouse_ypos < m_PopupMenuScreenPosY + KLEIN_FONT_HEIGHT * (i + 1))
 					{
 						sprintf(text, "%s <", table[i].name);
-						m_PickingAreaTrigger = i;
+						m_ToolBoxSelectedTriggerNameIndex = i;
 					}
 					else
 					{
@@ -148,17 +149,40 @@ void GameStageEditor::Render()
 			}
 			else
 			{
-				// Draw selected area
-				RenderSystem::DrawWireframeRect(m_SelectedArea.vMin(),
-												m_SelectedArea.vMax(),
-												color);
+				if (!m_SelectedAreaTrigger)
+				{
+					// Draw selected area
+					RenderSystem::DrawWireframeRect(m_SelectedArea.vMin(),
+													m_SelectedArea.vMax(),
+													color);
+				}
+
+				if (m_SelectedAreaTrigger)
+				{
+					// Draw selected trigger
+					RenderSystem::DrawWireframeRect(m_SelectedAreaTrigger->bound.vMin(),
+						m_SelectedAreaTrigger->bound.vMax(),
+						color);
+				}
 
 				if ( !m_bPicking )
 				{
-					// Draw cursor tile rect
-					RenderSystem::DrawWireframeRect(Vector2(floorf(tile_pos.x), floorf(tile_pos.y)),
-													Vector2(ceilf(tile_pos.x), ceilf(tile_pos.y)),
-													color);
+					AREA_TRIGGER* trigger = PickAreaTriggerAtPoint(tile_pos);
+
+					if (trigger)
+					{
+						RenderSystem::DrawWireframeRect(trigger->bound.vMin(),
+							trigger->bound.vMax(),
+							color);
+					}
+					else
+					{
+						// Draw cursor tile rect
+						RenderSystem::DrawWireframeRect(Vector2(floorf(tile_pos.x), floorf(tile_pos.y)),
+														Vector2(ceilf(tile_pos.x), ceilf(tile_pos.y)),
+														color);
+					}
+
 				}
 			}
 
@@ -172,7 +196,6 @@ void GameStageEditor::Render()
 void GameStageEditor::SetGameStage( GameStage* stage )
 {
 	m_GameStage = stage;
-
 }
 
 
@@ -226,21 +249,34 @@ void GameStageEditor::StartPicking( bool bStart )
 			// Fill selected area with tile just picked
 			if ( m_PaintTool == PAINT_TOOL_BRUSH )
 			{
-				if ( m_PickingAreaTrigger != -1 )
+				if ( m_ToolBoxSelectedTriggerNameIndex != -1 )
 				{
-					AREA_TRIGGER* trigger = new AREA_TRIGGER;
-
-					trigger->bound = m_SelectedArea;
-					trigger->world_id = KleinGame()->GetWorldview();
-					trigger->callback = NULL;
-					trigger->next = NULL;
-
-					if ( GetTriggerFuncTable()[m_PickingAreaTrigger].callback )
+					if (m_SelectedAreaTrigger)
 					{
-						trigger->callback = GetTriggerFuncTable()[m_PickingAreaTrigger].callback;
+						// Pick up new function for selected trigger
+						m_SelectedAreaTrigger->callback = NULL;
+						if ( GetTriggerFuncTable()[m_ToolBoxSelectedTriggerNameIndex].callback )
+						{
+							m_SelectedAreaTrigger->callback = GetTriggerFuncTable()[m_ToolBoxSelectedTriggerNameIndex].callback;
+						}
 					}
+					else
+					{
+						// Create new trigger with selected area
+						AREA_TRIGGER* trigger = new AREA_TRIGGER;
 
-					AddAreaTriggerToGame(trigger);
+						trigger->bound = m_SelectedArea;
+						trigger->world_id = KleinGame()->GetWorldview();
+						trigger->callback = NULL;
+						trigger->next = NULL;
+
+						if ( GetTriggerFuncTable()[m_ToolBoxSelectedTriggerNameIndex].callback )
+						{
+							trigger->callback = GetTriggerFuncTable()[m_ToolBoxSelectedTriggerNameIndex].callback;
+						}
+
+						AddAreaTriggerToGame(trigger);
+					}
 				}
 			}
 		}
@@ -380,10 +416,21 @@ void GameStageEditor::EndPainting()
 	switch (m_PaintTool)
 	{
 	case PAINT_TOOL_BRUSH:
-		m_SelectedArea.xMin = min( m_SelectedArea.xMin, floorf(tile_pos.x) );
-		m_SelectedArea.xMax = max( m_SelectedArea.xMax, ceilf(tile_pos.x) );
-		m_SelectedArea.yMin = min( m_SelectedArea.yMin, floorf(tile_pos.y) );
-		m_SelectedArea.yMax = max( m_SelectedArea.yMax, ceilf(tile_pos.y) );
+		{
+			m_SelectedAreaTrigger = PickAreaTriggerAtPoint(tile_pos);
+
+			if (m_SelectedAreaTrigger)
+			{
+
+			}
+			else
+			{
+				m_SelectedArea.xMin = min( m_SelectedArea.xMin, floorf(tile_pos.x) );
+				m_SelectedArea.xMax = max( m_SelectedArea.xMax, ceilf(tile_pos.x) );
+				m_SelectedArea.yMin = min( m_SelectedArea.yMin, floorf(tile_pos.y) );
+				m_SelectedArea.yMax = max( m_SelectedArea.yMax, ceilf(tile_pos.y) );
+			}
+		}
 
 		break;
 	default:
