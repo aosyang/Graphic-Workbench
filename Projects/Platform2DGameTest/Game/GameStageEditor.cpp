@@ -295,6 +295,8 @@ void GameStageEditor::StartPicking( bool bStart )
 						}
 
 						AddAreaTriggerToGame(trigger);
+
+						m_SelectedAreaTrigger = trigger;
 					}
 				}
 				else
