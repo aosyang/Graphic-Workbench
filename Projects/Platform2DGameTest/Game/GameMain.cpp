@@ -21,7 +21,6 @@ GameMain::GameMain()
   m_MouseWheel(0),
   m_MousePosX(0),
   m_MousePosY(0),
-  m_CameraPos(Vector2::ZERO),
   m_ProtoFeatureBits(0),
   m_ActiveWorld((GameWorldviewEnum)0)
 {
@@ -30,6 +29,9 @@ GameMain::GameMain()
 
 	for (int i=0; i<MBTN_COUNT; i++)
 		m_MBtnPressed[i] = false;
+
+	memset(&m_Camera, 0, sizeof(m_Camera));
+	m_Camera.fovy = KLEIN_CAMERA_FOVY;
 }
 
 GameMain::~GameMain()
@@ -63,6 +65,8 @@ void GameMain::Startup()
 
 	// Create player
 	m_Player = CreatePlayer();
+
+	m_Camera.dest_actor = m_Player;
 
 	// Create a patient for test
 	m_Patient = CreatePatient();
@@ -221,7 +225,7 @@ void GameMain::SetMousePosition( int x_pos, int y_pos )
 
 Vector2 GameMain::GetCameraPos() const
 {
-	return m_CameraPos;
+	return m_Camera.position;
 }
 
 Vector2 GameMain::GetPlayerPos() const
@@ -274,7 +278,10 @@ void GameMain::OnKeyPressed( int key_code )
 		break;
 	case GW_KEY_P:
 		if (m_IsEditorMode)
+		{
 			m_GameStage->SaveToFile("Stage.lua");
+			m_GameStageEditor->MarkMapSaved();
+		}
 		break;
 
 	}
@@ -347,12 +354,14 @@ void GameMain::DrawDebugText()
 			"pos: %f, %f\n"
 			"Block: x( %d ~ %d ) - y( %d ~ %d )\n"
 			"World: %d\n"
-			"Mouse: %d %d %d",
+			"Mouse: %d %d %d\n"
+			"%s",
 			char_pos.x, char_pos.y,
 			(int)floor(char_pos.x), (int)ceil(char_pos.x),
 			(int)floor(char_pos.y), (int)ceil(char_pos.y),
 			world_id,
-			m_MousePosX, m_MousePosY, m_MouseWheel);
+			m_MousePosX, m_MousePosY, m_MouseWheel,
+			m_GameStageEditor->IsMapUnsaved() ? "*Map unsaved*" : "");
 
 	RenderSystem::DrawText(debug_text, 0, 0, 0xFFFFFF00);
 }
@@ -407,11 +416,21 @@ void GameMain::UpdateActors( float delta_time )
 
 void GameMain::UpdateCamera()
 {
+	Vector2 rel;
+
 	// Update camera position
-	Vector2 rel = m_Player->GetPosition() - m_CameraPos;
+	if (m_Camera.dest_actor)
+	{
+		rel = m_Camera.dest_actor->GetPosition() - m_Camera.position;
+	}
+	else
+	{
+		rel = m_Camera.dest_point - m_Camera.position;
+	}
+
 	float dist = sqrtf(rel.SqrdLen());
 	if (dist > 0.3f)
-		m_CameraPos += rel * dist * 0.05f;
+		m_Camera.position += rel * dist * 0.05f;
 }
 
 void GameMain::HandlePlayerTriggerInteractivities()

@@ -18,7 +18,8 @@ GameStageEditor::GameStageEditor()
   m_SelectedAreaTrigger(NULL),
   m_Fovy(GW_MATH_PI / 3),
   m_PaintTool(PAINT_TOOL_PENCIL),
-  m_ToolState(TOOL_STATE_IDLE)
+  m_ToolState(TOOL_STATE_IDLE),
+  m_MapUnsaved(false)
 {
 
 }
@@ -298,6 +299,8 @@ void GameStageEditor::StartPicking( bool bStart )
 
 						m_SelectedAreaTrigger = trigger;
 					}
+
+					MarkMapUnsaved();
 				}
 				else
 				{
@@ -305,6 +308,8 @@ void GameStageEditor::StartPicking( bool bStart )
 					{
 						RemoveAreaTriggerFromGame(m_SelectedAreaTrigger);
 						m_SelectedAreaTrigger = NULL;
+
+						MarkMapUnsaved();
 					}
 				}
 			}
@@ -344,6 +349,8 @@ void GameStageEditor::PaintTileAtCursor()
 			{
 				geom->tile_type_id[KleinGame()->GetWorldview()] = m_GameStage->GetTileIdByName(m_TileTypeToPaint.c_str());
 			}
+
+			MarkMapUnsaved();
 		}
 		break;
 	default:

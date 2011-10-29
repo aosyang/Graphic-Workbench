@@ -10,6 +10,7 @@
 
 class GameStageEditor;
 class GameStage;
+class Actor;
 class Player;
 class Patient;
 
@@ -17,6 +18,14 @@ enum PrototypeFeatureEnum
 {
 	PROTO_FEATURE_CIRCLE_OF_TRUE_VIEW		= 0x00000001,
 };
+
+typedef struct GameCamera
+{
+	Vector2		position;
+	float		fovy;
+	Vector2		dest_point;
+	Actor*		dest_actor;
+} GAME_CAMERA;
 
 class GameMain
 {
@@ -80,7 +89,7 @@ private:
 	bool				m_IsEditorMode;
 	GameStageEditor*	m_GameStageEditor;
 
-	Vector2				m_CameraPos;
+	GAME_CAMERA			m_Camera;
 
 	int					m_ProtoFeatureBits;
 

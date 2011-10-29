@@ -45,6 +45,10 @@ public:
 	void SetPaintTool(PaintToolType tool) { m_PaintTool = tool; }
 	PaintToolType GetPaintTool() const { return m_PaintTool; }
 
+	void MarkMapUnsaved() { m_MapUnsaved = true; }
+	void MarkMapSaved() { m_MapUnsaved = false; }
+	bool IsMapUnsaved() const { return m_MapUnsaved; }
+
 	void ZoomView(int zoom);
 
 	float GetFovy() const { return m_Fovy; }
@@ -70,6 +74,7 @@ private:
 	BoundBox			m_SelectedArea;
 
 	PaintToolState		m_ToolState;
+	bool				m_MapUnsaved;
 };
 
 #endif // GameStageEditor_h__
