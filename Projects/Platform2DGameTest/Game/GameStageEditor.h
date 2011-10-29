@@ -1,8 +1,15 @@
+/********************************************************************
+	created:	2011/10/16
+	filename: 	GameStageEditor.h
+	author:		Mwolf
+	
+	purpose:	Map editor for game
+*********************************************************************/
 #ifndef GameStageEditor_h__
 #define GameStageEditor_h__
 
 #include "Math/GWVectors.h"
-#include "GWInputMouse.h"
+#include "GWInputDeviceEnum.h"
 #include "BoundBox.h"
 
 #include <string>

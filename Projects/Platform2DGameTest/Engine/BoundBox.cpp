@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/9/5
+	filename: 	BoundBox.cpp
+	author:		Mwolf
+	
+	purpose:	
+*********************************************************************/
 #include "BoundBox.h"
 #include "Math/GWVectors.h"
 

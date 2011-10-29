@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/9/5
+	filename: 	TextureManager.h
+	author:		Mwolf
+	
+	purpose:	
+*********************************************************************/
 #ifndef TextureManager_h__
 #define TextureManager_h__
 

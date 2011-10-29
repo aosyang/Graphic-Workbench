@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/10/14
+	filename: 	GameMain.cpp
+	author:		Mwolf
+	
+	purpose:	
+*********************************************************************/
 #include "GameMain.h"
 
 #include "Character.h"
@@ -18,17 +25,10 @@ GameMain::GameMain()
   m_Player(NULL),
   m_IsEditorMode(true),
   m_GameStageEditor(NULL),
-  m_MouseWheel(0),
-  m_MousePosX(0),
-  m_MousePosY(0),
   m_ProtoFeatureBits(0),
   m_ActiveWorld((GameWorldviewEnum)0)
 {
-	for (int i=0; i<0xFF; i++)
-		m_KeyPressed[i] = false;
-
-	for (int i=0; i<MBTN_COUNT; i++)
-		m_MBtnPressed[i] = false;
+	memset(&m_InputState, 0, sizeof(m_InputState));
 
 	memset(&m_Camera, 0, sizeof(m_Camera));
 	m_Camera.fovy = KLEIN_CAMERA_FOVY;
@@ -91,13 +91,15 @@ void GameMain::Update( float delta_time )
 	// Reset player movement control
 	m_Player->MoveController() = moveVector;
 
+	GW_KEYBOARD_STATE* key = &m_InputState.key;
+
 	if (m_IsEditorMode)
 	{
 		// Free move in editor mode
-		if (m_KeyPressed[GW_KEY_A]) moveVector += Vector2(-1.0f, 0.0f);
-		if (m_KeyPressed[GW_KEY_D]) moveVector += Vector2(1.0f, 0.0f);
-		if (m_KeyPressed[GW_KEY_W]) moveVector += Vector2(0.0f, 1.0f);
-		if (m_KeyPressed[GW_KEY_S]) moveVector += Vector2(0.0f, -1.0f);
+		if (key->pressed[GW_KEY_A]) moveVector += Vector2(-1.0f, 0.0f);
+		if (key->pressed[GW_KEY_D]) moveVector += Vector2(1.0f, 0.0f);
+		if (key->pressed[GW_KEY_W]) moveVector += Vector2(0.0f, 1.0f);
+		if (key->pressed[GW_KEY_S]) moveVector += Vector2(0.0f, -1.0f);
 
 		moveVector.Normalize();
 		moveVector *= 0.5f;
@@ -107,13 +109,13 @@ void GameMain::Update( float delta_time )
 	}
 	else 
 	{
-		if (m_KeyPressed[GW_KEY_LEFT]) moveVector += Vector2(-1.0f, 0.0f);
-		if (m_KeyPressed[GW_KEY_RIGHT]) moveVector += Vector2(1.0f, 0.0f);
+		if (key->pressed[GW_KEY_LEFT]) moveVector += Vector2(-1.0f, 0.0f);
+		if (key->pressed[GW_KEY_RIGHT]) moveVector += Vector2(1.0f, 0.0f);
 
 		if (m_Player->IsClimbingLadder())
 		{
-			if (m_KeyPressed[GW_KEY_UP]) moveVector += Vector2(0.0f, 1.0f);
-			if (m_KeyPressed[GW_KEY_DOWN]) moveVector += Vector2(0.0f, -1.0f);
+			if (key->pressed[GW_KEY_UP]) moveVector += Vector2(0.0f, 1.0f);
+			if (key->pressed[GW_KEY_DOWN]) moveVector += Vector2(0.0f, -1.0f);
 
 			// Fall down if no ladder
 			if (player_pos_type != TILE_USAGE_LADDER)
@@ -123,7 +125,7 @@ void GameMain::Update( float delta_time )
 		}
 		else
 		{
-			if (m_KeyPressed[GW_KEY_UP])
+			if (key->pressed[GW_KEY_UP])
 			{
 				// Climb up if player stands near by a ladder
 				if (player_pos_type == TILE_USAGE_LADDER)
@@ -191,8 +193,8 @@ void GameMain::Render()
 
 void GameMain::SetKeyState( int key_code, bool key_down )
 {
-	bool old_state = m_KeyPressed[key_code];
-	m_KeyPressed[key_code] = key_down;
+	bool old_state = m_InputState.key.pressed[key_code];
+	m_InputState.key.pressed[key_code] = key_down;
 
 	if ( key_down!=old_state )
 	{
@@ -205,8 +207,8 @@ void GameMain::SetKeyState( int key_code, bool key_down )
 
 void GameMain::SetMouseBtnState( GWMouseButton mbtn_code, bool btn_down )
 {
-	bool old_state = m_MBtnPressed[mbtn_code];
-	m_MBtnPressed[mbtn_code] = btn_down;
+	bool old_state = m_InputState.mouse.btn_down[mbtn_code];
+	m_InputState.mouse.btn_down[mbtn_code] = btn_down;
 
 	if ( btn_down != old_state )
 	{
@@ -219,8 +221,8 @@ void GameMain::SetMouseBtnState( GWMouseButton mbtn_code, bool btn_down )
 
 void GameMain::SetMousePosition( int x_pos, int y_pos )
 {
-	m_MousePosX = x_pos;
-	m_MousePosY = y_pos;
+	m_InputState.mouse.x = x_pos;
+	m_InputState.mouse.y = y_pos;
 }
 
 Vector2 GameMain::GetCameraPos() const
@@ -235,8 +237,8 @@ Vector2 GameMain::GetPlayerPos() const
 
 void GameMain::GetMousePos( int* x, int* y )
 {
-	if (x) *x = m_MousePosX;
-	if (y) *y = m_MousePosY;
+	if (x) *x = m_InputState.mouse.x;
+	if (y) *y = m_InputState.mouse.y;
 }
 
 
@@ -316,19 +318,21 @@ void GameMain::OnMouseBtnReleased( GWMouseButton mbtn_code )
 
 void GameMain::ClearMouseWheelState()
 {
-	m_MouseWheel = 0;
+	m_InputState.mouse.wheel = 0;
 }
 
 void GameMain::UpdateEditorControl()
 {
 	if (!m_IsEditorMode) return;
 
-	if ( m_MBtnPressed[MBTN_LEFT] && !m_MBtnPressed[MBTN_RIGHT])//Edit by YLL
-		//if (m_MBtnPressed[MBTN_LEFT])
+	GW_MOUSE_STATE* mouse = &m_InputState.mouse;
+
+	if ( mouse->btn_down[MBTN_LEFT] && !mouse->btn_down[MBTN_RIGHT])//Edit by YLL
+		//if (m_InputState.mouse_btn_pressed[MBTN_LEFT])
 	{
 		m_GameStageEditor->PaintTileAtCursor();
 	}
-	else if ( m_MBtnPressed[MBTN_RIGHT] )
+	else if ( mouse->btn_down[MBTN_RIGHT] )
 	{
 		m_GameStageEditor->StartPicking();//Edit by YLL for right click pick mode
 		//m_GameStageEditor->PickupTileTypeAtCursor();
@@ -338,7 +342,7 @@ void GameMain::UpdateEditorControl()
 		m_GameStageEditor->EndPicking();//Add by YLL for right click pick mode
 	}
 
-	m_GameStageEditor->ZoomView( m_MouseWheel / 120 );
+	m_GameStageEditor->ZoomView( mouse->wheel / 120 );
 }
 
 void GameMain::DrawDebugText()
@@ -348,6 +352,8 @@ void GameMain::DrawDebugText()
 	// Update debug info
 	Vector2 char_pos = m_Player->GetPosition();
 	int world_id = (int)GetWorldview();
+
+	GW_MOUSE_STATE* mouse = &m_InputState.mouse;
 
 	// Draw debug text
 	sprintf(debug_text,
@@ -360,7 +366,7 @@ void GameMain::DrawDebugText()
 			(int)floor(char_pos.x), (int)ceil(char_pos.x),
 			(int)floor(char_pos.y), (int)ceil(char_pos.y),
 			world_id,
-			m_MousePosX, m_MousePosY, m_MouseWheel,
+			mouse->x, mouse->y, mouse->wheel,
 			m_GameStageEditor->IsMapUnsaved() ? "*Map unsaved*" : "");
 
 	RenderSystem::DrawText(debug_text, 0, 0, 0xFFFFFF00);

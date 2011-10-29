@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/9/5
+	filename: 	RenderDevice.cpp
+	author:		Mwolf
+	
+	purpose:	
+*********************************************************************/
 #include "RenderDevice.h"
 #include "TextureManager.h"
 #include "../Game/GameDef.h"

@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/10/16
+	filename: 	GameStageEditor.cpp
+	author:		Mwolf
+	
+	purpose:	
+*********************************************************************/
 #include "GameStageEditor.h"
 
 #include "GameDef.h"

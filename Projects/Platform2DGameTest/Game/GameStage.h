@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/9/5
+	filename: 	GameStage.h
+	author:		Mwolf
+	
+	purpose:	Definitions for stage structure of game
+*********************************************************************/
 #ifndef GameStage_h__
 #define GameStage_h__
 

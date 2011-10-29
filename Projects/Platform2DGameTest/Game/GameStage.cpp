@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/9/5
+	filename: 	GameStage.cpp
+	author:		Mwolf
+	
+	purpose:	
+*********************************************************************/
 #include "GameStage.h"
 #include "TextureManager.h"
 #include "AreaTrigger.h"

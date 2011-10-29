@@ -269,11 +269,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Engine\GWInputKeyboard.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Engine\GWInputMouse.h"
+				RelativePath=".\Engine\GWInputDeviceEnum.h"
 				>
 			</File>
 			<File

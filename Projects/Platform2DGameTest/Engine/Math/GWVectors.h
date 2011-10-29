@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/9/5
+	filename: 	GWVectors.h
+	author:		Mwolf
+	
+	purpose:	2D and 3D vectors
+*********************************************************************/
 #ifndef GWVectors_h__
 #define GWVectors_h__
 

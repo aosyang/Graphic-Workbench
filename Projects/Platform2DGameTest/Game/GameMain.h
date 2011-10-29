@@ -1,10 +1,16 @@
+/********************************************************************
+	created:	2011/10/14
+	filename: 	GameMain.h
+	author:		Mwolf
+	
+	purpose:	Main game loop for Klein
+*********************************************************************/
 #ifndef GameMain_h__
 #define GameMain_h__
 
 #include "GameDef.h"
 
-#include "GWInputKeyboard.h"
-#include "GWInputMouse.h"
+#include "GWInputDeviceEnum.h"
 
 #include "Math/GWVectors.h"
 
@@ -44,7 +50,7 @@ public:
 	void SetKeyState(int key_code, bool key_down);
 	void SetMouseBtnState(GWMouseButton mbtn_code, bool btn_down);
 	void SetMousePosition(int x_pos, int y_pos);
-	void SetMouseWheelValue(int wheel) { m_MouseWheel = wheel; }
+	void SetMouseWheelValue(int wheel) { m_InputState.mouse.wheel = wheel; }
 
 	Vector2 GetCameraPos() const;
 	Vector2 GetPlayerPos() const;
@@ -81,10 +87,7 @@ private:
 	Player*				m_Player;
 	Patient*			m_Patient;
 
-	bool				m_KeyPressed[0xFF];		// Keep the press state of each key
-	bool				m_MBtnPressed[MBTN_COUNT];
-	int					m_MouseWheel;
-	int					m_MousePosX, m_MousePosY;
+	GW_INPUT_STATE		m_InputState;
 
 	bool				m_IsEditorMode;
 	GameStageEditor*	m_GameStageEditor;

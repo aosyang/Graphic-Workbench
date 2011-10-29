@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/10/22
+	filename: 	Actor.h
+	author:		Mwolf
+	
+	purpose:	Base class for movable objects
+*********************************************************************/
 #ifndef Actor_h__
 #define Actor_h__
 

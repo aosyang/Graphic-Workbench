@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/9/5
+	filename: 	GWVectors.cpp
+	author:		Mwolf
+	
+	purpose:	
+*********************************************************************/
 #include "GWVectors.h"
 
 const Vector2 Vector2::ZERO = Vector2(0.0f, 0.0f);

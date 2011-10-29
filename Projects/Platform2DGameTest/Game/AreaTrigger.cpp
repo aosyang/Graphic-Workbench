@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/10/27
+	filename: 	AreaTrigger.cpp
+	author:		Mwolf
+	
+	purpose:	Implementations for area trigger
+*********************************************************************/
 #include "AreaTrigger.h"
 #include "../DXUT/DXUT.h"
 #include "Actor.h"

@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/10/22
+	filename: 	Actor.cpp
+	author:		Mwolf
+	
+	purpose:	
+*********************************************************************/
 #include "Actor.h"
 #include "RenderDevice.h"
 #include "GameStage.h"

@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/9/5
+	filename: 	Character.cpp
+	author:		Mwolf
+	
+	purpose:	
+*********************************************************************/
 #include "Character.h"
 #include "BoundBox.h"
 #include "GameStage.h"

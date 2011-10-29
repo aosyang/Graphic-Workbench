@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/9/5
+	filename: 	TextureManager.cpp
+	author:		Mwolf
+	
+	purpose:	
+*********************************************************************/
 #include "TextureManager.h"
 #include "../DXUT/DXUT.h"
 

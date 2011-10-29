@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/9/5
+	filename: 	RenderDevice.h
+	author:		Mwolf
+	
+	purpose:	
+*********************************************************************/
 #ifndef RenderDevice_h__
 #define RenderDevice_h__
 

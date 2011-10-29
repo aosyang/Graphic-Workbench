@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/10/27
+	filename: 	AreaTrigger.h
+	author:		Mwolf
+	
+	purpose:	Definitions for area trigger 
+*********************************************************************/
 #ifndef AreaTrigger_h__
 #define AreaTrigger_h__
 

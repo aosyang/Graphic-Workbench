@@ -1,5 +1,12 @@
-#ifndef GWInputKeyboard_h__
-#define GWInputKeyboard_h__
+/********************************************************************
+	created:	2011/10/14
+	filename: 	GWInputDeviceEnum.h
+	author:		Mwolf
+	
+	purpose:	Common definitions for input device
+*********************************************************************/
+#ifndef GWInputDeviceEnum_h__
+#define GWInputDeviceEnum_h__
 
 // Note: Key codes come from here:
 //   http://www.webonweboff.com/tips/js/event_key_codes.aspx
@@ -58,4 +65,31 @@ enum GWKeyCode
 	GW_KEY_Z				= 90,
 };
 
-#endif // GWInputKeyboard_h__
+enum GWMouseButton
+{
+	MBTN_LEFT,
+	MBTN_RIGHT,
+	MBTN_MIDDLE,
+
+	MBTN_COUNT,
+};
+
+typedef struct GW_KeyboardState
+{
+	bool pressed[0xFF];
+} GW_KEYBOARD_STATE;
+
+typedef struct GW_MouseState
+{
+	bool	btn_down[MBTN_COUNT];
+	int		wheel;
+	int		x, y;
+} GW_MOUSE_STATE;
+
+typedef struct GW_InputState
+{
+	GW_KEYBOARD_STATE	key;
+	GW_MOUSE_STATE		mouse;
+} GW_INPUT_STATE;
+
+#endif // GWInputDeviceEnum_h__

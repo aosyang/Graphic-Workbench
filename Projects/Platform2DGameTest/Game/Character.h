@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/9/5
+	filename: 	Character.h
+	author:		Mwolf
+	
+	purpose:	Definitions for characters in game
+*********************************************************************/
 #ifndef Character_h__
 #define Character_h__
 

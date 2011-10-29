@@ -1,3 +1,10 @@
+/********************************************************************
+	created:	2011/10/15
+	filename: 	GameDef.h
+	author:		Mwolf
+	
+	purpose:	Common definitions for Klein
+*********************************************************************/
 #ifndef GameDef_h__
 #define GameDef_h__
 

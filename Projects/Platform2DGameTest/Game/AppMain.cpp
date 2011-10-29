@@ -1,4 +1,10 @@
-
+/********************************************************************
+	created:	2011/9/5
+	filename: 	AppMain.cpp
+	author:		Mwolf
+	
+	purpose:	Application loop for game
+*********************************************************************/
 #include <windows.h>
 #include <Windowsx.h>
 #include "../DXUT/DXUT.h"
