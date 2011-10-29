@@ -14,7 +14,7 @@
 #include "GameDef.h"
 
 #include "GameStageEditor.h"
-#include "TextureManager.h"
+#include "Renderer/TextureManager.h"
 
 #include "AreaTrigger.h"
 

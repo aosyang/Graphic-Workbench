@@ -8,7 +8,7 @@
 #ifndef GameStage_h__
 #define GameStage_h__
 
-#include "RenderDevice.h"
+#include "Renderer/RenderDevice.h"
 #include "BoundBox.h"
 #include "Actor.h"
 #include "GameDef.h"

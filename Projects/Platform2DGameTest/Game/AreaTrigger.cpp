@@ -8,7 +8,7 @@
 #include "AreaTrigger.h"
 #include "../DXUT/DXUT.h"
 #include "Actor.h"
-#include "RenderDevice.h"
+#include "Renderer/RenderDevice.h"
 #include <string.h>
 
 TriggerFuncTable trigger_func_table[] =

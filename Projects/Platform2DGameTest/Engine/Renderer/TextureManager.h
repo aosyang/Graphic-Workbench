@@ -12,15 +12,9 @@
 #include <string>
 
 #include "RenderDevice.h"
-#include <d3d9.h>
+#include "Win32/DX9/GWTextureDX9.h"
 
 #include "GWSingleton.h"
-
-typedef struct TextureInfoType
-{
-	int					width, height;
-	LPDIRECT3DTEXTURE9	d3d_tex;
-} TEXTURE_INFO;
 
 class TextureManager : public GWSingleton<TextureManager>
 {
@@ -30,7 +24,7 @@ public:
 	void Reset();
 
 	int GetTextureID(const char* filename) const;
-	LPDIRECT3DTEXTURE9 GetD3DTexture(int id) const;
+	const TEXTURE_INFO* GetTexture(int id) const;
 	const char* GetTextureName(int id) const;
 
 	bool LoadTextureFromFile( const char* filename );

@@ -276,22 +276,6 @@
 				RelativePath=".\Engine\GWSingleton.h"
 				>
 			</File>
-			<File
-				RelativePath=".\Engine\RenderDevice.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Engine\RenderDevice.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Engine\TextureManager.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\Engine\TextureManager.h"
-				>
-			</File>
 			<Filter
 				Name="Math"
 				>
@@ -303,6 +287,38 @@
 					RelativePath=".\Engine\Math\GWVectors.h"
 					>
 				</File>
+			</Filter>
+			<Filter
+				Name="Renderer"
+				>
+				<File
+					RelativePath=".\Engine\Renderer\RenderDevice.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Engine\Renderer\RenderDevice.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Engine\Renderer\TextureManager.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Engine\Renderer\TextureManager.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Win32"
+				>
+				<Filter
+					Name="DX9"
+					>
+					<File
+						RelativePath=".\Engine\Win32\DX9\GWTextureDX9.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter

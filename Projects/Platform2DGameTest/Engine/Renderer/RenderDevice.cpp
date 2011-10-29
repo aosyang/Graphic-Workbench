@@ -36,8 +36,8 @@ void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, int tex
 
 	if (tex_id!=-1)
 	{
-		LPDIRECT3DTEXTURE9 tex = TextureManager::Instance().GetD3DTexture(tex_id);
-		m_sDevice->SetTexture(0, tex);
+		const TEXTURE_INFO* tex = TextureManager::Instance().GetTexture(tex_id);
+		m_sDevice->SetTexture(0, tex->d3d_tex);
 
 		// enable mip-map for texture
 		m_sDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);

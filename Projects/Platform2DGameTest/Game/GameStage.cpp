@@ -6,7 +6,7 @@
 	purpose:	
 *********************************************************************/
 #include "GameStage.h"
-#include "TextureManager.h"
+#include "Renderer/TextureManager.h"
 #include "AreaTrigger.h"
 
 #include "../DXUT/DXUT.h"

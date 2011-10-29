@@ -39,13 +39,13 @@ int TextureManager::GetTextureID(const char* filename) const
 	return -1;
 }
 
-LPDIRECT3DTEXTURE9 TextureManager::GetD3DTexture( int id ) const
+const TEXTURE_INFO* TextureManager::GetTexture( int id ) const
 {
 	TextureMap::const_iterator iter;
 
 	if ( (iter=m_Textures.find(id)) != m_Textures.end() )
 	{
-		return iter->second.d3d_tex;
+		return &(iter->second);
 	}
 
 	return NULL;

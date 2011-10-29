@@ -12,7 +12,7 @@
 
 #include <d3dx9.h>
 
-#include "RenderDevice.h"
+#include "Renderer/RenderDevice.h"
 #include "GameDef.h"
 #include "GameMain.h"
 
