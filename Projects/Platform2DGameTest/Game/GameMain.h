@@ -19,6 +19,7 @@ class GameStage;
 class Actor;
 class Player;
 class Patient;
+typedef struct GWRenderWindow GW_RENDER_WINDOW;
 
 enum PrototypeFeatureEnum
 {
@@ -43,7 +44,7 @@ public:
 
 	void Startup();
 	void Shutdown();
-	void Update(float delta_time);
+	void Update();
 
 	void Render();
 
@@ -74,8 +75,9 @@ private:
 
 	void ClearMouseWheelState();
 
+	void UpdateInputDevice();
 	void UpdateCamera();
-	void UpdateActors( float delta_time );
+	void UpdateActors();
 	void HandlePlayerTriggerInteractivities();
 	void HandlePlayerActorInteractivities();
 	void UpdateEditorControl();
@@ -83,6 +85,8 @@ private:
 	void DrawDebugText();
 
 private:
+	GW_RENDER_WINDOW*	m_RenderWindow;
+
 	GameStage*			m_GameStage;
 	Player*				m_Player;
 	Patient*			m_Patient;

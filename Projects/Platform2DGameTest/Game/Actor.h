@@ -33,7 +33,7 @@ public:
 
 	// Test if actor can move in this direction, if not, give an available movement
 	bool DoCollisionMove(const BoundBox& other, const Vector2& input, Vector2* output);
-	virtual void Update(float delta_time);
+	virtual void Update();
 
 	// Move actor in local direction
 	void Translate(const Vector2& vecRel);

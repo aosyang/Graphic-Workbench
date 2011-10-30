@@ -52,7 +52,7 @@ typedef struct StageGeom
 	BoundBox					bound;
 	int							tile_type_id[GAME_WORLD_COUNT];
 
-	StageGeom*					next;
+	STAGE_GEOM*					next;
 } STAGE_GEOM;
 
 STAGE_GEOM* CreateStageGeom();

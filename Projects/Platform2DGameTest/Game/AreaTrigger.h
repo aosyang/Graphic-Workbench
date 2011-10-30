@@ -11,7 +11,7 @@
 #include "BoundBox.h"
 
 class Actor;
-struct AreaTrigger;
+typedef struct AreaTrigger AREA_TRIGGER;
 
 typedef void (*TriggerFunc)( AreaTrigger* trigger, Actor* actor );
 
@@ -24,14 +24,13 @@ struct TriggerFuncTable
 TriggerFuncTable* GetTriggerFuncTable();
 TriggerFunc StringToTriggerFunc(const char* name);
 const char* TriggerFuncToString(TriggerFunc func);
-
 typedef struct AreaTrigger
 {
 	BoundBox		bound;
 	int				world_id;
 	TriggerFunc		callback;
 
-	AreaTrigger*	next;
+	AREA_TRIGGER*	next;
 } AREA_TRIGGER;
 
 AREA_TRIGGER* GetFirstAreaTrigger();

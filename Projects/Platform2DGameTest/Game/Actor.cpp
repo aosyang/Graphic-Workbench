@@ -180,7 +180,7 @@ bool Actor::DoCollisionMove( const BoundBox& other, const Vector2& input, Vector
 	return true;
 }
 
-void Actor::Update( float delta_time )
+void Actor::Update()
 {
 	// Gravity
 	m_Velocity += Vector2(0.0f, -0.03f);

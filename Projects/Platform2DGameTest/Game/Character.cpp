@@ -46,7 +46,7 @@ void Player::Render()
 									0xFFFFF200);
 }
 
-void Player::Update( float delta_time )
+void Player::Update()
 {
 	if (m_ClimbingLadder)
 	{
@@ -55,7 +55,7 @@ void Player::Update( float delta_time )
 	else
 	{
 		// Base class update
-		Actor::Update( delta_time );
+		Actor::Update();
 	}
 
 	m_CanJump = false;

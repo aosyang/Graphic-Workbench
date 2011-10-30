@@ -25,7 +25,7 @@ public:
 	Player();
 
 	virtual void Render();
-	virtual void Update( float delta_time );
+	virtual void Update();
 
 	void Jump();
 

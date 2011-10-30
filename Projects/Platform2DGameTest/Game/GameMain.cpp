@@ -15,13 +15,15 @@
 
 #include "GameStageEditor.h"
 #include "Renderer/TextureManager.h"
+#include "Win32/dinput/GWDeviceDirectInput.h"
 
 #include "AreaTrigger.h"
 
 #include <d3dx9.h>
 
 GameMain::GameMain()
-: m_GameStage(NULL),
+: m_RenderWindow(NULL),
+  m_GameStage(NULL),
   m_Player(NULL),
   m_IsEditorMode(true),
   m_GameStageEditor(NULL),
@@ -60,6 +62,13 @@ void GameMain::Reset()
 
 void GameMain::Startup()
 {
+	m_RenderWindow = GWWnd_CreateRenderWindow(KLEIN_SCREEN_WIDTH, KLEIN_SCREEN_HEIGHT, "Klein");
+
+	GWInput_InitializeDevice( m_RenderWindow );
+
+	// Game initializations
+	RenderSystem::Initialize( m_RenderWindow );
+
 	m_GameStage = new GameStage;
 	m_GameStage->LoadFromFile("Stage.lua");
 
@@ -79,10 +88,17 @@ void GameMain::Startup()
 void GameMain::Shutdown()
 {
 	Reset();
+
+	GWInput_DestroyDevice();
+	RenderSystem::Destroy();
+
+	GWWnd_DestroyRenderWindow( m_RenderWindow );
 }
 
-void GameMain::Update( float delta_time )
+void GameMain::Update()
 {
+	UpdateInputDevice();
+
 	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(m_Player->GetPosition());
 	TileUsageEnum player_pos_type = geom ? m_GameStage->GetStageGeomUsage(geom) : TILE_USAGE_VOID;
 
@@ -153,7 +169,7 @@ void GameMain::Update( float delta_time )
 		m_Player->MoveController() = moveVector;
 
 		HandlePlayerTriggerInteractivities();
-		UpdateActors(delta_time);
+		UpdateActors();
 	}
 
 	UpdateCamera();
@@ -165,6 +181,11 @@ void GameMain::Update( float delta_time )
 
 void GameMain::Render()
 {
+	RenderSystem::SetupCamera(GetCameraPos(), GetFovy());
+	RenderSystem::Clear();
+
+	RenderSystem::BeginRender();
+
 	m_GameStage->RenderStage();
 
 	if (m_IsEditorMode)
@@ -189,6 +210,9 @@ void GameMain::Render()
 	}
 
 	DrawDebugText();
+
+	RenderSystem::EndRender();
+	RenderSystem::Flush();
 }
 
 void GameMain::SetKeyState( int key_code, bool key_down )
@@ -321,6 +345,22 @@ void GameMain::ClearMouseWheelState()
 	m_InputState.mouse.wheel = 0;
 }
 
+void GameMain::UpdateInputDevice()
+{
+	// Update mouse position relative to render window
+	SetMousePosition(m_RenderWindow->mouse_x, m_RenderWindow->mouse_y);
+
+	GWInput_UpdateInputState();
+
+	for (int i=0; i<0xFF; i++)
+		SetKeyState(i, GWInput_GetKeyDownState((GWKeyCode)i));
+
+	for (int i=0; i<2; i++)
+		SetMouseBtnState((GWMouseButton)i, GWInput_GetMouseBtnDownState((GWMouseButton)i));
+
+	SetMouseWheelValue(GWInput_GetMouseWheelValue());
+}
+
 void GameMain::UpdateEditorControl()
 {
 	if (!m_IsEditorMode) return;
@@ -408,12 +448,12 @@ void GameMain::HandlePlayerActorInteractivities()
 	} while ( actor = GetNextActor( actor ) );
 }
 
-void GameMain::UpdateActors( float delta_time )
+void GameMain::UpdateActors()
 {
 	Actor* actor = GetFirstActor();
 	while ( actor )
 	{
-		actor->Update( delta_time );
+		actor->Update();
 		m_GameStage->TestCollision( actor );
 
 		actor = GetNextActor( actor );

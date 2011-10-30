@@ -224,6 +224,10 @@
 				Name="Renderer"
 				>
 				<File
+					RelativePath=".\Engine\Renderer\GWRenderWindow.h"
+					>
+				</File>
+				<File
 					RelativePath=".\Engine\Renderer\RenderDevice.cpp"
 					>
 				</File>
@@ -243,11 +247,31 @@
 			<Filter
 				Name="Win32"
 				>
+				<File
+					RelativePath=".\Engine\Win32\GWRenderWindowWin32.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Engine\Win32\GWRenderWindowWin32.h"
+					>
+				</File>
 				<Filter
 					Name="DX9"
 					>
 					<File
 						RelativePath=".\Engine\Win32\DX9\GWTextureDX9.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="dinput"
+					>
+					<File
+						RelativePath=".\Engine\Win32\dinput\GWDeviceDirectInput.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\Engine\Win32\dinput\GWDeviceDirectInput.h"
 						>
 					</File>
 				</Filter>
