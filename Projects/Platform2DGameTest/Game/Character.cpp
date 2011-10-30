@@ -41,12 +41,8 @@ Player::Player()
 
 void Player::Render()
 {
-	D3DXMATRIXA16 transform;
-	D3DXMatrixTranslation(&transform, m_Position.x, m_Position.y, 0.0f);
-	RenderSystem::Device()->SetTransform( D3DTS_WORLD, &transform );
-
-	RenderSystem::DrawColoredSprite(Vector2(-0.5f * m_sCharSize, -0.5f * m_sCharSize),
-									Vector2(0.5f * m_sCharSize, 0.5f * m_sCharSize),
+	RenderSystem::DrawColoredSprite(Vector2(-0.5f * m_sCharSize, -0.5f * m_sCharSize) + m_Position,
+									Vector2(0.5f * m_sCharSize, 0.5f * m_sCharSize) + m_Position,
 									0xFFFFF200);
 }
 
@@ -91,12 +87,8 @@ Patient::Patient()
 
 void Patient::Render()
 {
-	D3DXMATRIXA16 transform;
-	D3DXMatrixTranslation(&transform, m_Position.x, m_Position.y, 0.0f);
-	RenderSystem::Device()->SetTransform( D3DTS_WORLD, &transform );
-
-	RenderSystem::DrawColoredSprite(Vector2(-0.45f, -0.45f),
-									Vector2(0.45f, 0.45f),
+	RenderSystem::DrawColoredSprite(Vector2(-0.45f, -0.45f) + m_Position,
+									Vector2(0.45f, 0.45f) + m_Position,
 									0xFF00FFF2);
 }
 
