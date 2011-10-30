@@ -273,9 +273,13 @@ void GameMain::GetMousePos( int* x, int* y )
 
 void GameMain::SetWorldview( int world_id )
 {
-	m_ActiveWorld = (GameWorldviewEnum)world_id;
+	if (m_ActiveWorld != (GameWorldviewEnum)world_id)
+	{
+		m_ActiveWorld = (GameWorldviewEnum)world_id;
 
-	m_GameStage->AnimSwapWorlds();
+		if (!m_IsEditorMode)
+			m_GameStage->AnimSwapWorlds();
+	}
 }
 
 float GameMain::GetFovy() const
