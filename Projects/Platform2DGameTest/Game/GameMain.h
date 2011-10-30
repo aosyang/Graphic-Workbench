@@ -13,6 +13,7 @@
 #include "GWInputDeviceEnum.h"
 
 #include "Math/GWVectors.h"
+#include "GWTypes.h"
 
 class GameStageEditor;
 class GameStage;
@@ -66,6 +67,7 @@ public:
 
 	float GetFovy() const;
 
+	GW_UINT32 GetSysTickCount() const { return m_SysTime; }
 private:
 	void OnKeyPressed(int key_code);
 	void OnKeyReleased(int key_code);
@@ -85,20 +87,22 @@ private:
 	void DrawDebugText();
 
 private:
-	GW_RENDER_WINDOW*	m_RenderWindow;
+	GW_RENDER_WINDOW*			m_RenderWindow;
 
-	GameStage*			m_GameStage;
-	Player*				m_Player;
-	Patient*			m_Patient;
+	GW_UINT32					m_SysTime;
 
-	GW_INPUT_STATE		m_InputState;
+	GameStage*					m_GameStage;
+	Player*						m_Player;
+	Patient*					m_Patient;
 
-	bool				m_IsEditorMode;
-	GameStageEditor*	m_GameStageEditor;
+	GW_INPUT_STATE				m_InputState;
 
-	GAME_CAMERA			m_Camera;
+	bool						m_IsEditorMode;
+	GameStageEditor*			m_GameStageEditor;
 
-	int					m_ProtoFeatureBits;
+	GAME_CAMERA					m_Camera;
+
+	int							m_ProtoFeatureBits;
 
 	GameWorldviewEnum			m_ActiveWorld;
 };

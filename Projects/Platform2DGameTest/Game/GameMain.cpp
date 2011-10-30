@@ -12,6 +12,7 @@
 
 #include "GWCommon.h"
 #include "GameDef.h"
+#include "Win32/GWTimer.h"
 
 #include "GameStageEditor.h"
 #include "Renderer/TextureManager.h"
@@ -23,6 +24,7 @@
 
 GameMain::GameMain()
 : m_RenderWindow(NULL),
+  m_SysTime(0),
   m_GameStage(NULL),
   m_Player(NULL),
   m_IsEditorMode(true),
@@ -97,6 +99,9 @@ void GameMain::Shutdown()
 
 void GameMain::Update()
 {
+	// Update timer
+	m_SysTime = GWSys_GetTickCount();
+
 	UpdateInputDevice();
 
 	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(m_Player->GetPosition());
@@ -269,6 +274,8 @@ void GameMain::GetMousePos( int* x, int* y )
 void GameMain::SetWorldview( int world_id )
 {
 	m_ActiveWorld = (GameWorldviewEnum)world_id;
+
+	m_GameStage->AnimSwapWorlds();
 }
 
 float GameMain::GetFovy() const

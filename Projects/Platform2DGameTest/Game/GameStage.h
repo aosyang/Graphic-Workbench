@@ -12,6 +12,7 @@
 #include "BoundBox.h"
 #include "Actor.h"
 #include "GameDef.h"
+#include "GWTypes.h"
 
 #include <map>
 #include <string>
@@ -61,11 +62,13 @@ STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom);
 
 void DebugRenderStageGeom(STAGE_GEOM* geom);
 
+//Add by YLL
+typedef std::map<int, TILE_TYPE_INFO> TILE_TYPE_INFO_MAP;
+
 // -----------------------------------------------------------
 // Game stage
 // -----------------------------------------------------------
-//Add by YLL
-#define TILE_TYPE_INFO_MAP std::map<int, TILE_TYPE_INFO>
+
 class GameStage
 {
 public:
@@ -89,6 +92,7 @@ public:
 
 	STAGE_GEOM* AddStageGeom(int layer_id, const BoundBox& bound, const char* tile_type_name[GAME_WORLD_COUNT]);
 
+	void AnimSwapWorlds();
 private:
 	
 	void ScriptLoadTileTypes(const LuaPlus::LuaObject* script);
@@ -99,7 +103,7 @@ private:
 	void ScriptSaveTileTypes( LuaPlus::LuaObject* script );
 	void ScriptSaveTriggers( LuaPlus::LuaObject* script );
 
-	void RenderStageGeom(STAGE_GEOM* geom);
+	void RenderStageGeom(STAGE_GEOM* geom, int world_id, float depth=0.0f);
 
 	TileUsageEnum GetTileUsageById(int id);
 private:
@@ -107,8 +111,9 @@ private:
 	std::map<std::string, int>
 								m_TileName2Id;
 	//Edit by YLL //std::map<int, TILE_TYPE_INFO>
-	TILE_TYPE_INFO_MAP
-								m_TileId2TypeInfo;
+	TILE_TYPE_INFO_MAP			m_TileId2TypeInfo;
+
+	GW_UINT32					m_WorldSwapTime;
 };
 
 #endif // GameStage_h__

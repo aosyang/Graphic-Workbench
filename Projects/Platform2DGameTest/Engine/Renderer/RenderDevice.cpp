@@ -92,6 +92,20 @@ void RenderSystem::Initialize( GW_RENDER_WINDOW* rw )
 					L"Arial", &pFont );
 
 	pD3Ddevice->SetRenderState( D3DRS_LIGHTING, FALSE );
+
+	float Start = 20.0f,    // Linear fog distances
+		  End   = 28.0f;
+
+	// Enable fog blending.
+	pD3Ddevice->SetRenderState(D3DRS_FOGENABLE, TRUE);
+
+	// Set the fog color.
+	pD3Ddevice->SetRenderState(D3DRS_FOGCOLOR, D3DCOLOR_ARGB( 0, 141, 153, 191 ));
+
+	// Set fog parameters.
+	pD3Ddevice->SetRenderState(D3DRS_FOGVERTEXMODE, D3DFOG_LINEAR );
+	pD3Ddevice->SetRenderState(D3DRS_FOGSTART, *(DWORD *)(&Start));
+	pD3Ddevice->SetRenderState(D3DRS_FOGEND,   *(DWORD *)(&End));
 }
 
 void RenderSystem::Destroy()

@@ -208,6 +208,10 @@
 				RelativePath=".\Engine\GWSingleton.h"
 				>
 			</File>
+			<File
+				RelativePath=".\Engine\GWTypes.h"
+				>
+			</File>
 			<Filter
 				Name="Math"
 				>
@@ -253,6 +257,14 @@
 				</File>
 				<File
 					RelativePath=".\Engine\Win32\GWRenderWindowWin32.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Engine\Win32\GWTimer.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\Engine\Win32\GWTimer.h"
 					>
 				</File>
 				<Filter

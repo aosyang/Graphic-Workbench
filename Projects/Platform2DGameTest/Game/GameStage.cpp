@@ -18,6 +18,8 @@ using namespace LuaPlus;
 
 #include "GameMain.h"
 
+#define TIME_WORLD_SWAP_ANIM 1000
+
 typedef struct TileUsageTable
 {
 	TileUsageEnum	usage;
@@ -166,10 +168,62 @@ bool GameStage::SaveToFile( const char* filename )
 void GameStage::RenderStage()
 {
 	STAGE_GEOM* geom;
-	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
+
+	int world_id = KleinGame()->GetWorldview();
+	float depth = 0.0f;
+	int remain_time = m_WorldSwapTime - KleinGame()->GetSysTickCount();
+	if (remain_time < 0)
 	{
-		RenderStageGeom(geom);
+		// Time up, render final result of swap animation
+
+		// Render other world
+		for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
+		{
+			RenderStageGeom(geom, 1 - world_id, 5.0f);
+		}
+
+		// Render current world
+		for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
+		{
+			RenderStageGeom(geom, world_id);
+		}
 	}
+	else if (remain_time > TIME_WORLD_SWAP_ANIM / 2)
+	{
+		// depth: 2.5f ~ 0.0f
+		depth = 2.5f * (float)(remain_time - TIME_WORLD_SWAP_ANIM / 2) / (float)(TIME_WORLD_SWAP_ANIM / 2);
+
+		// Render current world
+		for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
+		{
+			RenderStageGeom(geom, world_id, 2.5f + depth);
+		}
+
+		// Render other world
+		for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
+		{
+			RenderStageGeom(geom, 1 - world_id, 2.5f - depth);
+		}
+
+	}
+	else
+	{
+		// depth: 2.5f ~ 0.0f
+		depth = 2.5f * (float)(remain_time) / (float)(TIME_WORLD_SWAP_ANIM / 2);
+
+		// Render other world
+		for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
+		{
+			RenderStageGeom(geom, 1 - world_id, 5.0f - depth);
+		}
+
+		// Render current world
+		for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
+		{
+			RenderStageGeom(geom, world_id, depth);
+		}
+	}
+
 }
 
 void GameStage::Reset()
@@ -297,6 +351,11 @@ STAGE_GEOM* GameStage::AddStageGeom( int layer_id, const BoundBox& bound, const 
 	geom->bound = bound;
 
 	return geom;
+}
+
+void GameStage::AnimSwapWorlds()
+{
+	m_WorldSwapTime = KleinGame()->GetSysTickCount() + TIME_WORLD_SWAP_ANIM;
 }
 
 void GameStage::ScriptLoadTileTypes( const LuaPlus::LuaObject* script )
@@ -487,10 +546,8 @@ void GameStage::ScriptSaveTriggers( LuaPlus::LuaObject* script )
 	}
 }
 
-void GameStage::RenderStageGeom( STAGE_GEOM* geom )
+void GameStage::RenderStageGeom( STAGE_GEOM* geom, int world_id, float depth/*=0.0f*/ )
 {
-	int world_id = KleinGame()->GetWorldview();
-
 	if (KleinGame()->TestProtoFeatureBit(PROTO_FEATURE_CIRCLE_OF_TRUE_VIEW))
 	{
 		Vector2 geom_centre = geom->bound.GetCentrePoint();
@@ -503,12 +560,14 @@ void GameStage::RenderStageGeom( STAGE_GEOM* geom )
 	int tile_id = geom->tile_type_id[world_id];
 
 	// Don't render tile with no type
-	if (tile_id == -1) return;
+	if (tile_id != -1)
+	{
+		int tex_id = m_TileId2TypeInfo[tile_id].tex_id;
 
-	int tex_id = m_TileId2TypeInfo[tile_id].tex_id;
-
-	RenderSystem::DrawSprite(Vector2(geom->bound.xMin, geom->bound.yMin),
-		Vector2(geom->bound.xMax, geom->bound.yMax), tex_id);
+		RenderSystem::DrawSprite(Vector2(geom->bound.xMin, geom->bound.yMin),
+								 Vector2(geom->bound.xMax, geom->bound.yMax),
+								 tex_id, depth);
+	}
 
 	//DebugRenderStageGeom(geom);
 }
