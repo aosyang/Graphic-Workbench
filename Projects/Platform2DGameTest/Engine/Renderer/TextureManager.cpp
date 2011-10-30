@@ -6,7 +6,6 @@
 	purpose:	
 *********************************************************************/
 #include "TextureManager.h"
-#include <d3dx9.h>
 
 TextureManager::TextureManager()
 : m_TextureID(0)
@@ -19,7 +18,7 @@ void TextureManager::Reset()
 
 	for (iter=m_Textures.begin(); iter!=m_Textures.end(); iter++)
 	{
-		iter->second.d3d_tex->Release();
+		RenderSystem::DestroyTexture(iter->second);
 	}
 
 	m_TextureNameMap.clear();
@@ -45,7 +44,7 @@ const TEXTURE_INFO* TextureManager::GetTexture( int id ) const
 
 	if ( (iter=m_Textures.find(id)) != m_Textures.end() )
 	{
-		return &(iter->second);
+		return iter->second;
 	}
 
 	return NULL;
@@ -67,16 +66,15 @@ const char* TextureManager::GetTextureName( int id ) const
 
 bool TextureManager::LoadTextureFromFile( const char* filename )
 {
+	TEXTURE_INFO* tex = RenderSystem::CreateTexture(filename);
+
+	if (!tex) return false;
+
 	int id;
-	LPDIRECT3DTEXTURE9 tex;
-
-	if (FAILED(D3DXCreateTextureFromFileA(RenderSystem::Device(), filename, &tex)))
-		return false;
-
 	id = m_TextureID++;
 
 	m_TextureNameMap[filename] = id;
-	m_Textures[id].d3d_tex = tex;
+	m_Textures[id] = tex;
 
 	return true;
 }

@@ -38,7 +38,7 @@ private:
 	typedef std::map<std::string, int> TextureNameMap;
 	TextureNameMap	m_TextureNameMap;
 
-	typedef std::map<int, TextureInfoType>	TextureMap;
+	typedef std::map<int, TEXTURE_INFO*>	TextureMap;
 	TextureMap	m_Textures;
 };
 

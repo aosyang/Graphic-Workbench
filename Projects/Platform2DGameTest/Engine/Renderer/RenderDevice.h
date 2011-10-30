@@ -13,15 +13,17 @@
 
 #include <Windows.h>
 
+typedef struct TextureInfoType TEXTURE_INFO;
 typedef struct GWRenderWindow GW_RENDER_WINDOW;
-struct IDirect3DDevice9;
 
 class RenderSystem
 {
 public:
 	static void Initialize(GW_RENDER_WINDOW* rw);
 	static void Destroy();
-	static IDirect3DDevice9* Device();
+
+	static TEXTURE_INFO* CreateTexture( const char* filename );
+	static void DestroyTexture( TEXTURE_INFO* texture );
 
 	static void SetupCamera(const Vector2& cam_pos, float fovy);
 	static void Clear();

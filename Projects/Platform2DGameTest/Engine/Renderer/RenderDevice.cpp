@@ -103,6 +103,35 @@ void RenderSystem::Destroy()
 	}
 }
 
+TEXTURE_INFO* RenderSystem::CreateTexture( const char* filename )
+{
+	LPDIRECT3DTEXTURE9 d3d_tex;
+
+	if (FAILED(D3DXCreateTextureFromFileA(pD3Ddevice, filename, &d3d_tex)))
+		return NULL;
+
+	TEXTURE_INFO* tex = new TEXTURE_INFO;
+	memset(tex, 0, sizeof(TEXTURE_INFO));
+
+	LPDIRECT3DSURFACE9 surf;
+	D3DSURFACE_DESC desc;
+	d3d_tex->GetSurfaceLevel(0, &surf);
+	surf->GetDesc(&desc);
+
+	tex->width = desc.Width;
+	tex->height = desc.Height;
+
+	tex->d3d_tex = d3d_tex;
+
+	return tex;
+}
+
+void RenderSystem::DestroyTexture( TEXTURE_INFO* texture )
+{
+	texture->d3d_tex->Release();
+	delete texture;
+}
+
 void RenderSystem::SetupCamera( const Vector2& cam_pos, float fovy )
 {
 	D3DXMATRIXA16 matWorld;
@@ -167,11 +196,6 @@ void RenderSystem::DrawText( const char* text, int x, int y, DWORD color /*= 0xF
 	RECT font_rect;
 	SetRect( &font_rect, x, y, KLEIN_SCREEN_WIDTH, KLEIN_SCREEN_HEIGHT );
 	pFont->DrawTextA( NULL, text, -1, &font_rect, DT_LEFT|DT_NOCLIP, color );
-}
-
-IDirect3DDevice9* RenderSystem::Device()
-{
-	return pD3Ddevice;
 }
 
 void RenderSystem::Clear()

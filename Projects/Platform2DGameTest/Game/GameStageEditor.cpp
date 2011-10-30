@@ -43,10 +43,6 @@ void GameStageEditor::Render()
 
 	Vector2 tile_pos = CursorToTilePos(mouse_xpos, mouse_ypos);
 
-	D3DXMATRIXA16 matWorld;
-	D3DXMatrixIdentity(&matWorld);
-	RenderSystem::Device()->SetTransform( D3DTS_WORLD, &matWorld );
-
 	if ( m_bPicking )
 	{
 		switch (m_PaintTool)
