@@ -6,7 +6,6 @@
 	purpose:	Implementations for area trigger
 *********************************************************************/
 #include "AreaTrigger.h"
-#include "../DXUT/DXUT.h"
 #include "Actor.h"
 #include "Renderer/RenderDevice.h"
 #include <string.h>

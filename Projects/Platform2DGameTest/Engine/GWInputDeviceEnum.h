@@ -14,6 +14,8 @@
 
 enum GWKeyCode
 {
+	GW_KEY_UNDEFINED		= 0,
+
 	GW_KEY_BACKSPACE		= 8,
 	GW_KEY_TAB				= 9,
 
@@ -63,6 +65,7 @@ enum GWKeyCode
 	GW_KEY_X				= 88,
 	GW_KEY_Y				= 89,
 	GW_KEY_Z				= 90,
+
 };
 
 enum GWMouseButton

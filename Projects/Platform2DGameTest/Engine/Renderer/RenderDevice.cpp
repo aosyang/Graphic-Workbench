@@ -127,4 +127,5 @@ void RenderSystem::DrawText( const char* text, int x, int y, DWORD color /*= 0xF
 	m_sFont->DrawTextA( NULL, text, -1, &font_rect, DT_LEFT|DT_NOCLIP, color );
 }
 
+LPDIRECT3DDEVICE9 RenderSystem::m_sDevice = NULL;
 ID3DXFont* RenderSystem::m_sFont = NULL;

@@ -9,7 +9,6 @@
 #include "Renderer/TextureManager.h"
 #include "AreaTrigger.h"
 
-#include "../DXUT/DXUT.h"
 #include <string>
 #include <vector>
 
