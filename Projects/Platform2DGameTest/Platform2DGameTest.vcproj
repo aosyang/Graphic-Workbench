@@ -248,15 +248,11 @@
 				Name="Renderer"
 				>
 				<File
+					RelativePath=".\Engine\Renderer\GWRenderDevice.h"
+					>
+				</File>
+				<File
 					RelativePath=".\Engine\Renderer\GWRenderWindow.h"
-					>
-				</File>
-				<File
-					RelativePath=".\Engine\Renderer\RenderDevice.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\Engine\Renderer\RenderDevice.h"
 					>
 				</File>
 				<File
@@ -290,6 +286,10 @@
 				<Filter
 					Name="DX9"
 					>
+					<File
+						RelativePath=".\Engine\Win32\DX9\GWRenderDeviceDx9.cpp"
+						>
+					</File>
 					<File
 						RelativePath=".\Engine\Win32\DX9\GWTextureDX9.h"
 						>

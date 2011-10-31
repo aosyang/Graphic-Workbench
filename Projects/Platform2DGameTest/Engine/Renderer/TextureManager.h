@@ -11,7 +11,7 @@
 #include <map>
 #include <string>
 
-#include "RenderDevice.h"
+#include "GWRenderDevice.h"
 #include "Win32/DX9/GWTextureDX9.h"
 
 #include "GWSingleton.h"

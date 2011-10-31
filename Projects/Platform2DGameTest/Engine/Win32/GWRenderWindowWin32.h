@@ -16,10 +16,4 @@ enum WndSpecialParam
 	WND_PARAM_COUNT,
 };
 
-GW_RENDER_WINDOW* GWWnd_CreateRenderWindow(int width, int height, const char* title);
-
-void GWWnd_DestroyRenderWindow(GW_RENDER_WINDOW* rw);
-
-bool HandleWindowMessage();
-
 #endif // GWRenderWindowWin32_h__

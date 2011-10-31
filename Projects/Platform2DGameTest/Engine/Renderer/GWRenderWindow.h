@@ -21,4 +21,10 @@ typedef struct GWRenderWindow
 	GW_RENDER_WINDOW* next;
 } GW_RENDER_WINDOW;
 
+GW_RENDER_WINDOW* GWWnd_CreateRenderWindow(int width, int height, const char* title);
+
+void GWWnd_DestroyRenderWindow(GW_RENDER_WINDOW* rw);
+
+bool HandleWindowMessage();
+
 #endif // GWRenderWindow_h__

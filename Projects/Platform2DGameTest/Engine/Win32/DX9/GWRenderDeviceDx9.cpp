@@ -1,12 +1,12 @@
 /********************************************************************
 	created:	2011/9/5
-	filename: 	RenderDevice.cpp
+	filename: 	GWRenderDeviceDx9.cpp
 	author:		Mwolf
 	
 	purpose:	
 *********************************************************************/
-#include "RenderDevice.h"
-#include "TextureManager.h"
+#include "Renderer/GWRenderDevice.h"
+#include "Renderer/TextureManager.h"
 #include "../Game/GameDef.h"
 #include "TGA.h"
 

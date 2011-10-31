@@ -1,12 +1,12 @@
 /********************************************************************
 	created:	2011/9/5
-	filename: 	RenderDevice.h
+	filename: 	GWRenderDevice.h
 	author:		Mwolf
 	
 	purpose:	
 *********************************************************************/
-#ifndef RenderDevice_h__
-#define RenderDevice_h__
+#ifndef GWRenderDevice_h__
+#define GWRenderDevice_h__
 
 #include "Math/GWVectors.h"
 #include "GWRenderWindow.h"
@@ -39,4 +39,4 @@ public:
 private:
 };
 
-#endif // RenderDevice_h__
+#endif // GWRenderDevice_h__

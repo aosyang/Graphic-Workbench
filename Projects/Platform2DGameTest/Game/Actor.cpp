@@ -6,7 +6,7 @@
 	purpose:	
 *********************************************************************/
 #include "Actor.h"
-#include "Renderer/RenderDevice.h"
+#include "Renderer/GWRenderDevice.h"
 #include "GameStage.h"
 #include "GameDef.h"
 
