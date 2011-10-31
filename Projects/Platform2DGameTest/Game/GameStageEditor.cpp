@@ -55,27 +55,6 @@ void GameStageEditor::Render()
 				int nTileLayoutWidth = nTileType > 5 ? 5 : nTileType;
 				Vector2 vec_min, vec_max;
 
-				for ( int i = 0; i < nTileType; ++i)
-				{
-					float xBias = float(i % nTileLayoutWidth - (nTileLayoutWidth - 1) / 2);
-					float yBias = float(i / nTileLayoutWidth ) + 1.0f;
-
-					if ( i==0 )
-					{
-						vec_min.x = floorf(m_PopupMenuPos.x) + xBias;
-						vec_min.y = floorf(m_PopupMenuPos.y) + yBias;
-						vec_max.x = ceilf(m_PopupMenuPos.x)  + xBias;
-						vec_max.y = ceilf(m_PopupMenuPos.y) + yBias;
-					}
-					else
-					{
-						vec_min.x = min(vec_min.x, floorf(m_PopupMenuPos.x) + xBias);
-						vec_min.y = min(vec_min.y, floorf(m_PopupMenuPos.y) + yBias);
-						vec_max.x = max(vec_max.x, ceilf(m_PopupMenuPos.x)  + xBias);
-						vec_max.y = max(vec_max.y, ceilf(m_PopupMenuPos.y) + yBias);
-					}
-				}
-
 				if ( nTileType )
 				{
 					// Draw background of tile picking tool box
