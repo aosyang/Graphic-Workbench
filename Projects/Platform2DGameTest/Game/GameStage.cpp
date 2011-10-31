@@ -104,9 +104,12 @@ STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom)
 
 void DebugRenderStageGeom( STAGE_GEOM* geom )
 {
-	RenderSystem::DrawWireframeRect(Vector2(geom->bound.xMin, geom->bound.yMin),
-									Vector2(geom->bound.xMax, geom->bound.yMax),
-									GWColor(0.0f, 1.0f, 0.949f));
+	if (geom->tile_type_id[KleinGame()->GetWorldview()] != -1)
+	{
+		RenderSystem::DrawWireframeRect(Vector2(geom->bound.xMin, geom->bound.yMin),
+										Vector2(geom->bound.xMax, geom->bound.yMax),
+										GWColor(1.0f, 0.949f, 0.0f));
+	}
 }
 
 GameStage::GameStage()
@@ -186,6 +189,7 @@ void GameStage::RenderStage()
 		for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 		{
 			RenderStageGeom(geom, world_id);
+			// DebugRenderStageGeom(geom);
 		}
 	}
 	else if (remain_time > TIME_WORLD_SWAP_ANIM / 2)
@@ -568,8 +572,6 @@ void GameStage::RenderStageGeom( STAGE_GEOM* geom, int world_id, float depth/*=0
 								 Vector2(geom->bound.xMax, geom->bound.yMax),
 								 tex_id, depth);
 	}
-
-	//DebugRenderStageGeom(geom);
 }
 
 TileUsageEnum GameStage::GetTileUsageById( int id )
