@@ -8,6 +8,7 @@
 #include "RenderDevice.h"
 #include "TextureManager.h"
 #include "../Game/GameDef.h"
+#include "TGA.h"
 
 #include <d3d9.h>
 #include <d3dx9.h>
@@ -121,23 +122,87 @@ TEXTURE_INFO* RenderSystem::CreateTexture( const char* filename )
 {
 	LPDIRECT3DTEXTURE9 d3d_tex;
 
-	if (FAILED(D3DXCreateTextureFromFileA(pD3Ddevice, filename, &d3d_tex)))
+	GW_IMAGE tex;
+	if (!LoadTGAImage(&tex, filename))
+	{
 		return NULL;
+	}
 
-	TEXTURE_INFO* tex = new TEXTURE_INFO;
-	memset(tex, 0, sizeof(TEXTURE_INFO));
+	D3DFORMAT fmt = (tex.format == GW_PIXFMT_RGB) ? D3DFMT_X8R8G8B8 : D3DFMT_A8R8G8B8;
+	if ( FAILED(pD3Ddevice->CreateTexture(tex.width, tex.height, 0,
+		 D3DUSAGE_DYNAMIC | D3DUSAGE_AUTOGENMIPMAP, fmt, D3DPOOL_DEFAULT, &d3d_tex, NULL) ) )
+	{
+		UnloadTGAImage(&tex);
+		return NULL;
+	}
+
+	D3DLOCKED_RECT rect;
+	if ( FAILED( d3d_tex->LockRect(0, &rect, NULL, 0) ) )
+	{
+		UnloadTGAImage(&tex);
+		return NULL;
+	}
+
+	GW_UINT8* pRect = (GW_UINT8*) rect.pBits;
+	switch (tex.format)
+	{
+	case GW_PIXFMT_RGB:
+		for (GW_UINT32 x=0; x<tex.width; x++)
+			for (GW_UINT32 y=0; y<tex.height; y++)
+			{
+				// vertical flip for dx9 texture
+				int i = y * tex.width + x;
+				int src = (tex.height - y - 1) * tex.width + x;
+
+				pRect[i * 4] = tex.imageData[src * 3 + 2];
+				pRect[i * 4 + 1] = tex.imageData[src * 3 + 1];
+				pRect[i * 4 + 2] = tex.imageData[src * 3 + 0];
+				pRect[i * 4 + 3] = 0xFF;
+
+				//pRect[i * 4] = 0x00;		// B		
+				//pRect[i * 4 + 1] = 0x00;	// G
+				//pRect[i * 4 + 2] = 0xFF;	// R
+				//pRect[i * 4 + 3] = 0xFF;	// A
+			}
+			break;
+
+	case GW_PIXFMT_RGBA:
+		for (GW_UINT32 x=0; x<tex.width; x++)
+			for (GW_UINT32 y=0; y<tex.height; y++)
+			{
+				// vertical flip for dx9 texture
+				int i = y * tex.width + x;
+				int src = (tex.height - y - 1) * tex.width + x;
+
+				pRect[i * 4] = tex.imageData[src * 4 + 2];
+				pRect[i * 4 + 1] = tex.imageData[src * 4 + 1];
+				pRect[i * 4 + 2] = tex.imageData[src * 4 + 0];
+				pRect[i * 4 + 3] = tex.imageData[src * 4 + 3];
+			}
+			break;
+
+	default:
+		break;
+	}
+
+	d3d_tex->UnlockRect(0);
+
+	UnloadTGAImage(&tex);
+
+	TEXTURE_INFO* tex_info = new TEXTURE_INFO;
+	memset(tex_info, 0, sizeof(TEXTURE_INFO));
 
 	LPDIRECT3DSURFACE9 surf;
 	D3DSURFACE_DESC desc;
 	d3d_tex->GetSurfaceLevel(0, &surf);
 	surf->GetDesc(&desc);
 
-	tex->width = desc.Width;
-	tex->height = desc.Height;
+	tex_info->width = desc.Width;
+	tex_info->height = desc.Height;
 
-	tex->d3d_tex = d3d_tex;
+	tex_info->d3d_tex = d3d_tex;
 
-	return tex;
+	return tex_info;
 }
 
 void RenderSystem::DestroyTexture( TEXTURE_INFO* texture )

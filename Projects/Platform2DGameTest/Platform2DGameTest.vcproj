@@ -209,6 +209,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Engine\GWImage.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Engine\GWInputDeviceEnum.h"
 				>
 			</File>
@@ -218,6 +222,14 @@
 			</File>
 			<File
 				RelativePath=".\Engine\GWTypes.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Engine\TGA.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Engine\TGA.h"
 				>
 			</File>
 			<Filter
