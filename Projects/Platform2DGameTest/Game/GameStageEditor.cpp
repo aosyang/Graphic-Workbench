@@ -60,7 +60,7 @@ void GameStageEditor::Render()
 					// Draw background of tile picking tool box
 					RenderSystem::DrawColoredSprite(vec_min - Vector2(0.3f, 0.3f),
 						vec_max + Vector2(0.3f, 0.3f),
-						0xBF00BF7F);
+						GWColor(0.0f, 0.749f, 0.5f, 0.749f));
 				}
 
 				for ( int i = 0; i < nTileType; ++i)
@@ -96,7 +96,7 @@ void GameStageEditor::Render()
 				{
 					sprintf(text, "Remove");
 				}
-				RenderSystem::DrawText(text, m_PopupMenuScreenPosX,
+				RenderSystem::RenderText(text, m_PopupMenuScreenPosX,
 										m_PopupMenuScreenPosY + KLEIN_FONT_HEIGHT * -2);
 
 				for (int i=0; table[i].callback; i++)
@@ -113,7 +113,7 @@ void GameStageEditor::Render()
 						sprintf(text, "%s", table[i].name);
 					}
 
-					RenderSystem::DrawText(text, m_PopupMenuScreenPosX,
+					RenderSystem::RenderText(text, m_PopupMenuScreenPosX,
 											m_PopupMenuScreenPosY + KLEIN_FONT_HEIGHT * i);
 				}
 			}
@@ -124,11 +124,11 @@ void GameStageEditor::Render()
 
 	}
 
-	DWORD color;
+	GWColor color;
 	switch (m_PaintTool)
 	{
 	case PAINT_TOOL_PENCIL:
-		color = 0xFFFFF200;
+		color = GWColor(1.0f, 0.949f, 0.0f);
 
 		// Draw cursor tile rect
 		RenderSystem::DrawWireframeRect(Vector2(floorf(tile_pos.x), floorf(tile_pos.y)),
@@ -138,7 +138,7 @@ void GameStageEditor::Render()
 		break;
 	case PAINT_TOOL_BRUSH:
 		{
-			color = 0xFF00E6FF;
+			color = GWColor(0.0f, 0.9f, 1.0f);
 
 			if (m_ToolState == TOOL_STATE_DRAWING)
 			{

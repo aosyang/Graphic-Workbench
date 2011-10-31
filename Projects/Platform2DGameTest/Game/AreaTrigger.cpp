@@ -123,7 +123,7 @@ void DebugDrawTriggers( int world_id )
 	while (trigger)
 	{
 		if (world_id == trigger->world_id)
-			RenderSystem::DrawColoredSprite(trigger->bound.vMin(), trigger->bound.vMax(), 0x7FDD8677);
+			RenderSystem::DrawColoredSprite(trigger->bound.vMin(), trigger->bound.vMax(), GWColor(0.867f, 0.525f, 0.467f, 0.5f));
 
 		trigger = GetNextAreaTrigger(trigger);
 	}

@@ -420,7 +420,7 @@ void GameMain::DrawDebugText()
 			mouse->x, mouse->y, mouse->wheel,
 			m_GameStageEditor->IsMapUnsaved() ? "*Map unsaved*" : "");
 
-	RenderSystem::DrawText(debug_text, 0, 0, 0xFFFFFF00);
+	RenderSystem::RenderText(debug_text, 0, 0, GWColor::YELLOW);
 }
 
 void GameMain::ProtoFeatureBitSet( int bits, bool val )

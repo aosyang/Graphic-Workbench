@@ -166,17 +166,18 @@ void RenderSystem::SetupCamera( const Vector2& cam_pos, float fovy )
 	pD3Ddevice->SetTransform( D3DTS_PROJECTION, &matProj );
 }
 
-void RenderSystem::DrawColoredSprite( const Vector2& vMin, const Vector2& vMax, DWORD color /*= 0xFFFFFFFF*/, float depth /*= 0.0f*/ )
+void RenderSystem::DrawColoredSprite( const Vector2& vMin, const Vector2& vMax, const GWColor& color /*= GWColor::WHITE*/, float depth /*= 0.0f*/ )
 {
+	DWORD d3d_color = D3DCOLOR_COLORVALUE(color.r, color.g, color.b, color.a);
 	ColoredVertex v[6] =
 	{
-		{ vMin.x, vMin.y, depth, color },
-		{ vMin.x, vMax.y, depth, color },
-		{ vMax.x, vMax.y, depth, color },
+		{ vMin.x, vMin.y, depth, d3d_color },
+		{ vMin.x, vMax.y, depth, d3d_color },
+		{ vMax.x, vMax.y, depth, d3d_color },
 
-		{ vMax.x, vMax.y, depth, color },
-		{ vMax.x, vMin.y, depth, color },
-		{ vMin.x, vMin.y, depth, color },
+		{ vMax.x, vMax.y, depth, d3d_color },
+		{ vMax.x, vMin.y, depth, d3d_color },
+		{ vMin.x, vMin.y, depth, d3d_color },
 	};
 
 	pD3Ddevice->SetTexture(0, NULL);
@@ -186,16 +187,18 @@ void RenderSystem::DrawColoredSprite( const Vector2& vMin, const Vector2& vMax, 
 	pD3Ddevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(ColoredVertex));
 }
 
-void RenderSystem::DrawWireframeRect( const Vector2& vMin, const Vector2& vMax, DWORD color /*= 0xFFFFFFFF*/, float depth /*= 0.0f*/ )
+void RenderSystem::DrawWireframeRect( const Vector2& vMin, const Vector2& vMax, const GWColor& color /*= GWColor::WHITE*/, float depth /*= 0.0f*/ )
 {
-	ColoredVertex v[6] =
-	{
-		{ vMin.x, vMin.y, depth, color },
-		{ vMin.x, vMax.y, depth, color },
-		{ vMax.x, vMax.y, depth, color },
+	DWORD d3d_color = D3DCOLOR_COLORVALUE(color.r, color.g, color.b, color.a);
 
-		{ vMax.x, vMin.y, depth, color },
-		{ vMin.x, vMin.y, depth, color },
+	ColoredVertex v[5] =
+	{
+		{ vMin.x, vMin.y, depth, d3d_color },
+		{ vMin.x, vMax.y, depth, d3d_color },
+		{ vMax.x, vMax.y, depth, d3d_color },
+
+		{ vMax.x, vMin.y, depth, d3d_color },
+		{ vMin.x, vMin.y, depth, d3d_color },
 	};
 
 	pD3Ddevice->SetTexture(0, NULL);
@@ -205,11 +208,13 @@ void RenderSystem::DrawWireframeRect( const Vector2& vMin, const Vector2& vMax, 
 	pD3Ddevice->DrawPrimitiveUP(D3DPT_LINESTRIP, 4, v, sizeof(ColoredVertex));
 }
 
-void RenderSystem::DrawText( const char* text, int x, int y, DWORD color /*= 0xFFFFFFFF */ )
+void RenderSystem::RenderText( const char* text, int x, int y, const GWColor& color /*= GWColor::WHITE*/ )
 {
 	RECT font_rect;
 	SetRect( &font_rect, x, y, KLEIN_SCREEN_WIDTH, KLEIN_SCREEN_HEIGHT );
-	pFont->DrawTextA( NULL, text, -1, &font_rect, DT_LEFT|DT_NOCLIP, color );
+
+	DWORD d3d_color = D3DCOLOR_COLORVALUE(color.r, color.g, color.b, color.a);
+	pFont->DrawTextA( NULL, text, -1, &font_rect, DT_LEFT|DT_NOCLIP, d3d_color );
 }
 
 void RenderSystem::Clear()

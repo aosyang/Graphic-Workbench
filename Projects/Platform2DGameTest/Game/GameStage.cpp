@@ -106,7 +106,7 @@ void DebugRenderStageGeom( STAGE_GEOM* geom )
 {
 	RenderSystem::DrawWireframeRect(Vector2(geom->bound.xMin, geom->bound.yMin),
 									Vector2(geom->bound.xMax, geom->bound.yMax),
-									0xFFFFF200);
+									GWColor(0.0f, 1.0f, 0.949f));
 }
 
 GameStage::GameStage()

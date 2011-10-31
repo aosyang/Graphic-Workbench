@@ -10,8 +10,7 @@
 
 #include "Math/GWVectors.h"
 #include "GWRenderWindow.h"
-
-#include <Windows.h>
+#include "GWColor.h"
 
 typedef struct TextureInfoType TEXTURE_INFO;
 typedef struct GWRenderWindow GW_RENDER_WINDOW;
@@ -32,10 +31,10 @@ public:
 	static void Flush();
 
 	static void DrawSprite(const Vector2& vMin, const Vector2& vMax, int tex_id = -1, float depth = 0.0f);
-	static void DrawColoredSprite(const Vector2& vMin, const Vector2& vMax, DWORD color = 0xFFFFFFFF, float depth = 0.0f);
-	static void DrawWireframeRect(const Vector2& vMin, const Vector2& vMax, DWORD color = 0xFFFFFFFF, float depth = 0.0f);
+	static void DrawColoredSprite(const Vector2& vMin, const Vector2& vMax, const GWColor& color = GWColor::WHITE, float depth = 0.0f);
+	static void DrawWireframeRect(const Vector2& vMin, const Vector2& vMax, const GWColor& color = GWColor::WHITE, float depth = 0.0f);
 
-	static void DrawText( const char* text, int x, int y, DWORD color = 0xFFFFFFFF );
+	static void RenderText( const char* text, int x, int y, const GWColor& color = GWColor::WHITE );
 
 private:
 };

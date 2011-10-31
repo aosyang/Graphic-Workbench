@@ -43,7 +43,7 @@ void Player::Render()
 {
 	RenderSystem::DrawColoredSprite(Vector2(-0.5f * m_sCharSize, -0.5f * m_sCharSize) + m_Position,
 									Vector2(0.5f * m_sCharSize, 0.5f * m_sCharSize) + m_Position,
-									0xFFFFF200);
+									GWColor(1.0f, 0.949f, 0.0f));
 }
 
 void Player::Update()
@@ -89,7 +89,7 @@ void Patient::Render()
 {
 	RenderSystem::DrawColoredSprite(Vector2(-0.45f, -0.45f) + m_Position,
 									Vector2(0.45f, 0.45f) + m_Position,
-									0xFF00FFF2);
+									GWColor(0.0f, 1.0f, 0.949f));
 }
 
 void Patient::Interactive()

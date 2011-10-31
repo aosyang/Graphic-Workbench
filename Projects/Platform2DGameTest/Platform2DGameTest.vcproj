@@ -197,6 +197,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Engine\GWColor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Engine\GWColor.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Engine\GWCommon.h"
 				>
 			</File>
