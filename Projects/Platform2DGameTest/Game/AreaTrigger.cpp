@@ -7,7 +7,7 @@
 *********************************************************************/
 #include "AreaTrigger.h"
 #include "Actor.h"
-#include "Renderer/RenderDevice.h"
+#include "Renderer/GWRenderDevice.h"
 #include <string.h>
 
 TriggerFuncTable trigger_func_table[] =
