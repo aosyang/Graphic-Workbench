@@ -316,8 +316,10 @@ void GameMain::OnKeyPressed( int key_code )
 	case GW_KEY_P:
 		if (m_IsEditorMode)
 		{
+#if !defined KLEIN_NO_STAGE_SAVE
 			m_GameStage->SaveToFile("Stage.lua");
 			m_GameStageEditor->MarkMapSaved();
+#endif
 		}
 		break;
 

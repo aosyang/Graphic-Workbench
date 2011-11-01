@@ -369,6 +369,22 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Lua"
+			>
+			<File
+				RelativePath=".\Lua\lua.hpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Lua\lua51.lib"
+				>
+			</File>
+			<File
+				RelativePath=".\Lua\lualib.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath=".\FeatureList.txt"
 			>

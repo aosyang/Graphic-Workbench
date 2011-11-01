@@ -21,6 +21,8 @@
 
 #define KLEIN_COLLISION_TOLERANCE	(0.001f)
 
+//#define KLEIN_NO_STAGE_SAVE
+
 enum GameWorldviewEnum
 {
 	//GAME_WORLD_COMMON,

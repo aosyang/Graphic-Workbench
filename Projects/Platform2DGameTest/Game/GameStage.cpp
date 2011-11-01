@@ -12,9 +12,12 @@
 #include <string>
 #include <vector>
 
+#if !defined KLEIN_NO_STAGE_SAVE
 #include "../LuaPlus/LuaPlus.h"
-
 using namespace LuaPlus;
+#endif
+
+#include "../Lua/lua.hpp"
 
 #include "GameMain.h"
 
@@ -126,35 +129,37 @@ GameStage::~GameStage()
 bool GameStage::LoadFromFile( const char* filename )
 {
 	bool result = false;
-	LuaStateOwner state;
-	int err_code = state->DoFile(filename);
+	lua_State* pLuaState = lua_open();
+	luaL_openlibs(pLuaState);
+	int err_code = luaL_dofile(pLuaState, filename);
 
 	if (!err_code)
 	{
-		//state->DumpObject("Stage_out.lua", "Stage", state->GetGlobals()["Stage"], 0);
+		lua_getglobal(pLuaState, "Stage");
 
-		LuaObject stage_script = state->GetGlobals()["Stage"];
+		if (lua_istable(pLuaState, -1))
+		{
+			//int layers = stage["Layers"].GetInteger();
 
-		//int layers = stage["Layers"].GetInteger();
+			// Load tile types
+			ScriptLoadTileTypes(pLuaState);
 
-		// Load tile types
-		LuaObject tiletype_script = stage_script["TileTypes"];
-		ScriptLoadTileTypes(&tiletype_script);
+			// Load geometries for the stage
+			ScriptLoadGeometries(pLuaState);
 
-		// Load geometries for the stage
-		LuaObject geom_script = stage_script["Geometries"];
-		ScriptLoadGeometries(&geom_script);
+			// Load area triggers
+			ScriptLoadTriggers(pLuaState);
 
-		// Load area triggers
-		LuaObject trig_script = stage_script["AreaTriggers"];
-		ScriptLoadTriggers(&trig_script);
-
-		result = true;
+			result = true;
+		}
 	}
+
+	lua_close(pLuaState);
 
 	return result;
 }
 
+#if !defined KLEIN_NO_STAGE_SAVE
 bool GameStage::SaveToFile( const char* filename )
 {
 	LuaStateOwner state;
@@ -167,6 +172,7 @@ bool GameStage::SaveToFile( const char* filename )
 
 	return state->DumpGlobals(filename);
 }
+#endif
 
 void GameStage::RenderStage()
 {
@@ -362,100 +368,200 @@ void GameStage::AnimSwapWorlds()
 	m_WorldSwapTime = KleinGame()->GetSysTickCount() + TIME_WORLD_SWAP_ANIM;
 }
 
-void GameStage::ScriptLoadTileTypes( const LuaPlus::LuaObject* script )
+void GameStage::ScriptLoadTileTypes( lua_State* state )
 {
-	if (script->IsNil()) return;
+	lua_pushstring(state, "TileTypes");
+	lua_gettable(state, -2);
 
-	int tiletype_count = script->GetTableCount();
-
-	for (int i=0; i<tiletype_count; i++)
+	// ["TileTypes"]
+	if (lua_istable(state, -1))
 	{
-		// Load tile type info into common container
-		std::string tile_name = (*script)[i+1][1].GetString();
+		//int tiletype_count = lua_objlen(state, -1);
+		lua_pushnil(state);
 
-		TILE_TYPE_INFO tile_info;
-		tile_info.usage = StringToTileUsage((*script)[i+1][2].GetString());
-		const char* tex_name = (*script)[i+1][3].GetString();
-
-		int texID = -1;
-		if ( (texID=TextureManager::Instance().GetTextureID(tex_name)) == -1)
+		// Elements
+		while (lua_next(state, -2) != 0)
 		{
-			if (TextureManager::Instance().LoadTextureFromFile(tex_name))
-				texID = TextureManager::Instance().GetTextureID(tex_name);
-		}
-
-		tile_info.tex_id = texID;
-
-		// Add tile type to stage containers
-		m_TileName2Id[tile_name] = m_TileTypeIndex;
-		m_TileId2TypeInfo[m_TileTypeIndex] = tile_info;
-		m_TileTypeIndex++;
-	}
-}
-
-void GameStage::ScriptLoadGeometries( const LuaPlus::LuaObject* script )
-{
-	if (script->IsNil()) return;
-
-	int geom_count = StageGeomList.geom_count = script->GetTableCount();
-
-	for (int i=0; i<geom_count; i++)
-	{
-		BoundBox box;
-
-		int elem_count = (*script)[i+1].GetCount();
-
-		int layer = (*script)[i+1][1].GetInteger();
-		box.xMin = (float)(*script)[i+1][2].GetInteger();
-		box.xMax = (float)(*script)[i+1][3].GetInteger();
-		box.yMin = (float)(*script)[i+1][4].GetInteger();
-		box.yMax = (float)(*script)[i+1][5].GetInteger();
-		const char* tile_type_name[GAME_WORLD_COUNT];
-		for (int j=0; j<GAME_WORLD_COUNT; j++)
-		{
-			// In case we don't have enough string
-			if (6+j <= elem_count)
+			if (lua_istable(state, -1))
 			{
-				tile_type_name[j] = (*script)[i+1][6+j].GetString();
+				lua_pushnil(state);
+
+				const char* lua_str[3] = { NULL };
+				int s = 0;
+
+				// Strings
+				while (lua_next(state, -2) != 0)
+				{
+					int t = lua_type(state, -1);
+					if (lua_type(state, -1) == LUA_TSTRING)
+						lua_str[s] = lua_tostring(state, -1);
+
+					s++;
+					lua_pop(state, 1);
+				}
+
+				// Load tile type info into common container
+				std::string tile_name = lua_str[0];
+
+				TILE_TYPE_INFO tile_info;
+				tile_info.usage = StringToTileUsage(lua_str[1]);
+				const char* tex_name = lua_str[2];
+
+				int texID = -1;
+				if ( (texID=TextureManager::Instance().GetTextureID(tex_name)) == -1)
+				{
+					if (TextureManager::Instance().LoadTextureFromFile(tex_name))
+						texID = TextureManager::Instance().GetTextureID(tex_name);
+				}
+
+				tile_info.tex_id = texID;
+
+				// Add tile type to stage containers
+				m_TileName2Id[tile_name] = m_TileTypeIndex;
+				m_TileId2TypeInfo[m_TileTypeIndex] = tile_info;
+				m_TileTypeIndex++;
 			}
-			else
-				tile_type_name[j] = "";
+
+			lua_pop(state, 1);
 		}
-
-		AddStageGeom(layer, box, tile_type_name);
 	}
+
+	lua_pop(state, 1);
 }
 
-void GameStage::ScriptLoadTriggers( const LuaPlus::LuaObject* script )
+void GameStage::ScriptLoadGeometries( lua_State* state )
 {
-	if (script->IsNil()) return;
+	lua_pushstring(state, "Geometries");
+	lua_gettable(state, -2);
 
-	int trig_count = script->GetTableCount();
-
-	for (int i=0; i<trig_count; i++)
+	// ["Geometries"]
+	if (lua_istable(state, -1))
 	{
-		AREA_TRIGGER* trigger = new AREA_TRIGGER;
-		BoundBox box;
+		StageGeomList.geom_count = lua_objlen(state, -1);
+		lua_pushnil(state);
 
-		box.xMin = (float)(*script)[i+1][1].GetInteger();
-		box.xMax = (float)(*script)[i+1][2].GetInteger();
-		box.yMin = (float)(*script)[i+1][3].GetInteger();
-		box.yMax = (float)(*script)[i+1][4].GetInteger();
-		trigger->bound = box;
+		// Elements
+		while (lua_next(state, -2) != 0)
+		{
+			if (lua_istable(state, -1))
+			{
+				lua_pushnil(state);
 
-		trigger->world_id = (*script)[i+1][5].GetInteger();
+				float lua_num[5];
+				const char* lua_str[GAME_WORLD_COUNT];
+				int n = 0, s = 0;
 
-		const char* callback_name = (*script)[i+1][6].GetString();
-		trigger->callback = StringToTriggerFunc(callback_name);
+				// Strings
+				while (lua_next(state, -2) != 0)
+				{
+					int t = lua_type(state, -1);
+					if (t == LUA_TSTRING)
+					{
+						lua_str[s] = lua_tostring(state, -1);
+						s++;
+					}
+					else if (t == LUA_TNUMBER)
+					{
+						lua_num[n] = (float)lua_tonumber(state, -1);
+						n++;
+					}
 
-		AddAreaTriggerToGame(trigger);
+					lua_pop(state, 1);
+				}
+
+				BoundBox box;
+
+				int layer = (int)lua_num[0];
+				box.xMin = lua_num[1];
+				box.xMax = lua_num[2];
+				box.yMin = lua_num[3];
+				box.yMax = lua_num[4];
+
+				// In case we don't have enough string
+				for (; n<GAME_WORLD_COUNT; n++)
+				{
+					lua_str[n] = "";
+				}
+
+				AddStageGeom(layer, box, lua_str);
+			}
+
+			lua_pop(state, 1);
+		}
 	}
+
+	lua_pop(state, 1);
 }
 
-void GameStage::ScriptSaveTileTypes( LuaPlus::LuaObject* script )
+void GameStage::ScriptLoadTriggers( lua_State* state )
+{
+	lua_pushstring(state, "AreaTriggers");
+	lua_gettable(state, -2);
+
+	// ["Geometries"]
+	if (lua_istable(state, -1))
+	{
+		StageGeomList.geom_count = lua_objlen(state, -1);
+		lua_pushnil(state);
+
+		// Elements
+		while (lua_next(state, -2) != 0)
+		{
+			if (lua_istable(state, -1))
+			{
+				lua_pushnil(state);
+
+				float lua_num[5];
+				const char* lua_str[1];
+				int n = 0, s = 0;
+
+				// Strings
+				while (lua_next(state, -2) != 0)
+				{
+					int t = lua_type(state, -1);
+					if (t == LUA_TSTRING)
+					{
+						lua_str[s] = lua_tostring(state, -1);
+						s++;
+					}
+					else if (t == LUA_TNUMBER)
+					{
+						lua_num[n] = (float)lua_tonumber(state, -1);
+						n++;
+					}
+
+					lua_pop(state, 1);
+				}
+
+				AREA_TRIGGER* trigger = new AREA_TRIGGER;
+				BoundBox box;
+
+				box.xMin = lua_num[0];
+				box.xMax = lua_num[1];
+				box.yMin = lua_num[2];
+				box.yMax = lua_num[3];
+				trigger->bound = box;
+
+				trigger->world_id = (int)lua_num[4];
+
+				const char* callback_name = lua_str[0];
+				trigger->callback = StringToTriggerFunc(callback_name);
+
+				AddAreaTriggerToGame(trigger);
+			}
+
+			lua_pop(state, 1);
+		}
+	}
+
+	lua_pop(state, 1);
+}
+
+#if !defined KLEIN_NO_STAGE_SAVE
+void GameStage::ScriptSaveTileTypes( LuaPlus::LuaObject* state )
 {
 	//LuaObject world_script = stage_script.CreateTable(GameWorldviewKeyWord[0]);
-	LuaObject tile_type_script = script->CreateTable("TileTypes");
+	LuaObject tile_type_script = state->CreateTable("TileTypes");
 
 	// Write tile types
 	int i = 1;
@@ -474,9 +580,9 @@ void GameStage::ScriptSaveTileTypes( LuaPlus::LuaObject* script )
 	}
 }
 
-void GameStage::ScriptSaveGeometries( LuaPlus::LuaObject* script )
+void GameStage::ScriptSaveGeometries( LuaPlus::LuaObject* state )
 {
-	LuaObject geom_group_script = script->CreateTable("Geometries");
+	LuaObject geom_group_script = state->CreateTable("Geometries");
 
 	int i = 1;
 	std::map<std::string, int>::iterator iter;
@@ -527,9 +633,9 @@ void GameStage::ScriptSaveGeometries( LuaPlus::LuaObject* script )
 	}
 }
 
-void GameStage::ScriptSaveTriggers( LuaPlus::LuaObject* script )
+void GameStage::ScriptSaveTriggers( LuaPlus::LuaObject* state )
 {
-	LuaObject trig_group_script = script->CreateTable("AreaTriggers");
+	LuaObject trig_group_script = state->CreateTable("AreaTriggers");
 
 	int i = 1;
 
@@ -549,6 +655,7 @@ void GameStage::ScriptSaveTriggers( LuaPlus::LuaObject* script )
 		i++;
 	}
 }
+#endif
 
 void GameStage::RenderStageGeom( STAGE_GEOM* geom, int world_id, float depth/*=0.0f*/ )
 {

@@ -23,6 +23,8 @@ namespace LuaPlus
 	class LuaObject;
 }
 
+struct lua_State;
+
 enum TileUsageEnum
 {
 	TILE_USAGE_VOID = -1,
@@ -76,7 +78,9 @@ public:
 	~GameStage();
 
 	bool LoadFromFile(const char* filename);
+#if !defined KLEIN_NO_STAGE_SAVE
 	bool SaveToFile(const char* filename);
+#endif
 
 	// Render entire stage
 	void RenderStage();
@@ -95,13 +99,15 @@ public:
 	void AnimSwapWorlds();
 private:
 	
-	void ScriptLoadTileTypes(const LuaPlus::LuaObject* script);
-	void ScriptLoadGeometries(const LuaPlus::LuaObject* script);
-	void ScriptLoadTriggers(const LuaPlus::LuaObject* script);
+	void ScriptLoadTileTypes(lua_State* state);
+	void ScriptLoadGeometries(lua_State* state);
+	void ScriptLoadTriggers(lua_State* state);
 
+#if !defined KLEIN_NO_STAGE_SAVE
 	void ScriptSaveGeometries( LuaPlus::LuaObject* script );
 	void ScriptSaveTileTypes( LuaPlus::LuaObject* script );
 	void ScriptSaveTriggers( LuaPlus::LuaObject* script );
+#endif
 
 	void RenderStageGeom(STAGE_GEOM* geom, int world_id, float depth=0.0f);
 
