@@ -18,7 +18,7 @@
 
 #ifdef _DEBUG
 #define GW_BREAKPOINT				{ while(0) {} }
-#elif
+#else
 #define GW_BREAKPOINT
 #endif
 
