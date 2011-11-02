@@ -7,12 +7,13 @@
 *********************************************************************/
 #include "GameStageEditor.h"
 
+#include "GWCommon.h"
 #include "GameDef.h"
 #include "GameStage.h"
 #include "GameMain.h"
 #include "AreaTrigger.h"
 
-#include <d3dx9.h>
+#include <cstdlib>
 
 GameStageEditor::GameStageEditor()
 : m_GameStage(NULL),

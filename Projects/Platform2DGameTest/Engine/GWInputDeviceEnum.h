@@ -77,16 +77,35 @@ enum GWMouseButton
 	MBTN_COUNT,
 };
 
+// State for key, mouse button and controller button
+enum GWButtonState
+{
+	GW_KEY_STATE_INVALID = -1,
+
+	GW_KEY_STATE_UP = 0,
+	GW_KEY_STATE_DOWN,
+	GW_KEY_STATE_ON_PRESSED,
+	GW_KEY_STATE_ON_RELEASED,
+};
+
+enum GWInputDeviceType
+{
+	GW_INPUT_DEVICE_KEYBOARD,
+	GW_INPUT_DEVICE_MOUSE,
+	GW_INPUT_DEVICE_CONTROLLER0,
+	GW_INPUT_DEVICE_CONTROLLER1,
+};
+
 typedef struct GW_KeyboardState
 {
-	bool pressed[0xFF];
+	GWButtonState key[0xFF];
 } GW_KEYBOARD_STATE;
 
 typedef struct GW_MouseState
 {
-	bool	btn_down[MBTN_COUNT];
-	int		wheel;
-	int		x, y;
+	GWButtonState	btn[MBTN_COUNT];
+	int				wheel;
+	int				x, y;
 } GW_MOUSE_STATE;
 
 typedef struct GW_InputState

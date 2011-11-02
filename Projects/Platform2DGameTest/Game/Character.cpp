@@ -10,8 +10,6 @@
 #include "GameStage.h"
 #include "GameMain.h"
 
-#include <d3dx9.h>
-
 // define size of a character
 float Player::m_sCharSize = 0.8f;
 

@@ -49,10 +49,7 @@ public:
 
 	void Render();
 
-	void SetKeyState(int key_code, bool key_down);
-	void SetMouseBtnState(GWMouseButton mbtn_code, bool btn_down);
-	void SetMousePosition(int x_pos, int y_pos);
-	void SetMouseWheelValue(int wheel) { m_InputState.mouse.wheel = wheel; }
+	Vector2& MovingVector() { return m_MovingVector; }
 
 	Vector2 GetCameraPos() const;
 	Vector2 GetPlayerPos() const;
@@ -61,6 +58,8 @@ public:
 	void ProtoFeatureBitSet(int bits, bool val);
 	void ProtoFeatureFlipBit(int bits);
 	bool TestProtoFeatureBit(int bits) const;
+
+	bool IsEditorMode() const { return m_IsEditorMode; }
 
 	void SetWorldview(int world_id);
 	GameWorldviewEnum GetWorldview() const { return m_ActiveWorld; }
@@ -74,8 +73,6 @@ private:
 
 	void OnMouseBtnPressed(GWMouseButton mbtn_code);
 	void OnMouseBtnReleased(GWMouseButton mbtn_code);
-
-	void ClearMouseWheelState();
 
 	void UpdateInputDevice();
 	void UpdateCamera();
@@ -95,7 +92,7 @@ private:
 	Player*						m_Player;
 	Patient*					m_Patient;
 
-	GW_INPUT_STATE				m_InputState;
+	Vector2						m_MovingVector;
 
 	bool						m_IsEditorMode;
 	GameStageEditor*			m_GameStageEditor;

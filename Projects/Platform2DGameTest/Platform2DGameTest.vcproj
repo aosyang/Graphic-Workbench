@@ -213,6 +213,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Engine\GWInputControl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Engine\GWInputControl.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Engine\GWInputDeviceEnum.h"
 				>
 			</File>
@@ -300,10 +308,6 @@
 					>
 					<File
 						RelativePath=".\Engine\Win32\dinput\GWDeviceDirectInput.cpp"
-						>
-					</File>
-					<File
-						RelativePath=".\Engine\Win32\dinput\GWDeviceDirectInput.h"
 						>
 					</File>
 				</Filter>
