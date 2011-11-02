@@ -10,8 +10,6 @@
 #include "GameStage.h"
 #include "GameDef.h"
 
-#include <d3dx9.h>
-
 static Actor*	ActorListHead = NULL;
 static Actor*	ActorListTail = NULL;
 

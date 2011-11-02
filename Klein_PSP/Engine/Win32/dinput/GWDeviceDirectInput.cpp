@@ -5,7 +5,7 @@
 	
 	purpose:	
 *********************************************************************/
-#include "GWDeviceDirectInput.h"
+#include "GWInputControl.h"
 #include "Renderer/GWRenderWindow.h"
 
 #include <dinput.h>
@@ -17,7 +17,11 @@ LPDIRECTINPUTDEVICE8	di_mouse_device;
 BYTE					keystate[256];				// direct input key state table
 DIMOUSESTATE			mousestate;
 
-bool					gw_key_pressed[0xFF];		// GWKeyCode state table
+bool					di_key_down[0xFF];
+GWButtonState			di_key_state[0xFF];		// GWKeyCode state table
+
+bool					di_mbtn_down[MBTN_COUNT];
+GWButtonState			di_mbtn_state[MBTN_COUNT];
 
 GWKeyCode DI_GWKeyCodeTable[0xFF] = { GW_KEY_UNDEFINED };
 
@@ -174,7 +178,10 @@ void GWInput_InitializeDevice( GW_RENDER_WINDOW* rw )
 {
 	SetupKeyCodeMap();
 
-	memset(gw_key_pressed, 0, sizeof(gw_key_pressed));
+	memset(di_key_state, 0, sizeof(di_key_state));
+	memset(di_key_down, 0, sizeof(di_key_down));
+	memset(di_mbtn_down, 0, sizeof(di_mbtn_down));
+	memset(di_mbtn_state, 0, sizeof(di_mbtn_state));
 
 	HINSTANCE hInstance = GetModuleHandle(NULL);
 	HWND hWnd = *((HWND*)rw->params[WND_PARAM_WIN32_HANDLE]);
@@ -199,14 +206,36 @@ void GWInput_UpdateInputState()
 	di_keyboard_device->Acquire();
 	di_keyboard_device->GetDeviceState( 256, (LPVOID)keystate );
 
-	int n = sizeof(DI_GWKeyCodeTable) / sizeof(GWKeyCode);
 	for (int i=0; i<0xFF; i++)
 	{
-		gw_key_pressed[DI_GWKeyCodeTable[i]] = ((keystate[i] & 0x80) != 0);
+		bool key_down = ((keystate[i] & 0x80) != 0);
+		if (di_key_down[DI_GWKeyCodeTable[i]] != key_down)
+		{
+			di_key_state[DI_GWKeyCodeTable[i]] = key_down ? GW_KEY_STATE_ON_PRESSED : GW_KEY_STATE_ON_RELEASED;
+		}
+		else
+		{
+			di_key_state[DI_GWKeyCodeTable[i]] = key_down ? GW_KEY_STATE_DOWN : GW_KEY_STATE_UP;
+		}
+		di_key_down[DI_GWKeyCodeTable[i]] = key_down;
 	}
 
 	di_mouse_device->Acquire();
 	di_mouse_device->GetDeviceState( sizeof(DIMOUSESTATE), (LPVOID)&mousestate );
+
+	for (int i=0; i<MBTN_COUNT; i++)
+	{
+		bool btn_down = ((mousestate.rgbButtons[i] & 0x80) != 0);
+		if (di_mbtn_down[i] != btn_down)
+		{
+			di_mbtn_state[i] = btn_down ? GW_KEY_STATE_ON_PRESSED : GW_KEY_STATE_ON_RELEASED;
+		}
+		else
+		{
+			di_mbtn_state[i] = btn_down ? GW_KEY_STATE_DOWN : GW_KEY_STATE_UP;
+		}
+		di_mbtn_down[i] = btn_down;
+	}
 }
 
 void GWInput_DestroyDevice()
@@ -216,14 +245,14 @@ void GWInput_DestroyDevice()
 	dinput->Release();
 }
 
-bool GWInput_GetKeyDownState( GWKeyCode key )
+GWButtonState GWInput_GetKeyState(int key)
 {
-	return gw_key_pressed[key];
+	return (key >= 0 && key < 0xFF) ? di_key_state[key] : GW_KEY_STATE_INVALID;
 }
 
-bool GWInput_GetMouseBtnDownState(GWMouseButton btn)
+GWButtonState GWInput_GetMouseBtnState(int btn)
 {
-	return (mousestate.rgbButtons[btn] & 0x80) != 0;
+	return (btn >= 0 && btn < MBTN_COUNT) ? di_mbtn_state[btn] : GW_KEY_STATE_INVALID;
 }
 
 int GWInput_GetMouseWheelValue()

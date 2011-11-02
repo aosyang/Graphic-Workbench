@@ -21,7 +21,9 @@
 
 #define KLEIN_COLLISION_TOLERANCE	(0.001f)
 
-//#define KLEIN_NO_STAGE_SAVE
+#if defined GW_PLATFORM_PSP
+#define KLEIN_NO_STAGE_SAVE
+#endif
 
 enum GameWorldviewEnum
 {

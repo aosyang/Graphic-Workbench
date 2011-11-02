@@ -12,30 +12,54 @@
 
 #include "GWCommon.h"
 #include "GameDef.h"
-#include "Win32/GWTimer.h"
+#include "GWTimer.h"
 
 #include "GameStageEditor.h"
 #include "Renderer/TextureManager.h"
-#include "Win32/dinput/GWDeviceDirectInput.h"
+#include "GWInputControl.h"
 
 #include "AreaTrigger.h"
 
-#include <d3dx9.h>
+void Con_EditorMoveUp();
+void Con_EditorMoveDown();
+void Con_EditorMoveLeft();
+void Con_EditorMoveRight();
+void Con_MoveLeft();
+void Con_MoveRight();
+void Con_MoveUp();
+void Con_MoveDown();
+
+GW_KeyMap KleinKeyMap[] =
+{
+	// Editor control
+	{ Con_EditorMoveLeft,		GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_A,		GW_KEY_STATE_DOWN },
+	{ Con_EditorMoveRight,		GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_D,		GW_KEY_STATE_DOWN },
+	{ Con_EditorMoveUp,			GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_W,		GW_KEY_STATE_DOWN },
+	{ Con_EditorMoveDown,		GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_S,		GW_KEY_STATE_DOWN },
+
+	// Character control
+	{ Con_MoveLeft,				GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_LEFT,	GW_KEY_STATE_DOWN },
+	{ Con_MoveRight,			GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_RIGHT,	GW_KEY_STATE_DOWN },
+	//{ Con_MoveUp,				GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_UP,		GW_KEY_STATE_DOWN },
+	//{ Con_MoveDown,				GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_DOWN,	GW_KEY_STATE_DOWN },
+
+	// End
+	{ NULL,						GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_UNDEFINED, GW_KEY_STATE_INVALID },
+};
 
 GameMain::GameMain()
 : m_RenderWindow(NULL),
   m_SysTime(0),
   m_GameStage(NULL),
   m_Player(NULL),
-  m_IsEditorMode(true),
   m_GameStageEditor(NULL),
   m_ProtoFeatureBits(0),
   m_ActiveWorld((GameWorldviewEnum)0)
 {
-	memset(&m_InputState, 0, sizeof(m_InputState));
-
 	memset(&m_Camera, 0, sizeof(m_Camera));
 	m_Camera.fovy = KLEIN_CAMERA_FOVY;
+
+	m_IsEditorMode = false;
 }
 
 GameMain::~GameMain()
@@ -64,9 +88,14 @@ void GameMain::Reset()
 
 void GameMain::Startup()
 {
+#if defined GW_PLATFORM_PSP
+	m_RenderWindow = GWWnd_CreateRenderWindow();
+#else
 	m_RenderWindow = GWWnd_CreateRenderWindow(KLEIN_SCREEN_WIDTH, KLEIN_SCREEN_HEIGHT, "Klein");
+#endif
 
 	GWInput_InitializeDevice( m_RenderWindow );
+	GWInputCon_Initialize( KleinKeyMap );
 
 	// Game initializations
 	RenderSystem::Initialize( m_RenderWindow );
@@ -104,39 +133,31 @@ void GameMain::Update()
 
 	UpdateInputDevice();
 
-	STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(m_Player->GetPosition());
-	TileUsageEnum player_pos_type = geom ? m_GameStage->GetStageGeomUsage(geom) : TILE_USAGE_VOID;
+	m_MovingVector = Vector2::ZERO;
 
-	Vector2 moveVector(0.0f, 0.0f);
+	GWInputCon_Update();
 
 	// Reset player movement control
-	m_Player->MoveController() = moveVector;
-
-	GW_KEYBOARD_STATE* key = &m_InputState.key;
+	m_Player->MoveController() = Vector2::ZERO;
 
 	if (m_IsEditorMode)
 	{
 		// Free move in editor mode
-		if (key->pressed[GW_KEY_A]) moveVector += Vector2(-1.0f, 0.0f);
-		if (key->pressed[GW_KEY_D]) moveVector += Vector2(1.0f, 0.0f);
-		if (key->pressed[GW_KEY_W]) moveVector += Vector2(0.0f, 1.0f);
-		if (key->pressed[GW_KEY_S]) moveVector += Vector2(0.0f, -1.0f);
+		m_MovingVector.Normalize();
+		m_MovingVector *= 0.5f;
 
-		moveVector.Normalize();
-		moveVector *= 0.5f;
-
-		m_Player->Translate( moveVector );
+		m_Player->Translate( m_MovingVector );
 		m_Player->Velocity().y = 0.0f;
 	}
 	else 
 	{
-		if (key->pressed[GW_KEY_LEFT]) moveVector += Vector2(-1.0f, 0.0f);
-		if (key->pressed[GW_KEY_RIGHT]) moveVector += Vector2(1.0f, 0.0f);
+		STAGE_GEOM* geom = m_GameStage->GetTileAtPoint(m_Player->GetPosition());
+		TileUsageEnum player_pos_type = geom ? m_GameStage->GetStageGeomUsage(geom) : TILE_USAGE_VOID;
 
 		if (m_Player->IsClimbingLadder())
 		{
-			if (key->pressed[GW_KEY_UP]) moveVector += Vector2(0.0f, 1.0f);
-			if (key->pressed[GW_KEY_DOWN]) moveVector += Vector2(0.0f, -1.0f);
+			if (GWInput_GetKeyState(GW_KEY_UP) == GW_KEY_STATE_DOWN) m_MovingVector += Vector2(0.0f, 1.0f);
+			if (GWInput_GetKeyState(GW_KEY_DOWN) == GW_KEY_STATE_DOWN) m_MovingVector += Vector2(0.0f, -1.0f);
 
 			// Fall down if no ladder
 			if (player_pos_type != TILE_USAGE_LADDER)
@@ -146,7 +167,7 @@ void GameMain::Update()
 		}
 		else
 		{
-			if (key->pressed[GW_KEY_UP])
+			if (GWInput_GetKeyState(GW_KEY_UP) == GW_KEY_STATE_DOWN)
 			{
 				// Climb up if player stands near by a ladder
 				if (player_pos_type == TILE_USAGE_LADDER)
@@ -160,18 +181,18 @@ void GameMain::Update()
 			}
 		}
 
-		moveVector.Normalize();
+		m_MovingVector.Normalize();
 		if (m_Player->IsClimbingLadder())
 		{
 			// Slow down if climbing ladder
-			moveVector *= 0.08f;
+			m_MovingVector *= 0.08f;
 		}
 		else
 		{
-			moveVector *= 0.1f;
+			m_MovingVector *= 0.1f;
 		}
 
-		m_Player->MoveController() = moveVector;
+		m_Player->MoveController() = m_MovingVector;
 
 		HandlePlayerTriggerInteractivities();
 		UpdateActors();
@@ -180,16 +201,14 @@ void GameMain::Update()
 	UpdateCamera();
 
 	UpdateEditorControl();
-
-	ClearMouseWheelState();
 }
 
 void GameMain::Render()
 {
+	RenderSystem::BeginRender();
+
 	RenderSystem::SetupCamera(GetCameraPos(), GetFovy());
 	RenderSystem::Clear();
-
-	RenderSystem::BeginRender();
 
 	m_GameStage->RenderStage();
 
@@ -220,40 +239,6 @@ void GameMain::Render()
 	RenderSystem::Flush();
 }
 
-void GameMain::SetKeyState( int key_code, bool key_down )
-{
-	bool old_state = m_InputState.key.pressed[key_code];
-	m_InputState.key.pressed[key_code] = key_down;
-
-	if ( key_down!=old_state )
-	{
-		if (key_down)
-			OnKeyPressed(key_code);
-		else
-			OnKeyReleased(key_code);
-	}
-}
-
-void GameMain::SetMouseBtnState( GWMouseButton mbtn_code, bool btn_down )
-{
-	bool old_state = m_InputState.mouse.btn_down[mbtn_code];
-	m_InputState.mouse.btn_down[mbtn_code] = btn_down;
-
-	if ( btn_down != old_state )
-	{
-		if (btn_down)
-			OnMouseBtnPressed(mbtn_code);
-		else
-			OnMouseBtnReleased(mbtn_code);
-	}
-}
-
-void GameMain::SetMousePosition( int x_pos, int y_pos )
-{
-	m_InputState.mouse.x = x_pos;
-	m_InputState.mouse.y = y_pos;
-}
-
 Vector2 GameMain::GetCameraPos() const
 {
 	return m_Camera.position;
@@ -266,8 +251,13 @@ Vector2 GameMain::GetPlayerPos() const
 
 void GameMain::GetMousePos( int* x, int* y )
 {
-	if (x) *x = m_InputState.mouse.x;
-	if (y) *y = m_InputState.mouse.y;
+#if defined GW_PLATFORM_PSP
+	if (x) *x = 0;
+	if (y) *y = 0;
+#else
+	if (x) *x = m_RenderWindow->mouse_x;
+	if (y) *y = m_RenderWindow->mouse_y;
+#endif
 }
 
 
@@ -322,7 +312,8 @@ void GameMain::OnKeyPressed( int key_code )
 #endif
 		}
 		break;
-
+	default:
+		break;
 	}
 }
 
@@ -339,6 +330,8 @@ void GameMain::OnMouseBtnPressed( GWMouseButton mbtn_code )
 		if (m_IsEditorMode)
 			m_GameStageEditor->StartPainting();
 		break;
+	default:
+		break;
 	}
 }
 
@@ -350,42 +343,45 @@ void GameMain::OnMouseBtnReleased( GWMouseButton mbtn_code )
 		if (m_IsEditorMode)
 			m_GameStageEditor->EndPainting();
 		break;
+	default:
+		break;
 	}
-}
-
-void GameMain::ClearMouseWheelState()
-{
-	m_InputState.mouse.wheel = 0;
 }
 
 void GameMain::UpdateInputDevice()
 {
-	// Update mouse position relative to render window
-	SetMousePosition(m_RenderWindow->mouse_x, m_RenderWindow->mouse_y);
-
 	GWInput_UpdateInputState();
 
 	for (int i=0; i<0xFF; i++)
-		SetKeyState(i, GWInput_GetKeyDownState((GWKeyCode)i));
+	{
+		if (GWInput_GetKeyState(i) == GW_KEY_STATE_ON_PRESSED)
+			OnKeyPressed(i);
+		if (GWInput_GetKeyState(i) == GW_KEY_STATE_ON_RELEASED)
+			OnKeyReleased(i);
+	}	
 
-	for (int i=0; i<2; i++)
-		SetMouseBtnState((GWMouseButton)i, GWInput_GetMouseBtnDownState((GWMouseButton)i));
+	for (int i=0; i<MBTN_COUNT; i++)
+	{
+		if (GWInput_GetMouseBtnState(i) == GW_KEY_STATE_ON_PRESSED)
+			OnMouseBtnPressed((GWMouseButton)i);
+#if !defined GW_PLATFORM_PSP
+		if (GWInput_GetMouseBtnState(i) == GW_KEY_STATE_ON_RELEASED)
+			OnMouseBtnReleased((GWMouseButton)i);
+#endif
+	}
 
-	SetMouseWheelValue(GWInput_GetMouseWheelValue());
 }
 
 void GameMain::UpdateEditorControl()
 {
 	if (!m_IsEditorMode) return;
 
-	GW_MOUSE_STATE* mouse = &m_InputState.mouse;
-
-	if ( mouse->btn_down[MBTN_LEFT] && !mouse->btn_down[MBTN_RIGHT])//Edit by YLL
-		//if (m_InputState.mouse_btn_pressed[MBTN_LEFT])
+	if ( GWInput_GetMouseBtnState(MBTN_LEFT) == GW_KEY_STATE_DOWN && 
+		 !GWInput_GetMouseBtnState(MBTN_RIGHT) == GW_KEY_STATE_DOWN )//Edit by YLL
 	{
 		m_GameStageEditor->PaintTileAtCursor();
 	}
-	else if ( mouse->btn_down[MBTN_RIGHT] )
+	else if ( GWInput_GetMouseBtnState(MBTN_RIGHT) == GW_KEY_STATE_DOWN )
 	{
 		m_GameStageEditor->StartPicking();//Edit by YLL for right click pick mode
 		//m_GameStageEditor->PickupTileTypeAtCursor();
@@ -395,7 +391,7 @@ void GameMain::UpdateEditorControl()
 		m_GameStageEditor->EndPicking();//Add by YLL for right click pick mode
 	}
 
-	m_GameStageEditor->ZoomView( mouse->wheel / 120 );
+	m_GameStageEditor->ZoomView( GWInput_GetMouseWheelValue() / 120 );
 }
 
 void GameMain::DrawDebugText()
@@ -406,20 +402,22 @@ void GameMain::DrawDebugText()
 	Vector2 char_pos = m_Player->GetPosition();
 	int world_id = (int)GetWorldview();
 
-	GW_MOUSE_STATE* mouse = &m_InputState.mouse;
-
 	// Draw debug text
 	sprintf(debug_text,
 			"pos: %f, %f\n"
 			"Block: x( %d ~ %d ) - y( %d ~ %d )\n"
 			"World: %d\n"
+#if !defined GW_PLATFORM_PSP
 			"Mouse: %d %d %d\n"
+#endif
 			"%s",
 			char_pos.x, char_pos.y,
 			(int)floor(char_pos.x), (int)ceil(char_pos.x),
 			(int)floor(char_pos.y), (int)ceil(char_pos.y),
 			world_id,
-			mouse->x, mouse->y, mouse->wheel,
+#if !defined GW_PLATFORM_PSP
+			m_RenderWindow->mouse_x, m_RenderWindow->mouse_y, GWInput_GetMouseWheelValue(),
+#endif
 			m_GameStageEditor->IsMapUnsaved() ? "*Map unsaved*" : "");
 
 	RenderSystem::RenderText(debug_text, 0, 0, GWColor::YELLOW);
@@ -511,5 +509,49 @@ GameMain* KleinGame()
 {
 	static GameMain game;
 	return &game;
+}
+
+void Con_EditorMoveLeft()
+{
+	if (KleinGame()->IsEditorMode())
+		KleinGame()->MovingVector() += Vector2(-1.0f, 0.0f);
+}
+
+void Con_EditorMoveRight()
+{
+	if (KleinGame()->IsEditorMode())
+		KleinGame()->MovingVector() += Vector2(1.0f, 0.0f);
+}
+
+void Con_EditorMoveUp()
+{
+	KleinGame()->MovingVector() += Vector2(0.0f, 1.0f);
+}
+
+void Con_EditorMoveDown()
+{
+	KleinGame()->MovingVector() += Vector2(0.0f, -1.0f);
+}
+
+void Con_MoveLeft()
+{
+	if (!KleinGame()->IsEditorMode())
+		KleinGame()->MovingVector() += Vector2(-1.0f, 0.0f);
+}
+
+void Con_MoveRight()
+{
+	if (!KleinGame()->IsEditorMode())
+		KleinGame()->MovingVector() += Vector2(1.0f, 0.0f);
+}
+
+void Con_MoveUp()
+{
+
+}
+
+void Con_MoveDown()
+{
+
 }
 

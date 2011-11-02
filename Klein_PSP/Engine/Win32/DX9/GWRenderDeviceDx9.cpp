@@ -233,7 +233,7 @@ void RenderSystem::SetupCamera( const Vector2& cam_pos, float fovy )
 
 void RenderSystem::DrawColoredSprite( const Vector2& vMin, const Vector2& vMax, const GWColor& color /*= GWColor::WHITE*/, float depth /*= 0.0f*/ )
 {
-	DWORD d3d_color = D3DCOLOR_COLORVALUE(color.r, color.g, color.b, color.a);
+	DWORD d3d_color = color.ARGB();
 	ColoredVertex v[6] =
 	{
 		{ vMin.x, vMin.y, depth, d3d_color },
@@ -254,7 +254,7 @@ void RenderSystem::DrawColoredSprite( const Vector2& vMin, const Vector2& vMax, 
 
 void RenderSystem::DrawWireframeRect( const Vector2& vMin, const Vector2& vMax, const GWColor& color /*= GWColor::WHITE*/, float depth /*= 0.0f*/ )
 {
-	DWORD d3d_color = D3DCOLOR_COLORVALUE(color.r, color.g, color.b, color.a);
+	DWORD d3d_color = color.ARGB();
 
 	ColoredVertex v[5] =
 	{
@@ -278,8 +278,7 @@ void RenderSystem::RenderText( const char* text, int x, int y, const GWColor& co
 	RECT font_rect;
 	SetRect( &font_rect, x, y, KLEIN_SCREEN_WIDTH, KLEIN_SCREEN_HEIGHT );
 
-	DWORD d3d_color = D3DCOLOR_COLORVALUE(color.r, color.g, color.b, color.a);
-	pFont->DrawTextA( NULL, text, -1, &font_rect, DT_LEFT|DT_NOCLIP, d3d_color );
+	pFont->DrawTextA( NULL, text, -1, &font_rect, DT_LEFT|DT_NOCLIP, color.ARGB() );
 }
 
 void RenderSystem::Clear()

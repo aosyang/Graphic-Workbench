@@ -9,6 +9,7 @@
 #include "Renderer/TextureManager.h"
 #include "AreaTrigger.h"
 
+#include <cstring>
 #include <string>
 #include <vector>
 

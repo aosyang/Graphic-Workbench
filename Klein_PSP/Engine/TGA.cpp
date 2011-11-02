@@ -9,6 +9,9 @@
 #include "TGA.h"
 
 #include <memory>
+#include <cstdio>
+#include <malloc.h>
+#include <cstring>
 
 /********************************************************************************
 /name :		LoadTGA(Texture * texture, char * filename)							*

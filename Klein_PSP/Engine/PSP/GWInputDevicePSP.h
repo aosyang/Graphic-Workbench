@@ -1,12 +1,12 @@
 /********************************************************************
-	created:	2011/10/30
-	filename: 	GWDeviceDirectInput.h
+	created:	2011/11/03
+	filename: 	GWInputDevicePSP.h
 	author:		Mwolf
 	
 	purpose:	
 *********************************************************************/
-#ifndef GWDeviceDirectInput_h__
-#define GWDeviceDirectInput_h__
+#ifndef GWInputDevicePSP_h__
+#define GWInputDevicePSP_h__
 
 #include "GWInputDeviceEnum.h"
 
@@ -18,8 +18,4 @@ void GWInput_UpdateInputState();
 
 void GWInput_DestroyDevice();
 
-bool GWInput_GetKeyDownState(GWKeyCode key);
-bool GWInput_GetMouseBtnDownState(GWMouseButton btn);
-int GWInput_GetMouseWheelValue();
-
-#endif // GWDeviceDirectInput_h__
+#endif // GWInputDevicePSP_h__
