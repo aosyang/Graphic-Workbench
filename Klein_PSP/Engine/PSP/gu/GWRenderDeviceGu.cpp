@@ -6,7 +6,9 @@
 	purpose:	
 *********************************************************************/
 #include "Renderer/GWRenderDevice.h"
+#include "GWTextureGu.h"
 #include "../Game/GameDef.h"
+#include "TGA.h"
 
 #include <pspkernel.h>
 #include <pspdisplay.h>
@@ -98,8 +100,12 @@ void RenderSystem::Initialize( GW_RENDER_WINDOW* rw )
 	sceGuFrontFace(GU_CW);
 	sceGuShadeModel(GU_SMOOTH);
 	sceGuDisable(GU_CULL_FACE);
-	sceGuDisable(GU_TEXTURE_2D);
 	sceGuEnable(GU_CLIP_PLANES);
+
+	// Blending
+	sceGuEnable(GU_BLEND);
+	sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
+
 	sceGuFinish();
 	sceGuSync(0,0);
 
@@ -114,12 +120,49 @@ void RenderSystem::Destroy()
 
 TEXTURE_INFO* RenderSystem::CreateTexture( const char* filename )
 {
-	return 0;
+	GW_IMAGE tex;
+	if (!LoadTGAImage(&tex, filename))
+	{
+		return NULL;
+	}
+
+	GW_UINT8* gu_tex = (GW_UINT8*)getStaticVramTexture(tex.width, tex.height, GU_PSM_8888);
+
+	switch (tex.format)
+	{
+	case GW_PIXFMT_RGB:
+		for (int i=0; i<tex.width * tex.height; i++)
+		{
+			gu_tex[i * 4]		= tex.imageData[i * 3];
+			gu_tex[i * 4 + 1]	= tex.imageData[i * 3 + 1];
+			gu_tex[i * 4 + 2]	= tex.imageData[i * 3 + 2];
+			gu_tex[i * 4 + 3]	= 0xFF;
+		}
+		break;
+	case GW_PIXFMT_RGBA:
+		memcpy(gu_tex, tex.imageData, 4 * tex.width * tex.height);
+		break;
+
+	default:
+		break;
+	}
+
+	TEXTURE_INFO* tex_info = new TEXTURE_INFO;
+	memset(tex_info, 0, sizeof(TEXTURE_INFO));
+
+	tex_info->width = tex.width;
+	tex_info->height = tex.height;
+
+	tex_info->gu_tex = gu_tex;
+
+	UnloadTGAImage(&tex);
+
+	return tex_info;
 }
 
 void RenderSystem::DestroyTexture( TEXTURE_INFO* texture )
 {
-
+	// We won't release static buffers
 }
 
 void RenderSystem::SetupCamera( const Vector2& cam_pos, float fovy )
@@ -140,9 +183,9 @@ void RenderSystem::SetupCamera( const Vector2& cam_pos, float fovy )
 	sceGumLoadIdentity();
 }
 
-void RenderSystem::Clear()
+void RenderSystem::Clear(const GWColor& color)
 {
-	sceGuClearColor(0xff554433);
+	sceGuClearColor(color.ABGR());
 	sceGuClearDepth(0);
 	sceGuClear(GU_COLOR_BUFFER_BIT|GU_DEPTH_BUFFER_BIT);
 
@@ -166,6 +209,51 @@ void RenderSystem::Flush()
 	sceGuSwapBuffers();
 }
 
+struct GuTexturedVertex
+{
+	float u, v;
+	float x, y, z;
+};
+
+#define _GUTV_DEF(_i, _x, _y, _z)\
+			{ draw_list[_i].u = _x;\
+			  draw_list[_i].v = _y;\
+			  draw_list[_i].x = _x;\
+			  draw_list[_i].y = _y;\
+			  draw_list[_i].z = _z; }
+
+void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, const TEXTURE_INFO* tex /*= NULL*/, float depth /*= 0.0f*/ )
+{
+	GuTexturedVertex* draw_list = (GuTexturedVertex*)sceGuGetMemory(6 * sizeof(GuTexturedVertex));
+
+	_GUTV_DEF(0, vMin.x, vMin.y, -depth)
+	_GUTV_DEF(1, vMin.x, vMax.y, -depth)
+	_GUTV_DEF(2, vMax.x, vMax.y, -depth)
+
+	_GUTV_DEF(3, vMax.x, vMax.y, -depth)
+	_GUTV_DEF(4, vMax.x, vMin.y, -depth)
+	_GUTV_DEF(5, vMin.x, vMin.y, -depth)
+
+	if (tex)
+	{
+		sceGuEnable(GU_TEXTURE_2D);
+
+		sceGuTexMode(GU_PSM_8888, 0, 0, 0);
+		sceGuTexImage(0, tex->width, tex->height, tex->width, tex->gu_tex);
+		sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
+		sceGuTexFilter(GU_LINEAR,GU_LINEAR);
+		sceGuTexScale(1.0f,1.0f);
+		sceGuTexOffset(0.0f,0.0f);
+		sceGuAmbientColor(0xffffffff);
+	}
+	else
+	{
+		sceGuDisable(GU_TEXTURE_2D);
+	}
+	sceGumDrawArray(GU_TRIANGLES, GU_TEXTURE_32BITF|GU_VERTEX_32BITF|GU_TRANSFORM_3D, 2*3, 0, draw_list);
+	//sceKernelDcacheWritebackAll();
+}
+
 struct GuColoredVertex
 {
 	GW_UINT32 color;
@@ -173,26 +261,10 @@ struct GuColoredVertex
 };
 
 #define _GUCV_DEF(_i, _c, _x, _y, _z)\
-	{ draw_list[_i].color = _c;\
-	  draw_list[_i].x = _x;\
-	  draw_list[_i].y = _y;\
-	  draw_list[_i].z = _z; }
-
-void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, int tex_id /*= -1*/, float depth /*= 0.0f*/ )
-{
-	GuColoredVertex* draw_list = (GuColoredVertex*)sceGuGetMemory(6 * sizeof(GuColoredVertex));
-
-	_GUCV_DEF(0, 0xFFFFFFFF, vMin.x, vMin.y, -depth)
-	_GUCV_DEF(1, 0xFFFFFFFF, vMin.x, vMax.y, -depth)
-	_GUCV_DEF(2, 0xFFFFFFFF, vMax.x, vMax.y, -depth)
-
-	_GUCV_DEF(3, 0xFFFFFFFF, vMax.x, vMax.y, -depth)
-	_GUCV_DEF(4, 0xFFFFFFFF, vMax.x, vMin.y, -depth)
-	_GUCV_DEF(5, 0xFFFFFFFF, vMin.x, vMin.y, -depth)
-
-	sceGumDrawArray(GU_TRIANGLES, GU_COLOR_8888|GU_VERTEX_32BITF|GU_TRANSFORM_3D, 2*3, 0, draw_list);
-	//sceKernelDcacheWritebackAll();
-}
+			{ draw_list[_i].color = _c;\
+				draw_list[_i].x = _x;\
+				draw_list[_i].y = _y;\
+				draw_list[_i].z = _z; }
 
 void RenderSystem::DrawColoredSprite( const Vector2& vMin, const Vector2& vMax, const GWColor& color /*= GWColor::WHITE*/, float depth /*= 0.0f*/ )
 {
@@ -206,6 +278,7 @@ void RenderSystem::DrawColoredSprite( const Vector2& vMin, const Vector2& vMax, 
 	_GUCV_DEF(4, color.ABGR(), vMax.x, vMin.y, -depth)
 	_GUCV_DEF(5, color.ABGR(), vMin.x, vMin.y, -depth)
 
+	sceGuDisable(GU_TEXTURE_2D);
 	sceGumDrawArray(GU_TRIANGLES, GU_COLOR_8888|GU_VERTEX_32BITF|GU_TRANSFORM_3D, 2*3, 0, draw_list);
 	//sceKernelDcacheWritebackAll();
 }
@@ -220,6 +293,7 @@ void RenderSystem::DrawWireframeRect( const Vector2& vMin, const Vector2& vMax, 
 	_GUCV_DEF(3, color.ABGR(), vMax.x, vMin.y, -depth)
 	_GUCV_DEF(4, color.ABGR(), vMin.x, vMin.y, -depth)
 
+	sceGuDisable(GU_TEXTURE_2D);
 	sceGumDrawArray(GU_LINE_STRIP, GU_COLOR_8888|GU_VERTEX_32BITF|GU_TRANSFORM_3D, 5, 0, draw_list);
 	//sceKernelDcacheWritebackAll();
 }

@@ -217,7 +217,7 @@ void GameMain::Render()
 	RenderSystem::BeginRender();
 
 	RenderSystem::SetupCamera(GetCameraPos(), GetFovy());
-	RenderSystem::Clear();
+	RenderSystem::Clear(GWIntegerColor(141, 153, 191, 0));
 
 	m_GameStage->RenderStage();
 
@@ -396,6 +396,8 @@ void GameMain::UpdateEditorControl()
 
 void GameMain::DrawDebugText()
 {
+	return;
+
 	char debug_text[256];
 
 	// Update debug info
@@ -527,12 +529,14 @@ void GameMain::Con_EditorMoveRight()
 
 void GameMain::Con_EditorMoveUp()
 {
-	m_MovingVector += Vector2(0.0f, 1.0f);
+	if (KleinGame()->IsEditorMode())
+		m_MovingVector += Vector2(0.0f, 1.0f);
 }
 
 void GameMain::Con_EditorMoveDown()
 {
-	m_MovingVector += Vector2(0.0f, -1.0f);
+	if (KleinGame()->IsEditorMode())
+		m_MovingVector += Vector2(0.0f, -1.0f);
 }
 
 void GameMain::Con_MoveLeft()

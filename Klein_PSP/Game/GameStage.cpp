@@ -209,7 +209,7 @@ void GameStage::RenderStage()
 		for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 		{
 			RenderStageGeom(geom, world_id);
-			DebugRenderStageGeom(geom);
+			//DebugRenderStageGeom(geom);
 		}
 	}
 	else if (remain_time > TIME_WORLD_SWAP_ANIM / 2)
@@ -700,11 +700,11 @@ void GameStage::RenderStageGeom( STAGE_GEOM* geom, int world_id, float depth/*=0
 	// Don't render tile with no type
 	if (tile_id != -1)
 	{
-		int tex_id = m_TileId2TypeInfo[tile_id].tex_id;
+		const TEXTURE_INFO* tex = TextureManager::Instance().GetTexture(m_TileId2TypeInfo[tile_id].tex_id);
 
 		RenderSystem::DrawSprite(Vector2(geom->bound.xMin, geom->bound.yMin),
 								 Vector2(geom->bound.xMax, geom->bound.yMax),
-								 tex_id, depth);
+								 tex, depth);
 	}
 }
 

@@ -6,9 +6,10 @@
 	purpose:	
 *********************************************************************/
 #include "Renderer/GWRenderDevice.h"
-#include "Renderer/TextureManager.h"
 #include "../Game/GameDef.h"
 #include "TGA.h"
+
+#include "Win32/DX9/GWTextureDX9.h"
 
 #include <d3d9.h>
 #include <d3dx9.h>
@@ -25,7 +26,7 @@ struct TexturedVertex
 	float u, v;
 };
 
-void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, int tex_id /*= -1*/, float depth /*= 0.0f*/ )
+void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, const TEXTURE_INFO* tex /*= NULL*/, float depth /*= 0.0f*/ )
 {
 	TexturedVertex v[6] =
 	{
@@ -39,9 +40,8 @@ void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, int tex
 	};
 
 
-	if (tex_id!=-1)
+	if (tex)
 	{
-		const TEXTURE_INFO* tex = TextureManager::Instance().GetTexture(tex_id);
 		pD3Ddevice->SetTexture(0, tex->d3d_tex);
 
 		// enable mip-map for texture
@@ -187,20 +187,15 @@ TEXTURE_INFO* RenderSystem::CreateTexture( const char* filename )
 
 	d3d_tex->UnlockRect(0);
 
-	UnloadTGAImage(&tex);
-
 	TEXTURE_INFO* tex_info = new TEXTURE_INFO;
 	memset(tex_info, 0, sizeof(TEXTURE_INFO));
 
-	LPDIRECT3DSURFACE9 surf;
-	D3DSURFACE_DESC desc;
-	d3d_tex->GetSurfaceLevel(0, &surf);
-	surf->GetDesc(&desc);
-
-	tex_info->width = desc.Width;
-	tex_info->height = desc.Height;
+	tex_info->width = tex.width;
+	tex_info->height = tex.height;
 
 	tex_info->d3d_tex = d3d_tex;
+
+	UnloadTGAImage(&tex);
 
 	return tex_info;
 }
@@ -281,10 +276,10 @@ void RenderSystem::RenderText( const char* text, int x, int y, const GWColor& co
 	pFont->DrawTextA( NULL, text, -1, &font_rect, DT_LEFT|DT_NOCLIP, color.ARGB() );
 }
 
-void RenderSystem::Clear()
+void RenderSystem::Clear(const GWColor& color)
 {
 	// Clear the render target and the zbuffer 
-	pD3Ddevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB( 0, 141, 153, 191 ), 1.0f, 0 );
+	pD3Ddevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, color.ARGB(), 1.0f, 0 );
 }
 
 void RenderSystem::BeginRender()

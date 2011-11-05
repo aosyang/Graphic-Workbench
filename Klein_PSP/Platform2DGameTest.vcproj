@@ -426,6 +426,10 @@
 							/>
 						</FileConfiguration>
 					</File>
+					<File
+						RelativePath=".\Engine\PSP\gu\GWTextureGu.h"
+						>
+					</File>
 				</Filter>
 			</Filter>
 		</Filter>

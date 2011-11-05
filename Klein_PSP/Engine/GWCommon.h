@@ -10,6 +10,10 @@
 
 #include <string.h>
 
+#ifndef NULL
+#define NULL 0
+#endif
+
 #ifndef GW_SAFE_DELETE
 #define GW_SAFE_DELETE(x)			{ if (x) { delete (x); (x) = NULL; } }
 #endif
