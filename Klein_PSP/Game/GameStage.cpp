@@ -19,7 +19,11 @@
 using namespace LuaPlus;
 #endif
 
+#if defined GW_PLATFORM_PSP
+#include <lua.hpp>
+#else
 #include "../Lua/lua.hpp"
+#endif
 
 #include "GameMain.h"
 
