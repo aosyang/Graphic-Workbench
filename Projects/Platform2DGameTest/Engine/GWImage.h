@@ -9,13 +9,13 @@
 #ifndef GWImage_h__
 #define GWImage_h__
 
-enum GWPixelFormat
+typedef enum GWPixelFormat
 {
 	GW_PIXFMT_UNKNOWN = 0,
 
 	GW_PIXFMT_RGB,
 	GW_PIXFMT_RGBA,
-};
+} GW_PIXEL_FORMAT;
 
 typedef	struct GWImage
 {
@@ -23,7 +23,7 @@ typedef	struct GWImage
 	GW_UINT32		bpp;
 	GW_UINT32		width;
 	GW_UINT32		height;
-	GWPixelFormat	format;
+	GW_PIXEL_FORMAT	format;
 } GW_IMAGE;
 
 #endif // GWImage_h__

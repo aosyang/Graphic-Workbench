@@ -233,7 +233,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Engine\TGA.cpp"
+				RelativePath=".\Engine\TGA.c"
 				>
 			</File>
 			<File

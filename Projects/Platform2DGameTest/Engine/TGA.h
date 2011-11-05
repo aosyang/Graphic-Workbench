@@ -12,7 +12,15 @@
 #include "GWTypes.h"
 #include "GWImage.h"
 
-bool LoadTGAImage(GW_IMAGE* image, const char* filename);
+#if defined (__cplusplus)
+extern "C" {
+#endif // #if defined (__cplusplus)
+
+GW_BOOL LoadTGAImage(GW_IMAGE* image, const char* filename);
 void UnloadTGAImage(GW_IMAGE* image);
+
+#if defined (__cplusplus)
+}
+#endif // #if defined (__cplusplus)
 
 #endif // TGA_h__

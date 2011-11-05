@@ -8,7 +8,9 @@
 /*******************************************************************************/
 #include "TGA.h"
 
-#include <memory>
+#include <stdio.h>
+#include <malloc.h>
+#include <string.h>
 
 /********************************************************************************
 /name :		LoadTGA(Texture * texture, char * filename)							*
@@ -40,17 +42,17 @@ TGA tga;												// TGA image data
 
 GW_UINT8 uTGAcompare[12] = {0,0,2, 0,0,0,0,0,0,0,0,0};	// Uncompressed TGA Header
 GW_UINT8 cTGAcompare[12] = {0,0,10,0,0,0,0,0,0,0,0,0};	// Compressed TGA Header
-bool LoadUncompressedTGA(GW_IMAGE* image, const char* filename, FILE* fTGA);	// Load an Uncompressed file
-bool LoadCompressedTGA(GW_IMAGE* image, const char* filename, FILE* fTGA);		// Load a Compressed file
+GW_BOOL LoadUncompressedTGA(GW_IMAGE* image, const char* filename, FILE* fTGA);	// Load an Uncompressed file
+GW_BOOL LoadCompressedTGA(GW_IMAGE* image, const char* filename, FILE* fTGA);		// Load a Compressed file
 
-bool LoadTGAImage(GW_IMAGE* image, const char* filename)				// Load a TGA file
+GW_BOOL LoadTGAImage(GW_IMAGE* image, const char* filename)				// Load a TGA file
 {
 	FILE * fTGA;												// File pointer to texture file
 	fTGA = fopen(filename, "rb");								// Open file for reading
 
 	if(fTGA == NULL)											// If it didn't open....
 	{
-		return false;														// Exit function
+		return GW_FALSE;														// Exit function
 	}
 
 	if(fread(&tgaheader, sizeof(TGAHeader), 1, fTGA) == 0)					// Attempt to read 12 byte header from file
@@ -59,7 +61,7 @@ bool LoadTGAImage(GW_IMAGE* image, const char* filename)				// Load a TGA file
 		{
 			fclose(fTGA);													// If it is, close it
 		}
-		return false;														// Exit function
+		return GW_FALSE;														// Exit function
 	}
 
 	if(memcmp(uTGAcompare, &tgaheader, sizeof(tgaheader)) == 0)				// See if header matches the predefined header of 
@@ -73,20 +75,22 @@ bool LoadTGAImage(GW_IMAGE* image, const char* filename)				// Load a TGA file
 	else																	// If header matches neither type
 	{
 		fclose(fTGA);
-		return false;																// Exit function
+		return GW_FALSE;																// Exit function
 	}
-	return true;															// All went well, continue on
+	return GW_TRUE;															// All went well, continue on
 }
 
-bool LoadUncompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
+GW_BOOL LoadUncompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
 {																			// TGA Loading code nehe.gamedev.net)
+	GW_UINT32 cswap;
+
 	if(fread(tga.header, sizeof(tga.header), 1, fTGA) == 0)					// Read TGA header
 	{										
 		if(fTGA != NULL)													// if file is still open
 		{
 			fclose(fTGA);													// Close it
 		}
-		return false;														// Return failular
+		return GW_FALSE;														// Return failular
 	}	
 
 	image->width  = tga.header[1] * 256 + tga.header[0];					// Determine The TGA Width	(highbyte*256+lowbyte)
@@ -102,7 +106,7 @@ bool LoadUncompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
 		{
 			fclose(fTGA);													// If so, close it
 		}
-		return false;														// Return failed
+		return GW_FALSE;														// Return failed
 	}
 
 	if(image->bpp == 24)													// If the BPP of the image is 24...
@@ -117,7 +121,7 @@ bool LoadUncompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
 	if(image->imageData == NULL)											// If no space was allocated
 	{
 		fclose(fTGA);														// Close the file
-		return false;														// Return failed
+		return GW_FALSE;														// Return failed
 	}
 
 	if(fread(image->imageData, 1, tga.imageSize, fTGA) != tga.imageSize)	// Attempt to read image data
@@ -127,29 +131,34 @@ bool LoadUncompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
 			free(image->imageData);										// Delete data from memory
 		}
 		fclose(fTGA);														// Close file
-		return false;														// Return failed
+		return GW_FALSE;														// Return failed
 	}
 
 	// Byte Swapping Optimized By Steve Thomas
-	for(GW_UINT32 cswap = 0; cswap < (int)tga.imageSize; cswap += tga.bytesPerPixel)
+	for(cswap = 0; cswap < (int)tga.imageSize; cswap += tga.bytesPerPixel)
 	{
 		image->imageData[cswap] ^= image->imageData[cswap+2] ^=
 			image->imageData[cswap] ^= image->imageData[cswap+2];
 	}
 
 	fclose(fTGA);															// Close file
-	return true;															// Return success
+	return GW_TRUE;															// Return success
 }
 
-bool LoadCompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
+GW_BOOL LoadCompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
 { 
+	GW_UINT32 pixelcount;
+	GW_UINT32 currentpixel;
+	GW_UINT32 currentbyte;
+	GW_UINT8 * colorbuffer;
+
 	if(fread(tga.header, sizeof(tga.header), 1, fTGA) == 0)					// Attempt to read header
 	{
 		if(fTGA != NULL)													// If file is open
 		{
 			fclose(fTGA);													// Close it
 		}
-		return false;														// Return failed
+		return GW_FALSE;														// Return failed
 	}
 
 	image->width  = tga.header[1] * 256 + tga.header[0];					// Determine The TGA Width	(highbyte*256+lowbyte)
@@ -165,7 +174,7 @@ bool LoadCompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
 		{
 			fclose(fTGA);													// Ifit is, close it
 		}
-		return false;														// Return failed
+		return GW_FALSE;														// Return failed
 	}
 
 	if(image->bpp == 24)													// If the BPP of the image is 24...
@@ -180,13 +189,13 @@ bool LoadCompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
 	if(image->imageData == NULL)											// If it wasnt allocated correctly..
 	{
 		fclose(fTGA);														// Close file
-		return false;														// Return failed
+		return GW_FALSE;														// Return failed
 	}
 
-	GW_UINT32 pixelcount	= tga.Height * tga.Width;							// Nuber of pixels in the image
-	GW_UINT32 currentpixel	= 0;												// Current pixel being read
-	GW_UINT32 currentbyte	= 0;												// Current byte 
-	GW_UINT8 * colorbuffer = (GW_UINT8 *)malloc(tga.bytesPerPixel);			// Storage for 1 pixel
+	pixelcount	= tga.Height * tga.Width;							// Nuber of pixels in the image
+	currentpixel	= 0;												// Current pixel being read
+	currentbyte	= 0;												// Current byte 
+	colorbuffer = (GW_UINT8 *)malloc(tga.bytesPerPixel);			// Storage for 1 pixel
 
 	do
 	{
@@ -202,13 +211,15 @@ bool LoadCompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
 			{
 				free(image->imageData);									// Delete image data
 			}
-			return false;													// Return failed
+			return GW_FALSE;													// Return failed
 		}
 
 		if(chunkheader < 128)												// If the ehader is < 128, it means the that is the number of RAW color packets minus 1
 		{																	// that follow the header
+			short counter;
+
 			chunkheader++;													// add 1 to get number of following color values
-			for(short counter = 0; counter < chunkheader; counter++)		// Read RAW color values
+			for(counter = 0; counter < chunkheader; counter++)		// Read RAW color values
 			{
 				if(fread(colorbuffer, 1, tga.bytesPerPixel, fTGA) != tga.bytesPerPixel) // Try to read 1 pixel
 				{
@@ -228,7 +239,7 @@ bool LoadCompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
 						free(image->imageData);										// If so, delete it too
 					}
 
-					return false;														// Return failed
+					return GW_FALSE;														// Return failed
 				}
 				// write to memory
 				image->imageData[currentbyte		] = colorbuffer[2];				    // Flip R and B vcolor values around in the process 
@@ -261,12 +272,14 @@ bool LoadCompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
 						free(image->imageData);										// delete it
 					}
 
-					return false;														// Return failed
+					return GW_FALSE;														// Return failed
 				}
 			}
 		}
 		else																			// chunkheader > 128 RLE data, next color reapeated chunkheader - 127 times
 		{
+			short counter;
+
 			chunkheader -= 127;															// Subteact 127 to get rid of the ID bit
 			if(fread(colorbuffer, 1, tga.bytesPerPixel, fTGA) != tga.bytesPerPixel)		// Attempt to read following color values
 			{	
@@ -286,10 +299,10 @@ bool LoadCompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
 					free(image->imageData);											// delete it
 				}
 
-				return false;															// return failed
+				return GW_FALSE;															// return failed
 			}
 
-			for(short counter = 0; counter < chunkheader; counter++)					// copy the color into the image data as many times as dictated 
+			for(counter = 0; counter < chunkheader; counter++)					// copy the color into the image data as many times as dictated 
 			{																			// by the header
 				image->imageData[currentbyte		] = colorbuffer[2];					// switch R and B bytes areound while copying
 				image->imageData[currentbyte + 1	] = colorbuffer[1];
@@ -321,7 +334,7 @@ bool LoadCompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
 						free(image->imageData);										// delete it
 					}
 
-					return false;														// Return failed
+					return GW_FALSE;														// Return failed
 				}
 			}
 		}
@@ -329,7 +342,7 @@ bool LoadCompressedTGA( GW_IMAGE* image, const char* filename, FILE* fTGA )
 
 	while(currentpixel < pixelcount);													// Loop while there are still pixels left
 	fclose(fTGA);																		// Close the file
-	return true;																		// return success
+	return GW_TRUE;																		// return success
 }
 
 void UnloadTGAImage( GW_IMAGE* image )
