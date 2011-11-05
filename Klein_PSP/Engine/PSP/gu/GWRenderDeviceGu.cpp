@@ -209,6 +209,30 @@ void RenderSystem::Flush()
 	sceGuSwapBuffers();
 }
 
+
+void RenderSystem::ToggleFog( bool enable )
+{
+	sceGuStart(GU_DIRECT,list);
+
+	if (enable)
+		sceGuEnable(GU_FOG);
+	else
+		sceGuDisable(GU_FOG);
+
+	sceGuFinish();
+	sceGuSync(0,0);
+}
+
+void RenderSystem::SetFogParameters( float fog_near, float fog_far, const GWColor& color )
+{
+	sceGuStart(GU_DIRECT,list);
+
+	sceGuFog(fog_near, fog_far, color.ABGR());
+
+	sceGuFinish();
+	sceGuSync(0,0);
+}
+
 struct GuTexturedVertex
 {
 	float u, v;

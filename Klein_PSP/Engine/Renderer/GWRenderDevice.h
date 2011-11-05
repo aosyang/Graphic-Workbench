@@ -26,10 +26,14 @@ public:
 	static void DestroyTexture( TEXTURE_INFO* texture );
 
 	static void SetupCamera(const Vector2& cam_pos, float fovy);
+
 	static void Clear(const GWColor& color);
 	static void BeginRender();
 	static void EndRender();
 	static void Flush();
+
+	static void ToggleFog(bool enable);
+	static void SetFogParameters(float fog_near, float fog_far, const GWColor& color);
 
 	static void DrawSprite(const Vector2& vMin, const Vector2& vMax, const TEXTURE_INFO* tex = NULL, float depth = 0.0f);
 	static void DrawColoredSprite(const Vector2& vMin, const Vector2& vMax, const GWColor& color = GWColor::WHITE, float depth = 0.0f);

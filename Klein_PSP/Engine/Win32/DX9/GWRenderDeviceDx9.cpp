@@ -94,19 +94,6 @@ void RenderSystem::Initialize( GW_RENDER_WINDOW* rw )
 
 	pD3Ddevice->SetRenderState( D3DRS_LIGHTING, FALSE );
 
-	float Start = 20.0f,    // Linear fog distances
-		  End   = 28.0f;
-
-	// Enable fog blending.
-	pD3Ddevice->SetRenderState(D3DRS_FOGENABLE, TRUE);
-
-	// Set the fog color.
-	pD3Ddevice->SetRenderState(D3DRS_FOGCOLOR, D3DCOLOR_ARGB( 0, 141, 153, 191 ));
-
-	// Set fog parameters.
-	pD3Ddevice->SetRenderState(D3DRS_FOGVERTEXMODE, D3DFOG_LINEAR );
-	pD3Ddevice->SetRenderState(D3DRS_FOGSTART, *(DWORD *)(&Start));
-	pD3Ddevice->SetRenderState(D3DRS_FOGEND,   *(DWORD *)(&End));
 }
 
 void RenderSystem::Destroy()
@@ -299,4 +286,20 @@ void RenderSystem::EndRender()
 void RenderSystem::Flush()
 {
 	pD3Ddevice->Present( NULL, NULL, NULL, NULL );
+}
+
+void RenderSystem::ToggleFog( bool enable )
+{
+	pD3Ddevice->SetRenderState(D3DRS_FOGENABLE, enable ? TRUE : FALSE);
+}
+
+void RenderSystem::SetFogParameters( float fog_near, float fog_far, const GWColor& color )
+{
+	// Set the fog color.
+	pD3Ddevice->SetRenderState(D3DRS_FOGCOLOR, color.ARGB());
+
+	// Set fog parameters.
+	pD3Ddevice->SetRenderState(D3DRS_FOGVERTEXMODE, D3DFOG_LINEAR );
+	pD3Ddevice->SetRenderState(D3DRS_FOGSTART, *(DWORD *)(&fog_near));
+	pD3Ddevice->SetRenderState(D3DRS_FOGEND,   *(DWORD *)(&fog_far));
 }

@@ -109,6 +109,8 @@ void GameMain::Startup()
 
 	// Game initializations
 	RenderSystem::Initialize( m_RenderWindow );
+	RenderSystem::ToggleFog(true);
+	RenderSystem::SetFogParameters(20.0f, 28.0f, GWIntegerColor(141, 153, 191));
 
 	m_GameStage = new GameStage;
 	m_GameStage->LoadFromFile("Stage.lua");
