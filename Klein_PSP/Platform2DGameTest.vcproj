@@ -225,6 +225,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Engine\GWLog.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Engine\GWLog.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Engine\GWSingleton.h"
 				>
 			</File>
@@ -237,7 +245,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Engine\TGA.cpp"
+				RelativePath=".\Engine\TGA.c"
 				>
 			</File>
 			<File

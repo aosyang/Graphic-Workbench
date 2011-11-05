@@ -25,6 +25,7 @@ public:
 	GWColor(float _r, float _g, float _b, float _a=1.0f) : r(_r), g(_g), b(_b), a(_a) {}
 
 	GW_INLINE GW_UINT32 ARGB() const { return GW_COLOR_VALUE(r, g, b, a); }
+	GW_INLINE GW_UINT32 ABGR() const { return GW_COLOR_VALUE(b, g, r, a); }
 
 	static GWColor WHITE;
 	static GWColor BLACK;

@@ -1,5 +1,22 @@
 TARGET = klein
-OBJS = Game/Actor.o Game/AppMain.o Game/AreaTrigger.o Game/Character.o Game/GameMain.o Game/GameStage.o Game/GameStageEditor.o Engine/Math/GWVectors.o Engine/Renderer/TextureManager.o Engine/BoundBox.o Engine/GWColor.o Engine/GWInputControl.o Engine/TGA.o Engine/PSP/GWRenderWindowPSP.o Engine/PSP/GWTimer.o Engine/PSP/GWInputDevicePSP.o Engine/PSP/gu/GWRenderDeviceGu.o
+OBJS = Game/Actor.o\
+       Game/AppMain.o\
+       Game/AreaTrigger.o\
+       Game/Character.o\
+       Game/GameMain.o\
+       Game/GameStage.o\
+       Game/GameStageEditor.o\
+       Engine/BoundBox.o\
+       Engine/GWColor.o\
+       Engine/GWInputControl.o\
+       Engine/GWLog.o\
+       Engine/TGA.o\
+       Engine/Math/GWVectors.o\
+       Engine/PSP/GWInputDevicePSP.o\
+       Engine/PSP/GWRenderWindowPSP.o\
+       Engine/PSP/GWTimer.o\
+       Engine/PSP/gu/GWRenderDeviceGu.o\
+       Engine/Renderer/TextureManager.o
 
 INCDIR = Engine/
 CFLAGS = -O2 -G0 -Wall -DGW_PLATFORM_PSP

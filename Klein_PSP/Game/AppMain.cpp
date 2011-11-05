@@ -8,6 +8,7 @@
 
 #include "Renderer/GWRenderWindow.h"
 #include "GameMain.h"
+#include "GWLog.h"
 
 #if defined GW_PLATFORM_WIN32
 #include <windows.h>
@@ -16,7 +17,9 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 int main()
 #endif
 {
+	GWLog_StartRecord("klein.log");
 	KleinGame()->Startup();
+	GWLog_EndRecord();
 
 	while ( HandleWindowMessage() )
 	{

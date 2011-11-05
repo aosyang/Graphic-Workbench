@@ -410,6 +410,7 @@ void GameMain::DrawDebugText()
 #if !defined GW_PLATFORM_PSP
 			"Mouse: %d %d %d\n"
 #endif
+			"geom count: %d"
 			"%s",
 			char_pos.x, char_pos.y,
 			(int)floor(char_pos.x), (int)ceil(char_pos.x),
@@ -418,6 +419,7 @@ void GameMain::DrawDebugText()
 #if !defined GW_PLATFORM_PSP
 			m_RenderWindow->mouse_x, m_RenderWindow->mouse_y, GWInput_GetMouseWheelValue(),
 #endif
+			GetStageGeomCount(),
 			m_GameStageEditor->IsMapUnsaved() ? "*Map unsaved*" : "");
 
 	RenderSystem::RenderText(debug_text, 0, 0, GWColor::YELLOW);
