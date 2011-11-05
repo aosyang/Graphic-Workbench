@@ -178,8 +178,8 @@ void GWInput_InitializeDevice( GW_RENDER_WINDOW* rw )
 {
 	SetupKeyCodeMap();
 
-	memset(di_key_state, 0, sizeof(di_key_state));
 	memset(di_key_down, 0, sizeof(di_key_down));
+	memset(di_key_state, 0, sizeof(di_key_state));
 	memset(di_mbtn_down, 0, sizeof(di_mbtn_down));
 	memset(di_mbtn_state, 0, sizeof(di_mbtn_state));
 
@@ -258,4 +258,9 @@ GWButtonState GWInput_GetMouseBtnState(int btn)
 int GWInput_GetMouseWheelValue()
 {
 	return mousestate.lZ;
+}
+
+GWButtonState GWInput_GetControllerState( int btn, int controller/*=0*/ )
+{
+	return GW_KEY_STATE_INVALID;
 }

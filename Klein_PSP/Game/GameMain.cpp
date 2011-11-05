@@ -20,38 +20,48 @@
 
 #include "AreaTrigger.h"
 
-void Con_EditorMoveUp();
-void Con_EditorMoveDown();
-void Con_EditorMoveLeft();
-void Con_EditorMoveRight();
-void Con_MoveLeft();
-void Con_MoveRight();
-void Con_MoveUp();
-void Con_MoveDown();
-
 GW_KeyMap KleinKeyMap[] =
 {
+	// PC Controls
+
 	// Editor control
-	{ Con_EditorMoveLeft,		GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_A,		GW_KEY_STATE_DOWN },
-	{ Con_EditorMoveRight,		GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_D,		GW_KEY_STATE_DOWN },
-	{ Con_EditorMoveUp,			GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_W,		GW_KEY_STATE_DOWN },
-	{ Con_EditorMoveDown,		GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_S,		GW_KEY_STATE_DOWN },
+	{ GameMain::Con_EditorMoveLeft,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_A,			GW_KEY_STATE_DOWN },
+	{ GameMain::Con_EditorMoveRight,	GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_D,			GW_KEY_STATE_DOWN },
+	{ GameMain::Con_EditorMoveUp,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_W,			GW_KEY_STATE_DOWN },
+	{ GameMain::Con_EditorMoveDown,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_S,			GW_KEY_STATE_DOWN },
 
 	// Character control
-	{ Con_MoveLeft,				GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_LEFT,	GW_KEY_STATE_DOWN },
-	{ Con_MoveRight,			GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_RIGHT,	GW_KEY_STATE_DOWN },
-	//{ Con_MoveUp,				GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_UP,		GW_KEY_STATE_DOWN },
-	//{ Con_MoveDown,				GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_DOWN,	GW_KEY_STATE_DOWN },
+	{ GameMain::Con_MoveLeft,			GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_LEFT,		GW_KEY_STATE_DOWN },
+	{ GameMain::Con_MoveRight,			GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_RIGHT,		GW_KEY_STATE_DOWN },
+	{ GameMain::Con_MoveUp,				GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_UP,			GW_KEY_STATE_DOWN },
+	{ GameMain::Con_MoveDown,			GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_DOWN,		GW_KEY_STATE_DOWN },
+
+	{ GameMain::Con_PlayerJump,			GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_Z,			GW_KEY_STATE_ON_PRESSED },
+
+	{ GameMain::Con_WorldPerspec0,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_9,			GW_KEY_STATE_ON_PRESSED },
+	{ GameMain::Con_WorldPerspec1,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_0,			GW_KEY_STATE_ON_PRESSED },
+
+	// PSP Key Controls
+	{ GameMain::Con_MoveLeft,			GW_INPUT_DEVICE_CONTROLLER0,	GW_PSPBTN_LEFT,		GW_KEY_STATE_DOWN },
+	{ GameMain::Con_MoveRight,			GW_INPUT_DEVICE_CONTROLLER0,	GW_PSPBTN_RIGHT,	GW_KEY_STATE_DOWN },
+	{ GameMain::Con_MoveUp,				GW_INPUT_DEVICE_CONTROLLER0,	GW_PSPBTN_UP,		GW_KEY_STATE_DOWN },
+	{ GameMain::Con_MoveDown,			GW_INPUT_DEVICE_CONTROLLER0,	GW_PSPBTN_DOWN,		GW_KEY_STATE_DOWN },
+
+	{ GameMain::Con_PlayerJump,			GW_INPUT_DEVICE_CONTROLLER0,	GW_PSPBTN_CROSS,	GW_KEY_STATE_ON_PRESSED },
+	{ GameMain::Con_SwitchPerspec,		GW_INPUT_DEVICE_CONTROLLER0,	GW_PSPBTN_TRIANGLE,	GW_KEY_STATE_ON_PRESSED },
 
 	// End
-	{ NULL,						GW_INPUT_DEVICE_KEYBOARD,	GW_KEY_UNDEFINED, GW_KEY_STATE_INVALID },
+	{ NULL,								GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_UNDEFINED,	GW_KEY_STATE_INVALID },
 };
+
+Player* GameMain::m_Player = NULL;
+Vector2 GameMain::m_MovingVector;
+bool GameMain::m_UpPressed = false;
 
 GameMain::GameMain()
 : m_RenderWindow(NULL),
   m_SysTime(0),
   m_GameStage(NULL),
-  m_Player(NULL),
   m_GameStageEditor(NULL),
   m_ProtoFeatureBits(0),
   m_ActiveWorld((GameWorldviewEnum)0)
@@ -133,7 +143,9 @@ void GameMain::Update()
 
 	UpdateInputDevice();
 
+	// Clear input state for last frame
 	m_MovingVector = Vector2::ZERO;
+	m_UpPressed = false;
 
 	GWInputCon_Update();
 
@@ -156,9 +168,6 @@ void GameMain::Update()
 
 		if (m_Player->IsClimbingLadder())
 		{
-			if (GWInput_GetKeyState(GW_KEY_UP) == GW_KEY_STATE_DOWN) m_MovingVector += Vector2(0.0f, 1.0f);
-			if (GWInput_GetKeyState(GW_KEY_DOWN) == GW_KEY_STATE_DOWN) m_MovingVector += Vector2(0.0f, -1.0f);
-
 			// Fall down if no ladder
 			if (player_pos_type != TILE_USAGE_LADDER)
 			{
@@ -167,7 +176,7 @@ void GameMain::Update()
 		}
 		else
 		{
-			if (GWInput_GetKeyState(GW_KEY_UP) == GW_KEY_STATE_DOWN)
+			if (m_UpPressed)
 			{
 				// Climb up if player stands near by a ladder
 				if (player_pos_type == TILE_USAGE_LADDER)
@@ -290,15 +299,6 @@ void GameMain::OnKeyPressed( int key_code )
 		break;
 	case GW_KEY_2:
 		m_GameStageEditor->SetPaintTool(PAINT_TOOL_BRUSH);
-		break;
-	case GW_KEY_9:
-		SetWorldview(0);
-		break;
-	case GW_KEY_0:
-		SetWorldview(1);
-		break;
-	case GW_KEY_Z:
-		m_Player->Jump();
 		break;
 	case GW_KEY_C:
 		ProtoFeatureFlipBit(PROTO_FEATURE_CIRCLE_OF_TRUE_VIEW);
@@ -513,47 +513,77 @@ GameMain* KleinGame()
 	return &game;
 }
 
-void Con_EditorMoveLeft()
+void GameMain::Con_EditorMoveLeft()
 {
 	if (KleinGame()->IsEditorMode())
-		KleinGame()->MovingVector() += Vector2(-1.0f, 0.0f);
+		m_MovingVector += Vector2(-1.0f, 0.0f);
 }
 
-void Con_EditorMoveRight()
+void GameMain::Con_EditorMoveRight()
 {
 	if (KleinGame()->IsEditorMode())
-		KleinGame()->MovingVector() += Vector2(1.0f, 0.0f);
+		m_MovingVector += Vector2(1.0f, 0.0f);
 }
 
-void Con_EditorMoveUp()
+void GameMain::Con_EditorMoveUp()
 {
-	KleinGame()->MovingVector() += Vector2(0.0f, 1.0f);
+	m_MovingVector += Vector2(0.0f, 1.0f);
 }
 
-void Con_EditorMoveDown()
+void GameMain::Con_EditorMoveDown()
 {
-	KleinGame()->MovingVector() += Vector2(0.0f, -1.0f);
+	m_MovingVector += Vector2(0.0f, -1.0f);
 }
 
-void Con_MoveLeft()
-{
-	if (!KleinGame()->IsEditorMode())
-		KleinGame()->MovingVector() += Vector2(-1.0f, 0.0f);
-}
-
-void Con_MoveRight()
+void GameMain::Con_MoveLeft()
 {
 	if (!KleinGame()->IsEditorMode())
-		KleinGame()->MovingVector() += Vector2(1.0f, 0.0f);
+		m_MovingVector += Vector2(-1.0f, 0.0f);
 }
 
-void Con_MoveUp()
+void GameMain::Con_MoveRight()
 {
-
+	if (!KleinGame()->IsEditorMode())
+		m_MovingVector += Vector2(1.0f, 0.0f);
 }
 
-void Con_MoveDown()
+void GameMain::Con_MoveUp()
 {
+	if (m_Player->IsClimbingLadder())
+	{
+		m_MovingVector += Vector2(0.0f, 1.0f);
+	}
+	else
+	{
+		m_UpPressed = true;
+	}
+}
 
+void GameMain::Con_MoveDown()
+{
+	if (m_Player->IsClimbingLadder())
+	{
+		m_MovingVector += Vector2(0.0f, -1.0f);
+	}
+}
+
+void GameMain::Con_PlayerJump()
+{
+	m_Player->Jump();
+}
+
+void GameMain::Con_WorldPerspec0()
+{
+	KleinGame()->SetWorldview(0);
+}
+
+void GameMain::Con_WorldPerspec1()
+{
+	KleinGame()->SetWorldview(1);
+}
+
+void GameMain::Con_SwitchPerspec()
+{
+	KleinGame()->SetWorldview(1 - KleinGame()->GetWorldview());
 }
 
