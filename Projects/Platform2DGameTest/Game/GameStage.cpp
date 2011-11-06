@@ -7,8 +7,10 @@
 *********************************************************************/
 #include "GameStage.h"
 #include "Renderer/TextureManager.h"
+#include "GWLog.h"
 #include "AreaTrigger.h"
 
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -17,7 +19,11 @@
 using namespace LuaPlus;
 #endif
 
+#if defined GW_PLATFORM_PSP
+#include <lua.hpp>
+#else
 #include "../Lua/lua.hpp"
+#endif
 
 #include "GameMain.h"
 
@@ -105,6 +111,11 @@ STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom)
 	return geom->next;
 }
 
+int GetStageGeomCount()
+{
+	return StageGeomList.geom_count;
+}
+
 void DebugRenderStageGeom( STAGE_GEOM* geom )
 {
 	if (geom->tile_type_id[KleinGame()->GetWorldview()] != -1)
@@ -130,7 +141,7 @@ bool GameStage::LoadFromFile( const char* filename )
 {
 	bool result = false;
 	lua_State* pLuaState = lua_open();
-	luaL_openlibs(pLuaState);
+	//luaL_openlibs(pLuaState);
 	int err_code = luaL_dofile(pLuaState, filename);
 
 	if (!err_code)
@@ -142,12 +153,15 @@ bool GameStage::LoadFromFile( const char* filename )
 			//int layers = stage["Layers"].GetInteger();
 
 			// Load tile types
+			GWLog_Print("Load tile types.\n");
 			ScriptLoadTileTypes(pLuaState);
 
 			// Load geometries for the stage
+			GWLog_Print("Load geometries.\n");
 			ScriptLoadGeometries(pLuaState);
 
 			// Load area triggers
+			GWLog_Print("Load area triggers.\n");
 			ScriptLoadTriggers(pLuaState);
 
 			result = true;
@@ -195,7 +209,7 @@ void GameStage::RenderStage()
 		for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 		{
 			RenderStageGeom(geom, world_id);
-			// DebugRenderStageGeom(geom);
+			//DebugRenderStageGeom(geom);
 		}
 	}
 	else if (remain_time > TIME_WORLD_SWAP_ANIM / 2)
@@ -377,9 +391,11 @@ void GameStage::ScriptLoadTileTypes( lua_State* state )
 	if (lua_istable(state, -1))
 	{
 		//int tiletype_count = lua_objlen(state, -1);
+		GWLog_Print("Tile type count: %d\n", lua_objlen(state, -1));
+
 		lua_pushnil(state);
 
-		// Elements
+		// Read elements
 		while (lua_next(state, -2) != 0)
 		{
 			if (lua_istable(state, -1))
@@ -395,6 +411,8 @@ void GameStage::ScriptLoadTileTypes( lua_State* state )
 					int t = lua_type(state, -1);
 					if (lua_type(state, -1) == LUA_TSTRING)
 						lua_str[s] = lua_tostring(state, -1);
+
+					GWLog_Print("Tile type string[%d]: %s\n", s, lua_str[s]);
 
 					s++;
 					lua_pop(state, 1);
@@ -438,6 +456,8 @@ void GameStage::ScriptLoadGeometries( lua_State* state )
 	if (lua_istable(state, -1))
 	{
 		StageGeomList.geom_count = lua_objlen(state, -1);
+		GWLog_Print("Total stage geom count: %d\n", StageGeomList.geom_count);
+
 		lua_pushnil(state);
 
 		// Elements
@@ -454,16 +474,18 @@ void GameStage::ScriptLoadGeometries( lua_State* state )
 				// Strings
 				while (lua_next(state, -2) != 0)
 				{
-					int t = lua_type(state, -1);
-					if (t == LUA_TSTRING)
-					{
-						lua_str[s] = lua_tostring(state, -1);
-						s++;
-					}
-					else if (t == LUA_TNUMBER)
+					if (lua_isnumber(state, -1))
 					{
 						lua_num[n] = (float)lua_tonumber(state, -1);
+						GWLog_Print("Stage geom num[%d]: %f\n", n, lua_tonumber(state, -1));
+						GWLog_Print("Stage geom num[%d]: %f\n", n, lua_num[n]);
 						n++;
+					}
+					else if (lua_isstring(state, -1))
+					{
+						lua_str[s] = lua_tostring(state, -1);
+						GWLog_Print("Stage geom string[%d]: %s\n", s, lua_str[s]);
+						s++;
 					}
 
 					lua_pop(state, 1);
@@ -476,6 +498,8 @@ void GameStage::ScriptLoadGeometries( lua_State* state )
 				box.xMax = lua_num[2];
 				box.yMin = lua_num[3];
 				box.yMax = lua_num[4];
+
+				GWLog_Print("\n");
 
 				// In case we don't have enough string
 				for (; n<GAME_WORLD_COUNT; n++)
@@ -498,10 +522,11 @@ void GameStage::ScriptLoadTriggers( lua_State* state )
 	lua_pushstring(state, "AreaTriggers");
 	lua_gettable(state, -2);
 
-	// ["Geometries"]
+	// ["AreaTriggers"]
 	if (lua_istable(state, -1))
 	{
-		StageGeomList.geom_count = lua_objlen(state, -1);
+		//StageGeomList.geom_count = lua_objlen(state, -1);
+		GWLog_Print("Total area trigger count: %d\n", lua_objlen(state, -1));
 		lua_pushnil(state);
 
 		// Elements
@@ -522,11 +547,13 @@ void GameStage::ScriptLoadTriggers( lua_State* state )
 					if (t == LUA_TSTRING)
 					{
 						lua_str[s] = lua_tostring(state, -1);
+						GWLog_Print("Area trigger string[%d]: %s\n", s, lua_str[s]);
 						s++;
 					}
 					else if (t == LUA_TNUMBER)
 					{
 						lua_num[n] = (float)lua_tonumber(state, -1);
+						GWLog_Print("Area trigger num[%d]: %f\n", n, lua_num[n]);
 						n++;
 					}
 
@@ -673,11 +700,11 @@ void GameStage::RenderStageGeom( STAGE_GEOM* geom, int world_id, float depth/*=0
 	// Don't render tile with no type
 	if (tile_id != -1)
 	{
-		int tex_id = m_TileId2TypeInfo[tile_id].tex_id;
+		const TEXTURE_INFO* tex = TextureManager::Instance().GetTexture(m_TileId2TypeInfo[tile_id].tex_id);
 
 		RenderSystem::DrawSprite(Vector2(geom->bound.xMin, geom->bound.yMin),
 								 Vector2(geom->bound.xMax, geom->bound.yMax),
-								 tex_id, depth);
+								 tex, depth);
 	}
 }
 

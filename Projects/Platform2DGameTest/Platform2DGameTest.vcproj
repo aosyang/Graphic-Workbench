@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(ProjectDir)\Engine&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;GW_PLATFORM_WIN32"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -119,7 +119,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="&quot;$(ProjectDir)\Engine&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;GW_PLATFORM_WIN32"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -225,7 +225,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Engine\GWLog.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Engine\GWLog.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Engine\GWSingleton.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Engine\GWTimer.h"
 				>
 			</File>
 			<File
@@ -287,10 +299,6 @@
 					RelativePath=".\Engine\Win32\GWTimer.cpp"
 					>
 				</File>
-				<File
-					RelativePath=".\Engine\Win32\GWTimer.h"
-					>
-				</File>
 				<Filter
 					Name="DX9"
 					>
@@ -308,6 +316,118 @@
 					>
 					<File
 						RelativePath=".\Engine\Win32\dinput\GWDeviceDirectInput.cpp"
+						>
+					</File>
+				</Filter>
+			</Filter>
+			<Filter
+				Name="PSP"
+				>
+				<File
+					RelativePath=".\Engine\PSP\GWInputDevicePSP.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\Engine\PSP\GWRenderWindowPSP.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\Engine\PSP\GWRenderWindowPSP.h"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCustomBuildTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\Engine\PSP\GWTimer.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<Filter
+					Name="gu"
+					>
+					<File
+						RelativePath=".\Engine\PSP\gu\GWRenderDeviceGu.cpp"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							ExcludedFromBuild="true"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath=".\Engine\PSP\gu\GWTextureGu.h"
 						>
 					</File>
 				</Filter>

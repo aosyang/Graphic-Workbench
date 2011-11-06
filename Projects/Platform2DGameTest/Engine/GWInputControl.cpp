@@ -9,6 +9,9 @@
 #include "GWInputControl.h"
 
 
+/************************************************************************/
+/* GW Input Device
+/************************************************************************/
 GWButtonState GWInput_GetBtnState(GWInputDeviceType device, int btn)
 {
 	switch (device)
@@ -17,6 +20,8 @@ GWButtonState GWInput_GetBtnState(GWInputDeviceType device, int btn)
 		return GWInput_GetKeyState(btn);
 	case GW_INPUT_DEVICE_MOUSE:
 		return GWInput_GetMouseBtnState(btn);
+	case GW_INPUT_DEVICE_CONTROLLER0:
+		return GWInput_GetControllerState(btn, device - GW_INPUT_DEVICE_CONTROLLER0);
 	default:
 		break;
 	}
@@ -25,7 +30,9 @@ GWButtonState GWInput_GetBtnState(GWInputDeviceType device, int btn)
 }
 
 
-
+/************************************************************************/
+/* GW Input Control
+/************************************************************************/
 static GW_KeyMap* control_key_map = 0;
 
 void GWInputCon_Initialize( GW_KeyMap* key_map )

@@ -12,7 +12,10 @@
 #include <string>
 
 #include "GWRenderDevice.h"
+
+#if defined GW_PLATFORM_WIN32
 #include "Win32/DX9/GWTextureDX9.h"
+#endif
 
 #include "GWSingleton.h"
 

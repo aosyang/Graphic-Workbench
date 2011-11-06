@@ -77,6 +77,26 @@ enum GWMouseButton
 	MBTN_COUNT,
 };
 
+enum GWPSPButton
+{
+	GW_PSPBTN_SQUARE,
+	GW_PSPBTN_TRIANGLE,
+	GW_PSPBTN_CIRCLE,
+	GW_PSPBTN_CROSS,
+
+	GW_PSPBTN_UP,
+	GW_PSPBTN_DOWN,
+	GW_PSPBTN_LEFT,
+	GW_PSPBTN_RIGHT,
+
+	GW_PSPBTN_START,
+	GW_PSPBTN_SELECT,
+	GW_PSPBTN_L,
+	GW_PSPBTN_R,
+
+	GW_PSPBTN_COUNT,
+};
+
 // State for key, mouse button and controller button
 enum GWButtonState
 {

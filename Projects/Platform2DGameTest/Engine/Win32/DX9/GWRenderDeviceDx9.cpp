@@ -6,9 +6,10 @@
 	purpose:	
 *********************************************************************/
 #include "Renderer/GWRenderDevice.h"
-#include "Renderer/TextureManager.h"
 #include "../Game/GameDef.h"
 #include "TGA.h"
+
+#include "Win32/DX9/GWTextureDX9.h"
 
 #include <d3d9.h>
 #include <d3dx9.h>
@@ -25,7 +26,7 @@ struct TexturedVertex
 	float u, v;
 };
 
-void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, int tex_id /*= -1*/, float depth /*= 0.0f*/ )
+void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, const TEXTURE_INFO* tex /*= NULL*/, float depth /*= 0.0f*/ )
 {
 	TexturedVertex v[6] =
 	{
@@ -39,9 +40,8 @@ void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, int tex
 	};
 
 
-	if (tex_id!=-1)
+	if (tex)
 	{
-		const TEXTURE_INFO* tex = TextureManager::Instance().GetTexture(tex_id);
 		pD3Ddevice->SetTexture(0, tex->d3d_tex);
 
 		// enable mip-map for texture
@@ -94,19 +94,6 @@ void RenderSystem::Initialize( GW_RENDER_WINDOW* rw )
 
 	pD3Ddevice->SetRenderState( D3DRS_LIGHTING, FALSE );
 
-	float Start = 20.0f,    // Linear fog distances
-		  End   = 28.0f;
-
-	// Enable fog blending.
-	pD3Ddevice->SetRenderState(D3DRS_FOGENABLE, TRUE);
-
-	// Set the fog color.
-	pD3Ddevice->SetRenderState(D3DRS_FOGCOLOR, D3DCOLOR_ARGB( 0, 141, 153, 191 ));
-
-	// Set fog parameters.
-	pD3Ddevice->SetRenderState(D3DRS_FOGVERTEXMODE, D3DFOG_LINEAR );
-	pD3Ddevice->SetRenderState(D3DRS_FOGSTART, *(DWORD *)(&Start));
-	pD3Ddevice->SetRenderState(D3DRS_FOGEND,   *(DWORD *)(&End));
 }
 
 void RenderSystem::Destroy()
@@ -187,20 +174,15 @@ TEXTURE_INFO* RenderSystem::CreateTexture( const char* filename )
 
 	d3d_tex->UnlockRect(0);
 
-	UnloadTGAImage(&tex);
-
 	TEXTURE_INFO* tex_info = new TEXTURE_INFO;
 	memset(tex_info, 0, sizeof(TEXTURE_INFO));
 
-	LPDIRECT3DSURFACE9 surf;
-	D3DSURFACE_DESC desc;
-	d3d_tex->GetSurfaceLevel(0, &surf);
-	surf->GetDesc(&desc);
-
-	tex_info->width = desc.Width;
-	tex_info->height = desc.Height;
+	tex_info->width = tex.width;
+	tex_info->height = tex.height;
 
 	tex_info->d3d_tex = d3d_tex;
+
+	UnloadTGAImage(&tex);
 
 	return tex_info;
 }
@@ -233,7 +215,7 @@ void RenderSystem::SetupCamera( const Vector2& cam_pos, float fovy )
 
 void RenderSystem::DrawColoredSprite( const Vector2& vMin, const Vector2& vMax, const GWColor& color /*= GWColor::WHITE*/, float depth /*= 0.0f*/ )
 {
-	DWORD d3d_color = D3DCOLOR_COLORVALUE(color.r, color.g, color.b, color.a);
+	DWORD d3d_color = color.ARGB();
 	ColoredVertex v[6] =
 	{
 		{ vMin.x, vMin.y, depth, d3d_color },
@@ -254,7 +236,7 @@ void RenderSystem::DrawColoredSprite( const Vector2& vMin, const Vector2& vMax, 
 
 void RenderSystem::DrawWireframeRect( const Vector2& vMin, const Vector2& vMax, const GWColor& color /*= GWColor::WHITE*/, float depth /*= 0.0f*/ )
 {
-	DWORD d3d_color = D3DCOLOR_COLORVALUE(color.r, color.g, color.b, color.a);
+	DWORD d3d_color = color.ARGB();
 
 	ColoredVertex v[5] =
 	{
@@ -278,14 +260,13 @@ void RenderSystem::RenderText( const char* text, int x, int y, const GWColor& co
 	RECT font_rect;
 	SetRect( &font_rect, x, y, KLEIN_SCREEN_WIDTH, KLEIN_SCREEN_HEIGHT );
 
-	DWORD d3d_color = D3DCOLOR_COLORVALUE(color.r, color.g, color.b, color.a);
-	pFont->DrawTextA( NULL, text, -1, &font_rect, DT_LEFT|DT_NOCLIP, d3d_color );
+	pFont->DrawTextA( NULL, text, -1, &font_rect, DT_LEFT|DT_NOCLIP, color.ARGB() );
 }
 
-void RenderSystem::Clear()
+void RenderSystem::Clear(const GWColor& color)
 {
 	// Clear the render target and the zbuffer 
-	pD3Ddevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, D3DCOLOR_ARGB( 0, 141, 153, 191 ), 1.0f, 0 );
+	pD3Ddevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, color.ARGB(), 1.0f, 0 );
 }
 
 void RenderSystem::BeginRender()
@@ -305,4 +286,20 @@ void RenderSystem::EndRender()
 void RenderSystem::Flush()
 {
 	pD3Ddevice->Present( NULL, NULL, NULL, NULL );
+}
+
+void RenderSystem::ToggleFog( bool enable )
+{
+	pD3Ddevice->SetRenderState(D3DRS_FOGENABLE, enable ? TRUE : FALSE);
+}
+
+void RenderSystem::SetFogParameters( float fog_near, float fog_far, const GWColor& color )
+{
+	// Set the fog color.
+	pD3Ddevice->SetRenderState(D3DRS_FOGCOLOR, color.ARGB());
+
+	// Set fog parameters.
+	pD3Ddevice->SetRenderState(D3DRS_FOGVERTEXMODE, D3DFOG_LINEAR );
+	pD3Ddevice->SetRenderState(D3DRS_FOGSTART, *(DWORD *)(&fog_near));
+	pD3Ddevice->SetRenderState(D3DRS_FOGEND,   *(DWORD *)(&fog_far));
 }

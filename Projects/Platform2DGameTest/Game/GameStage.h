@@ -61,6 +61,7 @@ typedef struct StageGeom
 STAGE_GEOM* CreateStageGeom();
 STAGE_GEOM* GetFirstStageGeom();
 STAGE_GEOM* GetNextStageGeom(STAGE_GEOM* geom);
+int GetStageGeomCount();
 
 void DebugRenderStageGeom(STAGE_GEOM* geom);
 

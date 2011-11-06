@@ -12,6 +12,7 @@
 #include "GameStage.h"
 #include "GameMain.h"
 #include "AreaTrigger.h"
+#include "Renderer/TextureManager.h"
 
 #include <cstdlib>
 
@@ -90,9 +91,11 @@ void GameStageEditor::Render()
 					float xBias = float(i % nTileLayoutWidth - (nTileLayoutWidth - 1) / 2);
 					float yBias = float(i / nTileLayoutWidth ) + 1.0f;
 
+					const TEXTURE_INFO* tex = TextureManager::Instance().GetTexture(mapTileType[i].tex_id);
+
 					RenderSystem::DrawSprite(Vector2(floorf(m_PopupMenuPos.x) + xBias, floorf(m_PopupMenuPos.y)+ yBias),
-						Vector2(ceilf(m_PopupMenuPos.x)  + xBias, ceilf(m_PopupMenuPos.y) + yBias),
-						mapTileType[i].tex_id);
+											 Vector2(ceilf(m_PopupMenuPos.x)  + xBias, ceilf(m_PopupMenuPos.y) + yBias),
+											 tex);
 				}
 			}
 			break;

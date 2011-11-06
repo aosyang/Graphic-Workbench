@@ -15,7 +15,9 @@ typedef struct GWRenderWindow GW_RENDER_WINDOW;
 
 
 
-// GW Input Device
+/************************************************************************/
+/* GW Input Device
+/************************************************************************/
 void GWInput_InitializeDevice(GW_RENDER_WINDOW* rw);
 
 void GWInput_UpdateInputState();
@@ -26,11 +28,14 @@ GWButtonState GWInput_GetKeyState(int key);
 GWButtonState GWInput_GetMouseBtnState(int btn);
 int GWInput_GetMouseWheelValue();
 
+GWButtonState GWInput_GetControllerState(int btn, int controller=0);
+
 GWButtonState GWInput_GetBtnState(GWInputDeviceType device, int btn);
 
 
-
-// GW Input Control
+/************************************************************************/
+/* GW Input Control
+/************************************************************************/
 typedef void(*GW_KeyFunc)();
 
 struct GW_KeyMap
