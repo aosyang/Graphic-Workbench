@@ -77,6 +77,47 @@ enum GWMouseButton
 	MBTN_COUNT,
 };
 
+#if defined GW_XINPUT
+enum GWXInputControllerButton
+{
+	GW_XBTN_X,
+	GW_XBTN_Y,
+	GW_XBTN_A,
+	GW_XBTN_B,
+
+	GW_XBTN_DPAD_UP,
+	GW_XBTN_DPAD_DOWN,
+	GW_XBTN_DPAD_LEFT,
+	GW_XBTN_DPAD_RIGHT,
+
+	GW_XBTN_LB,
+	GW_XBTN_RB,
+
+	GW_XBTN_LTHUMB,
+	GW_XBTN_RTHUMB,
+
+	GW_XBTN_START,
+	GW_XBTN_BACK,
+
+	GW_XBTN_COUNT,
+};
+
+enum GWXInputAxis
+{
+	GW_XAXIS_LX,
+	GW_XAXIS_LY,
+	GW_XAXIS_RX,
+	GW_XAXIS_RY,
+
+	GW_XAXIS_LT,
+	GW_XAXIS_RT,
+
+	GW_XAXIS_COUNT,
+};
+
+#endif	// #if defined GW_XINPUT
+
+#if defined GW_PLATFORM_PSP
 enum GWPSPButton
 {
 	GW_PSPBTN_SQUARE,
@@ -89,16 +130,18 @@ enum GWPSPButton
 	GW_PSPBTN_LEFT,
 	GW_PSPBTN_RIGHT,
 
-	GW_PSPBTN_START,
-	GW_PSPBTN_SELECT,
 	GW_PSPBTN_L,
 	GW_PSPBTN_R,
 
+	GW_PSPBTN_START,
+	GW_PSPBTN_SELECT,
+
 	GW_PSPBTN_COUNT,
 };
+#endif	// #if defined GW_PLATFORM_PSP
 
 // State for key, mouse button and controller button
-enum GWButtonState
+typedef enum GWButtonState
 {
 	GW_KEY_STATE_INVALID = -1,
 
@@ -106,32 +149,23 @@ enum GWButtonState
 	GW_KEY_STATE_DOWN,
 	GW_KEY_STATE_ON_PRESSED,
 	GW_KEY_STATE_ON_RELEASED,
-};
+} GW_BUTTON_STATE;
 
-enum GWInputDeviceType
+typedef enum GWInputDeviceType
 {
 	GW_INPUT_DEVICE_KEYBOARD,
 	GW_INPUT_DEVICE_MOUSE,
 	GW_INPUT_DEVICE_CONTROLLER0,
 	GW_INPUT_DEVICE_CONTROLLER1,
-};
 
-typedef struct GW_KeyboardState
-{
-	GWButtonState key[0xFF];
-} GW_KEYBOARD_STATE;
+#if defined GW_PLATFORM_PSP
+	GW_INPUT_DEVICE_PSP					= GW_INPUT_DEVICE_CONTROLLER0,
+#endif	// #if defined GW_PLATFORM_PSP
 
-typedef struct GW_MouseState
-{
-	GWButtonState	btn[MBTN_COUNT];
-	int				wheel;
-	int				x, y;
-} GW_MOUSE_STATE;
+#if defined GW_XINPUT
+	GW_INPUT_DEVICE_XINPUT_CONTROLLER0	= GW_INPUT_DEVICE_CONTROLLER0,
+#endif	// #if defined GW_XINPUT
 
-typedef struct GW_InputState
-{
-	GW_KEYBOARD_STATE	key;
-	GW_MOUSE_STATE		mouse;
-} GW_INPUT_STATE;
+} GW_INPUT_DEVICE;
 
 #endif // GWInputDeviceEnum_h__

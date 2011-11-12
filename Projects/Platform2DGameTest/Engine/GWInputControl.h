@@ -9,6 +9,7 @@
 #ifndef GWInputControl_h__
 #define GWInputControl_h__
 
+#include "GWCommon.h"
 #include "GWInputDeviceEnum.h"
 
 typedef struct GWRenderWindow GW_RENDER_WINDOW;
@@ -24,29 +25,38 @@ void GWInput_UpdateInputState();
 
 void GWInput_DestroyDevice();
 
-GWButtonState GWInput_GetKeyState(int key);
-GWButtonState GWInput_GetMouseBtnState(int btn);
+GW_BUTTON_STATE GWInput_GetKeyState(int key);
+GW_BUTTON_STATE GWInput_GetMouseBtnState(int btn);
 int GWInput_GetMouseWheelValue();
 
-GWButtonState GWInput_GetControllerState(int btn, int controller=0);
+GW_BUTTON_STATE GWInput_GetControllerBtnState(int btn, int controller=0);
+float GWInput_GetControllerAxisState(int axis, int controller=0);
 
-GWButtonState GWInput_GetBtnState(GWInputDeviceType device, int btn);
+GW_BUTTON_STATE GWInput_GetDeviceBtnState(GW_INPUT_DEVICE device, int btn);
 
 
 /************************************************************************/
 /* GW Input Control
 /************************************************************************/
 typedef void(*GW_KeyFunc)();
+typedef void(*GW_AxisFunc)(float val);
 
-struct GW_KeyMap
+struct GWControlMap
 {
 	GW_KeyFunc			func;
-	GWInputDeviceType	device;
+	GW_INPUT_DEVICE		device;
 	int					btn_code;
-	GWButtonState		state;		
+	GW_BUTTON_STATE		state;		
 };
 
-void GWInputCon_Initialize(GW_KeyMap* key_map);
+struct GWAxisMap
+{
+	GW_AxisFunc			func;
+	GW_INPUT_DEVICE		device;
+	int					axis;
+};
+
+void GWInputCon_Initialize(GWControlMap* control_map, GWAxisMap* axis_map=NULL);
 
 void GWInputCon_Update();
 

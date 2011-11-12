@@ -20,9 +20,11 @@
 
 #include "AreaTrigger.h"
 
-GW_KeyMap KleinKeyMap[] =
+GWControlMap KleinControlMap[] =
 {
-	// PC Controls
+	/************************************************************************/
+	/* PC Controls
+	/************************************************************************/
 
 	// Editor control
 	{ GameMain::Con_EditorMoveLeft,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_A,			GW_KEY_STATE_DOWN },
@@ -41,17 +43,43 @@ GW_KeyMap KleinKeyMap[] =
 	{ GameMain::Con_WorldPerspec0,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_9,			GW_KEY_STATE_ON_PRESSED },
 	{ GameMain::Con_WorldPerspec1,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_0,			GW_KEY_STATE_ON_PRESSED },
 
-	// PSP Key Controls
-	{ GameMain::Con_MoveLeft,			GW_INPUT_DEVICE_CONTROLLER0,	GW_PSPBTN_LEFT,		GW_KEY_STATE_DOWN },
-	{ GameMain::Con_MoveRight,			GW_INPUT_DEVICE_CONTROLLER0,	GW_PSPBTN_RIGHT,	GW_KEY_STATE_DOWN },
-	{ GameMain::Con_MoveUp,				GW_INPUT_DEVICE_CONTROLLER0,	GW_PSPBTN_UP,		GW_KEY_STATE_DOWN },
-	{ GameMain::Con_MoveDown,			GW_INPUT_DEVICE_CONTROLLER0,	GW_PSPBTN_DOWN,		GW_KEY_STATE_DOWN },
+	/************************************************************************/
+	/* PSP Key Controls
+	/************************************************************************/
+#if defined GW_PLATFORM_PSP
+	{ GameMain::Con_MoveLeft,			GW_INPUT_DEVICE_PSP,			GW_PSPBTN_LEFT,		GW_KEY_STATE_DOWN },
+	{ GameMain::Con_MoveRight,			GW_INPUT_DEVICE_PSP,			GW_PSPBTN_RIGHT,	GW_KEY_STATE_DOWN },
+	{ GameMain::Con_MoveUp,				GW_INPUT_DEVICE_PSP,			GW_PSPBTN_UP,		GW_KEY_STATE_DOWN },
+	{ GameMain::Con_MoveDown,			GW_INPUT_DEVICE_PSP,			GW_PSPBTN_DOWN,		GW_KEY_STATE_DOWN },
 
-	{ GameMain::Con_PlayerJump,			GW_INPUT_DEVICE_CONTROLLER0,	GW_PSPBTN_CROSS,	GW_KEY_STATE_ON_PRESSED },
-	{ GameMain::Con_SwitchPerspec,		GW_INPUT_DEVICE_CONTROLLER0,	GW_PSPBTN_TRIANGLE,	GW_KEY_STATE_ON_PRESSED },
+	{ GameMain::Con_PlayerJump,			GW_INPUT_DEVICE_PSP,			GW_PSPBTN_CROSS,	GW_KEY_STATE_ON_PRESSED },
+	{ GameMain::Con_SwitchPerspec,		GW_INPUT_DEVICE_PSP,			GW_PSPBTN_TRIANGLE,	GW_KEY_STATE_ON_PRESSED },
+#endif	// #if defined GW_PLATFORM_PSP
 
-	// End
+	/************************************************************************/
+	/* XInput Controls
+	/************************************************************************/
+#if defined GW_XINPUT
+	{ GameMain::Con_MoveLeft,			GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_DPAD_LEFT,	GW_KEY_STATE_DOWN },
+	{ GameMain::Con_MoveRight,			GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_DPAD_RIGHT,	GW_KEY_STATE_DOWN },
+	{ GameMain::Con_MoveUp,				GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_DPAD_UP,	GW_KEY_STATE_DOWN },
+	{ GameMain::Con_MoveDown,			GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_DPAD_DOWN,	GW_KEY_STATE_DOWN },
+
+	{ GameMain::Con_PlayerJump,			GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_A,			GW_KEY_STATE_ON_PRESSED },
+	{ GameMain::Con_SwitchPerspec,		GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_Y,			GW_KEY_STATE_ON_PRESSED },
+#endif	// #if defined GW_XINPUT
+
+	/************************************************************************/
+	/* End of control table
+	/************************************************************************/
 	{ NULL,								GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_UNDEFINED,	GW_KEY_STATE_INVALID },
+};
+
+GWAxisMap KleinAxisMap[] =
+{
+	{ GameMain::Con_PlayerMove,			GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XAXIS_LX },
+
+	{ NULL,								GW_INPUT_DEVICE_KEYBOARD,		0 },
 };
 
 Player* GameMain::m_Player = NULL;
@@ -105,7 +133,7 @@ void GameMain::Startup()
 #endif
 
 	GWInput_InitializeDevice( m_RenderWindow );
-	GWInputCon_Initialize( KleinKeyMap );
+	GWInputCon_Initialize( KleinControlMap, KleinAxisMap );
 
 	// Game initializations
 	RenderSystem::Initialize( m_RenderWindow );
@@ -192,7 +220,7 @@ void GameMain::Update()
 			}
 		}
 
-		m_MovingVector.Normalize();
+		//m_MovingVector.Normalize();
 		if (m_Player->IsClimbingLadder())
 		{
 			// Slow down if climbing ladder
@@ -398,8 +426,6 @@ void GameMain::UpdateEditorControl()
 
 void GameMain::DrawDebugText()
 {
-	return;
-
 	char debug_text[256];
 
 	// Update debug info
@@ -517,6 +543,9 @@ GameMain* KleinGame()
 	return &game;
 }
 
+/************************************************************************/
+/* Klein game controller methods
+/************************************************************************/
 void GameMain::Con_EditorMoveLeft()
 {
 	if (KleinGame()->IsEditorMode())
@@ -591,5 +620,11 @@ void GameMain::Con_WorldPerspec1()
 void GameMain::Con_SwitchPerspec()
 {
 	KleinGame()->SetWorldview(1 - KleinGame()->GetWorldview());
+}
+
+void GameMain::Con_PlayerMove( float val )
+{
+	if (!KleinGame()->IsEditorMode())
+		m_MovingVector += Vector2(val, 0.0f);
 }
 

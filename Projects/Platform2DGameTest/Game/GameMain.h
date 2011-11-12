@@ -80,6 +80,7 @@ public:
 	static void Con_MoveDown();
 
 	static void Con_PlayerJump();
+	static void Con_PlayerMove(float val);
 
 	static void Con_WorldPerspec0();
 	static void Con_WorldPerspec1();

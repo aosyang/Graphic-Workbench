@@ -8,6 +8,10 @@
 #include "GWInputControl.h"
 #include "Renderer/GWRenderWindow.h"
 
+#if defined GW_XINPUT
+#include "Win32/XInput/GWXInput.h"
+#endif	// #if defined GW_XINPUT
+
 #include <dinput.h>
 
 LPDIRECTINPUT8			dinput;
@@ -18,10 +22,10 @@ BYTE					keystate[256];				// direct input key state table
 DIMOUSESTATE			mousestate;
 
 bool					di_key_down[0xFF];
-GWButtonState			di_key_state[0xFF];		// GWKeyCode state table
+GW_BUTTON_STATE			di_key_state[0xFF];		// GWKeyCode state table
 
 bool					di_mbtn_down[MBTN_COUNT];
-GWButtonState			di_mbtn_state[MBTN_COUNT];
+GW_BUTTON_STATE			di_mbtn_state[MBTN_COUNT];
 
 GWKeyCode DI_GWKeyCodeTable[0xFF] = { GW_KEY_UNDEFINED };
 
@@ -198,6 +202,11 @@ void GWInput_InitializeDevice( GW_RENDER_WINDOW* rw )
 
 	di_mouse_device->SetDataFormat( &c_dfDIMouse );
 	di_mouse_device->SetCooperativeLevel( hWnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND );
+
+#if defined GW_XINPUT
+	GWXInputResetState();
+#endif	// #if defined GW_XINPUT
+
 }
 
 void GWInput_UpdateInputState()
@@ -236,6 +245,10 @@ void GWInput_UpdateInputState()
 		}
 		di_mbtn_down[i] = btn_down;
 	}
+
+#if defined GW_XINPUT
+	GWXInputUpdateState();
+#endif	// #if defined GW_XINPUT
 }
 
 void GWInput_DestroyDevice()
@@ -245,12 +258,12 @@ void GWInput_DestroyDevice()
 	dinput->Release();
 }
 
-GWButtonState GWInput_GetKeyState(int key)
+GW_BUTTON_STATE GWInput_GetKeyState(int key)
 {
 	return (key >= 0 && key < 0xFF) ? di_key_state[key] : GW_KEY_STATE_INVALID;
 }
 
-GWButtonState GWInput_GetMouseBtnState(int btn)
+GW_BUTTON_STATE GWInput_GetMouseBtnState(int btn)
 {
 	return (btn >= 0 && btn < MBTN_COUNT) ? di_mbtn_state[btn] : GW_KEY_STATE_INVALID;
 }
@@ -260,7 +273,22 @@ int GWInput_GetMouseWheelValue()
 	return mousestate.lZ;
 }
 
-GWButtonState GWInput_GetControllerState( int btn, int controller/*=0*/ )
+GW_BUTTON_STATE GWInput_GetControllerBtnState( int btn, int controller/*=0*/ )
 {
+#if defined GW_XINPUT
+	if (controller == 0)
+		return GWXInputGetBtnState(btn);
+#endif	// #if defined GW_XINPUT
+
 	return GW_KEY_STATE_INVALID;
+}
+
+float GWInput_GetControllerAxisState( int axis, int controller/*=0*/ )
+{
+#if defined GW_XINPUT
+	if (controller == 0)
+		return GWXInputGetAxisState(axis);
+#endif	// #if defined GW_XINPUT
+
+	return 0.f;
 }
