@@ -81,6 +81,7 @@ public:
 
 	static void Con_PlayerJump();
 	static void Con_PlayerMove(float val);
+	static void Con_PlayerClimb(float val);
 
 	static void Con_WorldPerspec0();
 	static void Con_WorldPerspec1();

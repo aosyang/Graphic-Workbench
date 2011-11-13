@@ -129,7 +129,7 @@ void DebugRenderStageGeom( STAGE_GEOM* geom )
 GameStage::GameStage()
 : m_TileTypeIndex(0)
 {
-
+	m_WorldSwapTime = KleinGame()->GetSysTickCount();
 }
 
 GameStage::~GameStage()

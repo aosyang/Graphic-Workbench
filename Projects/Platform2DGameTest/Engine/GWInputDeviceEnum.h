@@ -138,6 +138,15 @@ enum GWPSPButton
 
 	GW_PSPBTN_COUNT,
 };
+
+enum GWPSPAxis
+{
+	GW_PSPAXIS_LX,
+	GW_PSPAXIS_LY,
+
+	GW_PSPAXIS_COUNT,
+};
+
 #endif	// #if defined GW_PLATFORM_PSP
 
 // State for key, mouse button and controller button

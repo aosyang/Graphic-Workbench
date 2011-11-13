@@ -47,10 +47,10 @@ GWControlMap KleinControlMap[] =
 	/* PSP Key Controls
 	/************************************************************************/
 #if defined GW_PLATFORM_PSP
-	{ GameMain::Con_MoveLeft,			GW_INPUT_DEVICE_PSP,			GW_PSPBTN_LEFT,		GW_KEY_STATE_DOWN },
-	{ GameMain::Con_MoveRight,			GW_INPUT_DEVICE_PSP,			GW_PSPBTN_RIGHT,	GW_KEY_STATE_DOWN },
-	{ GameMain::Con_MoveUp,				GW_INPUT_DEVICE_PSP,			GW_PSPBTN_UP,		GW_KEY_STATE_DOWN },
-	{ GameMain::Con_MoveDown,			GW_INPUT_DEVICE_PSP,			GW_PSPBTN_DOWN,		GW_KEY_STATE_DOWN },
+	//{ GameMain::Con_MoveLeft,			GW_INPUT_DEVICE_PSP,			GW_PSPBTN_LEFT,		GW_KEY_STATE_DOWN },
+	//{ GameMain::Con_MoveRight,			GW_INPUT_DEVICE_PSP,			GW_PSPBTN_RIGHT,	GW_KEY_STATE_DOWN },
+	//{ GameMain::Con_MoveUp,				GW_INPUT_DEVICE_PSP,			GW_PSPBTN_UP,		GW_KEY_STATE_DOWN },
+	//{ GameMain::Con_MoveDown,			GW_INPUT_DEVICE_PSP,			GW_PSPBTN_DOWN,		GW_KEY_STATE_DOWN },
 
 	{ GameMain::Con_PlayerJump,			GW_INPUT_DEVICE_PSP,			GW_PSPBTN_CROSS,	GW_KEY_STATE_ON_PRESSED },
 	{ GameMain::Con_SwitchPerspec,		GW_INPUT_DEVICE_PSP,			GW_PSPBTN_TRIANGLE,	GW_KEY_STATE_ON_PRESSED },
@@ -60,10 +60,10 @@ GWControlMap KleinControlMap[] =
 	/* XInput Controls
 	/************************************************************************/
 #if defined GW_XINPUT
-	{ GameMain::Con_MoveLeft,			GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_DPAD_LEFT,	GW_KEY_STATE_DOWN },
-	{ GameMain::Con_MoveRight,			GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_DPAD_RIGHT,	GW_KEY_STATE_DOWN },
-	{ GameMain::Con_MoveUp,				GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_DPAD_UP,	GW_KEY_STATE_DOWN },
-	{ GameMain::Con_MoveDown,			GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_DPAD_DOWN,	GW_KEY_STATE_DOWN },
+	//{ GameMain::Con_MoveLeft,			GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_DPAD_LEFT,	GW_KEY_STATE_DOWN },
+	//{ GameMain::Con_MoveRight,			GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_DPAD_RIGHT,	GW_KEY_STATE_DOWN },
+	//{ GameMain::Con_MoveUp,				GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_DPAD_UP,	GW_KEY_STATE_DOWN },
+	//{ GameMain::Con_MoveDown,			GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_DPAD_DOWN,	GW_KEY_STATE_DOWN },
 
 	{ GameMain::Con_PlayerJump,			GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_A,			GW_KEY_STATE_ON_PRESSED },
 	{ GameMain::Con_SwitchPerspec,		GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XBTN_Y,			GW_KEY_STATE_ON_PRESSED },
@@ -77,7 +77,15 @@ GWControlMap KleinControlMap[] =
 
 GWAxisMap KleinAxisMap[] =
 {
+#if defined GW_PLATFORM_PSP
+	{ GameMain::Con_PlayerMove,			GW_INPUT_DEVICE_PSP,						GW_PSPAXIS_LX },
+	{ GameMain::Con_PlayerClimb,		GW_INPUT_DEVICE_PSP,						GW_PSPAXIS_LY },
+#endif	// #if defined GW_PLATFORM_PSP
+
+#if defined GW_XINPUT
 	{ GameMain::Con_PlayerMove,			GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XAXIS_LX },
+	{ GameMain::Con_PlayerClimb,		GW_INPUT_DEVICE_XINPUT_CONTROLLER0,			GW_XAXIS_LY },
+#endif	// #if defined GW_XINPUT
 
 	{ NULL,								GW_INPUT_DEVICE_KEYBOARD,		0 },
 };
@@ -440,7 +448,8 @@ void GameMain::DrawDebugText()
 #if !defined GW_PLATFORM_PSP
 			"Mouse: %d %d %d\n"
 #endif
-			"geom count: %d"
+			"geom count: %d\n"
+			"t: %d\n"
 			"%s",
 			char_pos.x, char_pos.y,
 			(int)floor(char_pos.x), (int)ceil(char_pos.x),
@@ -450,6 +459,7 @@ void GameMain::DrawDebugText()
 			m_RenderWindow->mouse_x, m_RenderWindow->mouse_y, GWInput_GetMouseWheelValue(),
 #endif
 			GetStageGeomCount(),
+			m_SysTime,
 			m_GameStageEditor->IsMapUnsaved() ? "*Map unsaved*" : "");
 
 	RenderSystem::RenderText(debug_text, 0, 0, GWColor::YELLOW);
@@ -626,5 +636,20 @@ void GameMain::Con_PlayerMove( float val )
 {
 	if (!KleinGame()->IsEditorMode())
 		m_MovingVector += Vector2(val, 0.0f);
+}
+
+void GameMain::Con_PlayerClimb( float val )
+{
+	if (!KleinGame()->IsEditorMode())
+	{
+		if (m_Player->IsClimbingLadder())
+		{
+			m_MovingVector += Vector2(0.0f, val);
+		}
+		else if (val > 0.f)
+		{
+			m_UpPressed = true;
+		}
+	}
 }
 
