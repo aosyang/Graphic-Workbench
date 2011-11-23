@@ -9,6 +9,7 @@
 #define GameStageEditor_h__
 
 #include "Math/GWVectors.h"
+#include "GWCommon.h"
 #include "GWInputDeviceEnum.h"
 #include "BoundBox.h"
 
@@ -58,7 +59,7 @@ public:
 
 	void ZoomView(int zoom);
 
-	float GetFovy() const { return m_Fovy; }
+	GWAngle GetFovy() const { return m_Fovy; }
 
 private:
 	Vector2 CursorToTilePos(int x_pos, int y_pos);
@@ -75,7 +76,7 @@ private:
 	int					m_ToolBoxSelectedTriggerNameIndex;
 	AreaTrigger*		m_SelectedAreaTrigger;
 
-	float				m_Fovy;
+	GWAngle				m_Fovy;
 
 	PaintToolType		m_PaintTool;
 	BoundBox			m_SelectedArea;

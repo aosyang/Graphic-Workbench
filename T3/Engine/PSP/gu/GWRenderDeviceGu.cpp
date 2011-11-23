@@ -165,10 +165,11 @@ void RenderSystem::DestroyTexture( TEXTURE_INFO* texture )
 	// We won't release static buffers
 }
 
-void RenderSystem::SetupCamera( const Vector2& cam_pos, float fovy )
+void RenderSystem::SetupCamera( const Vector2& cam_pos, GWAngle fovy )
 {
 	sceGumMatrixMode(GU_PROJECTION);
 	sceGumLoadIdentity();
+	// Gu uses degrees for fovy
 	sceGumPerspective( fovy * 180.0f / GW_MATH_PI, 16.0f/9.0f, 1.0f, 100.0f );
 
 	ScePspFVector3 eye = { cam_pos.x, cam_pos.y, -KLEIN_CAMERA_ZPOS };

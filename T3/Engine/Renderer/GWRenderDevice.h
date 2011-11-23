@@ -25,7 +25,10 @@ public:
 	static TEXTURE_INFO* CreateTexture( const char* filename );
 	static void DestroyTexture( TEXTURE_INFO* texture );
 
-	static void SetupCamera(const Vector2& cam_pos, float fovy);
+	static void SetPerspectiveProjMatrix( GWAngle fovy, float aspect, float znear, float zfar );
+	static void SetOrthoProjMatrix( float width, float height, float znear, float zfar );
+	static void SetViewMatrix( const Vector3& eye, const Vector3& look_at, const Vector3& up = Vector3(0.f, 1.f, 0.f) );
+	static void LoadIdentityModelMatrix();
 
 	static void Clear(const GWColor& color);
 	static void BeginRender();

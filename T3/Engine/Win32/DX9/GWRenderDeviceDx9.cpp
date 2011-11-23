@@ -20,45 +20,11 @@ static LPD3DXFONT			pFont = NULL;
 
 #define TexturedSpriteFVF D3DFVF_XYZ|D3DFVF_TEX1
 
-struct TexturedVertex
+struct UVVertex
 {
 	float x, y, z;
 	float u, v;
 };
-
-void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, const TEXTURE_INFO* tex /*= NULL*/, float depth /*= 0.0f*/ )
-{
-	TexturedVertex v[6] =
-	{
-		{ vMin.x, vMin.y, depth, vMin.x, vMax.y },
-		{ vMin.x, vMax.y, depth, vMin.x, vMin.y },
-		{ vMax.x, vMax.y, depth, vMax.x, vMin.y },
-
-		{ vMax.x, vMax.y, depth, vMax.x, vMin.y },
-		{ vMax.x, vMin.y, depth, vMax.x, vMax.y },
-		{ vMin.x, vMin.y, depth, vMin.x, vMax.y },
-	};
-
-
-	if (tex)
-	{
-		pD3Ddevice->SetTexture(0, tex->d3d_tex);
-
-		// enable mip-map for texture
-		pD3Ddevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
-	}
-	else
-	{
-		pD3Ddevice->SetTexture(0, NULL);
-	}
-
-	pD3Ddevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-
-	pD3Ddevice->SetFVF(TexturedSpriteFVF);
-	pD3Ddevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(TexturedVertex));
-
-}
-
 
 #define ColoredSpriteVertexFVF D3DFVF_XYZ|D3DFVF_DIFFUSE
 
@@ -193,25 +159,72 @@ void RenderSystem::DestroyTexture( TEXTURE_INFO* texture )
 	delete texture;
 }
 
-void RenderSystem::SetupCamera( const Vector2& cam_pos, float fovy )
+void RenderSystem::SetPerspectiveProjMatrix( GWAngle fovy, float aspect, float znear, float zfar )
+{
+	D3DXMATRIXA16 matProj;
+	D3DXMatrixPerspectiveFovLH( &matProj, fovy, aspect, znear, zfar );
+	pD3Ddevice->SetTransform( D3DTS_PROJECTION, &matProj );
+}
+
+void RenderSystem::SetOrthoProjMatrix( float width, float height, float znear, float zfar )
+{
+	D3DXMATRIXA16 matProj;
+	D3DXMatrixOrthoLH( &matProj, width, height, znear, zfar );
+	pD3Ddevice->SetTransform( D3DTS_PROJECTION, &matProj );
+}
+
+void RenderSystem::SetViewMatrix( const Vector3& eye, const Vector3& look_at, const Vector3& up )
+{
+	D3DXVECTOR3 vEyePt( eye.x, eye.y, eye.z );
+	D3DXVECTOR3 vLookatPt( look_at.x, look_at.y, look_at.z );
+	D3DXVECTOR3 vUpVec( up.x, up.y, up.z );
+
+	D3DXMATRIXA16 matView;
+	D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );
+	pD3Ddevice->SetTransform( D3DTS_VIEW, &matView );
+}
+
+void RenderSystem::LoadIdentityModelMatrix()
 {
 	D3DXMATRIXA16 matWorld;
 
 	D3DXMatrixIdentity(&matWorld);
 	pD3Ddevice->SetTransform( D3DTS_WORLD, &matWorld );
-
-	D3DXVECTOR3 vEyePt( cam_pos.x, cam_pos.y, KLEIN_CAMERA_ZPOS );
-	D3DXVECTOR3 vLookatPt( cam_pos.x, cam_pos.y, 0.0f );
-
-	D3DXVECTOR3 vUpVec( 0.0f, 1.0f, 0.0f );
-	D3DXMATRIXA16 matView;
-	D3DXMatrixLookAtLH( &matView, &vEyePt, &vLookatPt, &vUpVec );
-	pD3Ddevice->SetTransform( D3DTS_VIEW, &matView );
-
-	D3DXMATRIXA16 matProj;
-	D3DXMatrixPerspectiveFovLH( &matProj, fovy, KLEIN_SCREEN_ASPECT, 1.0f, 100.0f );
-	pD3Ddevice->SetTransform( D3DTS_PROJECTION, &matProj );
 }
+
+void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, const TEXTURE_INFO* tex /*= NULL*/, float depth /*= 0.0f*/ )
+{
+	UVVertex v[6] =
+	{
+		{ vMin.x, vMin.y, depth, vMin.x, vMax.y },
+		{ vMin.x, vMax.y, depth, vMin.x, vMin.y },
+		{ vMax.x, vMax.y, depth, vMax.x, vMin.y },
+
+		{ vMax.x, vMax.y, depth, vMax.x, vMin.y },
+		{ vMax.x, vMin.y, depth, vMax.x, vMax.y },
+		{ vMin.x, vMin.y, depth, vMin.x, vMax.y },
+	};
+
+
+	if (tex)
+	{
+		pD3Ddevice->SetTexture(0, tex->d3d_tex);
+
+		// enable mip-map for texture
+		pD3Ddevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
+	}
+	else
+	{
+		pD3Ddevice->SetTexture(0, NULL);
+	}
+
+	pD3Ddevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+
+	pD3Ddevice->SetFVF(TexturedSpriteFVF);
+	pD3Ddevice->DrawPrimitiveUP(D3DPT_TRIANGLELIST, 2, v, sizeof(UVVertex));
+
+}
+
 
 void RenderSystem::DrawColoredSprite( const Vector2& vMin, const Vector2& vMax, const GWColor& color /*= GWColor::WHITE*/, float depth /*= 0.0f*/ )
 {

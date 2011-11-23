@@ -36,4 +36,10 @@
 #define GW_BREAKPOINT
 #endif
 
+#define GW_MATH_PI				(float)(3.141592654f)
+
+typedef float GWAngle;
+
+#define DEGREE(rad) ((float)(rad) * GW_MATH_PI / 180.f)
+
 #endif // GWCommon_h__

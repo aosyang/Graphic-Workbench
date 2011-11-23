@@ -254,7 +254,15 @@ void GameMain::Render()
 {
 	RenderSystem::BeginRender();
 
-	RenderSystem::SetupCamera(GetCameraPos(), GetFovy());
+	//RenderSystem::SetupCamera(GetCameraPos(), GetFovy());
+
+	Vector2 cam_pos = GetCameraPos();
+
+	RenderSystem::LoadIdentityModelMatrix();
+	RenderSystem::SetPerspectiveProjMatrix( GetFovy(), KLEIN_SCREEN_ASPECT, 1.f, 100.f );
+	RenderSystem::SetViewMatrix( Vector3(cam_pos.x, cam_pos.y, KLEIN_CAMERA_ZPOS),
+								 Vector3(cam_pos.x, cam_pos.y, 0.f) );
+
 	RenderSystem::Clear(GWIntegerColor(141, 153, 191, 0));
 
 	m_GameStage->RenderStage();
@@ -319,7 +327,7 @@ void GameMain::SetWorldview( int world_id )
 	}
 }
 
-float GameMain::GetFovy() const
+GWAngle GameMain::GetFovy() const
 {
 	return m_IsEditorMode ? m_GameStageEditor->GetFovy() : KLEIN_CAMERA_FOVY;
 }
