@@ -702,7 +702,7 @@ void GameStage::RenderStageGeom( STAGE_GEOM* geom, int world_id, float depth/*=0
 	{
 		const TEXTURE_INFO* tex = TextureManager::Instance().GetTexture(m_TileId2TypeInfo[tile_id].tex_id);
 
-		RenderSystem::DrawSprite(Vector2(geom->bound.xMin, geom->bound.yMin),
+		RenderSystem::DrawCube(  Vector2(geom->bound.xMin, geom->bound.yMin),
 								 Vector2(geom->bound.xMax, geom->bound.yMax),
 								 tex, depth);
 	}

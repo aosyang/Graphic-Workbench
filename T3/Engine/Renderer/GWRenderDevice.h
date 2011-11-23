@@ -38,6 +38,8 @@ public:
 	static void ToggleFog(bool enable);
 	static void SetFogParameters(float fog_near, float fog_far, const GWColor& color);
 
+	static void DrawCube(const Vector2& vMin, const Vector2& vMax, const TEXTURE_INFO* tex = NULL, float depth = 0.0f);
+
 	static void DrawSprite(const Vector2& vMin, const Vector2& vMax, const TEXTURE_INFO* tex = NULL, float depth = 0.0f);
 	static void DrawColoredSprite(const Vector2& vMin, const Vector2& vMax, const GWColor& color = GWColor::WHITE, float depth = 0.0f);
 	static void DrawWireframeRect(const Vector2& vMin, const Vector2& vMax, const GWColor& color = GWColor::WHITE, float depth = 0.0f);

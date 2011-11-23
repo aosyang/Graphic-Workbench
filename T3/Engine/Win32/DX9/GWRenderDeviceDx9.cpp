@@ -192,6 +192,49 @@ void RenderSystem::LoadIdentityModelMatrix()
 	pD3Ddevice->SetTransform( D3DTS_WORLD, &matWorld );
 }
 
+void RenderSystem::DrawCube( const Vector2& vMin, const Vector2& vMax, const TEXTURE_INFO* tex /*= NULL*/, float depth /*= 0.0f*/ )
+{
+	UVVertex v[] =
+	{
+		{ vMin.x, vMin.y, depth, vMin.x, vMax.y },
+		{ vMin.x, vMax.y, depth, vMin.x, vMin.y },
+		{ vMax.x, vMax.y, depth, vMax.x, vMin.y },
+		{ vMax.x, vMin.y, depth, vMax.x, vMax.y },
+
+		{ vMin.x, vMin.y, depth + 1.0f, vMin.x, vMax.y },
+		{ vMin.x, vMax.y, depth + 1.0f, vMin.x, vMin.y },
+		{ vMax.x, vMax.y, depth + 1.0f, vMax.x, vMin.y },
+		{ vMax.x, vMin.y, depth + 1.0f, vMax.x, vMax.y },
+	};
+
+	int i[] =
+	{
+		0, 1, 2, 2, 3, 0,
+		7, 6, 5, 5, 4, 7,
+		3, 2, 6, 3, 6, 7,
+		4, 5, 1, 4, 1, 0,
+		1, 5, 6, 1, 6, 2,
+		4, 0, 3, 4, 3, 7,
+	};
+
+	if (tex)
+	{
+		pD3Ddevice->SetTexture(0, tex->d3d_tex);
+
+		// enable mip-map for texture
+		pD3Ddevice->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
+	}
+	else
+	{
+		pD3Ddevice->SetTexture(0, NULL);
+	}
+
+	pD3Ddevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+
+	pD3Ddevice->SetFVF(TexturedSpriteFVF);
+	pD3Ddevice->DrawIndexedPrimitiveUP(D3DPT_TRIANGLELIST, 0, 8, 12, i, D3DFMT_INDEX32, v, sizeof(UVVertex));
+}
+
 void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, const TEXTURE_INFO* tex /*= NULL*/, float depth /*= 0.0f*/ )
 {
 	UVVertex v[6] =
