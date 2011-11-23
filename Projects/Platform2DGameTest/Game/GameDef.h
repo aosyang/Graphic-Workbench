@@ -13,7 +13,12 @@
 
 #define KLEIN_SCREEN_WIDTH		640
 #define KLEIN_SCREEN_HEIGHT		480
+
+#if defined GW_PLATFORM_PSP
+#define KLEIN_SCREEN_ASPECT		(16.f / 9.f)
+#else
 #define KLEIN_SCREEN_ASPECT		(float)KLEIN_SCREEN_WIDTH / (float)KLEIN_SCREEN_HEIGHT
+#endif
 
 #define KLEIN_FONT_HEIGHT		16
 
