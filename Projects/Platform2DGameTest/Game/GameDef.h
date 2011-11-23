@@ -8,9 +8,7 @@
 #ifndef GameDef_h__
 #define GameDef_h__
 
-#define GW_MATH_PI				(float)(3.141592654f)
-
-#define KLEIN_CAMERA_FOVY		(GW_MATH_PI / 4)
+#define KLEIN_CAMERA_FOVY		DEGREE(45.f)
 #define KLEIN_CAMERA_ZPOS		(-20.0f)
 
 #define KLEIN_SCREEN_WIDTH		640

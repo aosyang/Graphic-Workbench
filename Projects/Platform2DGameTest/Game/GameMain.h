@@ -14,6 +14,7 @@
 
 #include "Math/GWVectors.h"
 #include "GWTypes.h"
+#include "GWCommon.h"
 
 class GameStageEditor;
 class GameStage;
@@ -62,7 +63,7 @@ public:
 	void SetWorldview(int world_id);
 	GameWorldviewEnum GetWorldview() const { return m_ActiveWorld; }
 
-	float GetFovy() const;
+	GWAngle GetFovy() const;
 
 	GW_UINT32 GetSysTickCount() const { return m_SysTime; }
 public:
