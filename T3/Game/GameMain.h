@@ -15,6 +15,7 @@
 #include "Math/GWVectors.h"
 #include "GWTypes.h"
 #include "GWCommon.h"
+#include "T3Camera.h"
 
 class GameStageEditor;
 class GameStage;
@@ -120,7 +121,10 @@ private:
 	bool						m_IsEditorMode;
 	GameStageEditor*			m_GameStageEditor;
 
-	GAME_CAMERA					m_Camera;
+	//GAME_CAMERA					m_Camera;
+	T3_CAMERA					m_Camera;
+	Vector2						m_CameraDestPoint;
+	Actor*						m_CameraDestActor;
 
 	int							m_ProtoFeatureBits;
 

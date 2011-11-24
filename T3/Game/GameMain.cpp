@@ -17,6 +17,7 @@
 #include "GameStageEditor.h"
 #include "Renderer/TextureManager.h"
 #include "GWInputControl.h"
+#include "T3Camera.h"
 
 #include "AreaTrigger.h"
 
@@ -104,6 +105,7 @@ GameMain::GameMain()
 {
 	memset(&m_Camera, 0, sizeof(m_Camera));
 	m_Camera.fovy = KLEIN_CAMERA_FOVY;
+	T3Camera_Init(&m_Camera);
 
 	m_IsEditorMode = false;
 }
@@ -145,8 +147,8 @@ void GameMain::Startup()
 
 	// Game initializations
 	RenderSystem::Initialize( m_RenderWindow );
-	RenderSystem::ToggleFog(true);
-	RenderSystem::SetFogParameters(20.0f, 28.0f, GWIntegerColor(141, 153, 191));
+	//RenderSystem::ToggleFog(true);
+	//RenderSystem::SetFogParameters(20.0f, 28.0f, GWIntegerColor(141, 153, 191));
 
 	m_GameStage = new GameStage;
 	m_GameStage->LoadFromFile("Stage.lua");
@@ -154,7 +156,7 @@ void GameMain::Startup()
 	// Create player
 	m_Player = CreatePlayer();
 
-	m_Camera.dest_actor = m_Player;
+	m_CameraDestActor = m_Player;
 
 	// Create a patient for test
 	m_Patient = CreatePatient();
@@ -259,9 +261,7 @@ void GameMain::Render()
 	Vector2 cam_pos = GetCameraPos();
 
 	RenderSystem::LoadIdentityModelMatrix();
-	RenderSystem::SetPerspectiveProjMatrix( GetFovy(), KLEIN_SCREEN_ASPECT, 1.f, 100.f );
-	RenderSystem::SetViewMatrix( Vector3(cam_pos.x, cam_pos.y, KLEIN_CAMERA_ZPOS),
-								 Vector3(cam_pos.x, cam_pos.y, 0.f) );
+	T3Camera_SetupViewWithCamera(&m_Camera);
 
 	RenderSystem::Clear(GWIntegerColor(141, 153, 191, 0));
 
@@ -348,6 +348,9 @@ void GameMain::OnKeyPressed( int key_code )
 		break;
 	case GW_KEY_C:
 		ProtoFeatureFlipBit(PROTO_FEATURE_CIRCLE_OF_TRUE_VIEW);
+		break;
+	case GW_KEY_H:
+		T3Camera_ActiveProjectionAnimation(&m_Camera);
 		break;
 	case GW_KEY_P:
 		if (m_IsEditorMode)
@@ -526,18 +529,20 @@ void GameMain::UpdateCamera()
 	Vector2 rel;
 
 	// Update camera position
-	if (m_Camera.dest_actor)
+	if (m_CameraDestActor)
 	{
-		rel = m_Camera.dest_actor->GetPosition() - m_Camera.position;
+		rel = m_CameraDestActor->GetPosition() - m_Camera.position;
 	}
 	else
 	{
-		rel = m_Camera.dest_point - m_Camera.position;
+		rel = m_CameraDestPoint - m_Camera.position;
 	}
 
 	float dist = sqrtf(rel.SqrdLen());
 	if (dist > 0.3f)
 		m_Camera.position += rel * dist * 0.05f;
+
+	T3Camera_Update(&m_Camera);
 }
 
 void GameMain::HandlePlayerTriggerInteractivities()

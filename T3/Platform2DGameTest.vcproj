@@ -520,6 +520,14 @@
 				RelativePath=".\Game\GameStageEditor.h"
 				>
 			</File>
+			<File
+				RelativePath=".\Game\T3Camera.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Game\T3Camera.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Lua"
