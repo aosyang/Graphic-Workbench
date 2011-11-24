@@ -34,6 +34,7 @@ static const float T3_CAMERA_ORTHO_WIDTH	= T3_CAMERA_ORTHO_HEIGHT * KLEIN_SCREEN
 
 // Camera projection animation time duration
 static const GW_UINT32 T3_CAMERA_ANIM_TIME	= 200;
+static const GW_UINT32 T3_CAMERA_TILT_TIME	= 200;
 
 static const float T3_CAMERA_FOVY			= DEGREE(45.f);
 static const float T3_CAMERA_FOVY_TOLERANCE	= DEGREE(0.1f);
@@ -46,12 +47,14 @@ typedef struct T3Camera
 	GWAngle					fovy;
 	GW_UINT32				anim_end_time;
 	GW_BOOL					animating;
-	GW_BOOL					inverse_anim;
+	GW_BOOL					reverse_anim;
 
 	float					zdist;
 	float					znear, zfar;
 
 	T3CameraTilt			tilt;
+	GW_UINT32				tilt_anim_end_time;
+	GW_BOOL					reverse_tile_anim;
 } T3_CAMERA;
 
 void T3Camera_Init(T3_CAMERA* camera);
@@ -62,5 +65,7 @@ void T3Camera_SetupViewWithCamera(T3_CAMERA* camera);
 
 void T3Camera_ActiveProjectionAnimation(T3_CAMERA* camera);
 void T3Camera_DeactiveProjectionAnimation(T3_CAMERA* camera);
+
+void T3Camera_DoTilt(T3_CAMERA* camera, T3CameraTilt tilt);
 
 #endif // T3Camera_h__

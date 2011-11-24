@@ -365,6 +365,18 @@ void GameMain::OnKeyPressed( int key_code )
 	case GW_KEY_C:
 		ProtoFeatureFlipBit(PROTO_FEATURE_CIRCLE_OF_TRUE_VIEW);
 		break;
+	case GW_KEY_J:
+		T3Camera_DoTilt(&m_Camera, T3_CAMERA_TILT_LEFT);
+		break;
+	case GW_KEY_K:
+		T3Camera_DoTilt(&m_Camera, T3_CAMERA_TILT_DOWN);
+		break;
+	case GW_KEY_L:
+		T3Camera_DoTilt(&m_Camera, T3_CAMERA_TILT_RIGHT);
+		break;
+	case GW_KEY_I:
+		T3Camera_DoTilt(&m_Camera, T3_CAMERA_TILT_UP);
+		break;
 	case GW_KEY_P:
 		if (m_IsEditorMode)
 		{
@@ -381,7 +393,17 @@ void GameMain::OnKeyPressed( int key_code )
 
 void GameMain::OnKeyReleased( int key_code )
 {
-
+	switch (key_code)
+	{
+	case GW_KEY_J:
+	case GW_KEY_K:
+	case GW_KEY_L:
+	case GW_KEY_I:
+		T3Camera_DoTilt(&m_Camera, T3_CAMERA_TILT_NONE);
+		break;
+	default:
+		break;
+	}
 }
 
 void GameMain::OnMouseBtnPressed( GWMouseButton mbtn_code )

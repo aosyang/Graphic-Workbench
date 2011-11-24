@@ -26,6 +26,9 @@ void T3Camera_Init( T3_CAMERA* camera )
 	camera->proj_type = T3_CAMERA_PROJ_ORTHO;
 	camera->animating = false;
 	camera->tilt = T3_CAMERA_TILT_NONE;
+
+	camera->tilt_anim_end_time = KleinGame()->GetSysTickCount();
+	camera->reverse_tile_anim = false;
 }
 
 static void UpdateCameraView( T3_CAMERA* camera )
@@ -63,7 +66,7 @@ void T3Camera_Update( T3_CAMERA* camera )
 		if (tick < camera->anim_end_time)
 		{
 			float p = GW_MATH_CLAMP((float)(camera->anim_end_time - tick) / T3_CAMERA_ANIM_TIME, 0.f, 1.f);
-			if (camera->inverse_anim)
+			if (camera->reverse_anim)
 				p = 1.f - p;
 
 			camera->fovy = p * (T3_CAMERA_FOVY - T3_CAMERA_FOVY_TOLERANCE) + T3_CAMERA_FOVY_TOLERANCE;
@@ -71,7 +74,7 @@ void T3Camera_Update( T3_CAMERA* camera )
 		else
 		{
 			// End of animation playing
-			if (camera->inverse_anim)
+			if (camera->reverse_anim)
 			{
 				camera->animating = false;
 				camera->proj_type = T3_CAMERA_PROJ_PERSPECTIVE;
@@ -90,9 +93,26 @@ void T3Camera_Update( T3_CAMERA* camera )
 // Get world position of a T3Camera according to the tilt
 static Vector3 T3Camera_GetWorldPosition( T3_CAMERA* camera )
 {
-	//Vector3 offset = tilt_offset[camera->tilt];
-	Vector3 offset = tilt_offset[T3_CAMERA_TILT_UP];
+	GW_UINT32 tick = KleinGame()->GetSysTickCount();
+
+	Vector3 offset = tilt_offset[camera->tilt];
 	offset.Normalize();
+
+	if (tick < camera->tilt_anim_end_time)
+	{
+		float p = GW_MATH_CLAMP((float)(camera->tilt_anim_end_time - tick) / T3_CAMERA_TILT_TIME, 0.f, 1.f);
+		if (camera->reverse_tile_anim)
+			p = 1.f - p;
+
+		offset = (tilt_offset[T3_CAMERA_TILT_NONE] - offset) * p + offset;
+	}
+	else if (camera->reverse_tile_anim)	// End of animation
+	{
+		camera->reverse_tile_anim = false;
+		camera->tilt = T3_CAMERA_TILT_NONE;
+		offset = tilt_offset[T3_CAMERA_TILT_NONE];
+	}
+
 	return Vector3(camera->position, 0.f) + offset * camera->zdist;
 }
 
@@ -118,7 +138,7 @@ void T3Camera_ActiveProjectionAnimation( T3_CAMERA* camera )
 	camera->animating = true;
 	camera->anim_end_time = KleinGame()->GetSysTickCount() + T3_CAMERA_ANIM_TIME;
 	camera->proj_type = T3_CAMERA_PROJ_PERSPECTIVE;
-	camera->inverse_anim = true;
+	camera->reverse_anim = true;
 }
 
 void T3Camera_DeactiveProjectionAnimation( T3_CAMERA* camera )
@@ -126,5 +146,16 @@ void T3Camera_DeactiveProjectionAnimation( T3_CAMERA* camera )
 	camera->animating = true;
 	camera->anim_end_time = KleinGame()->GetSysTickCount() + T3_CAMERA_ANIM_TIME;
 	camera->proj_type = T3_CAMERA_PROJ_PERSPECTIVE;
-	camera->inverse_anim = false;
+	camera->reverse_anim = false;
+}
+
+void T3Camera_DoTilt( T3_CAMERA* camera, T3CameraTilt tilt )
+{
+	camera->reverse_tile_anim = (tilt==T3_CAMERA_TILT_NONE);
+	camera->tilt_anim_end_time = KleinGame()->GetSysTickCount() + T3_CAMERA_TILT_TIME;
+
+	if ( tilt != T3_CAMERA_TILT_NONE )
+	{
+		camera->tilt = tilt;
+	}
 }
