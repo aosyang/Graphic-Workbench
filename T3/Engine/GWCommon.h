@@ -22,12 +22,12 @@
 #define GW_SAFE_DELETE_ARRAY(x)		{ if (x) { delete [] (x); (x) = NULL; } }
 #endif
 
-#ifndef max
-#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#ifndef GW_MATH_MAX
+#define GW_MATH_MAX(a,b)            (((a) > (b)) ? (a) : (b))
 #endif
 
-#ifndef min
-#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#ifndef GW_MATH_MIN
+#define GW_MATH_MIN(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 
 #ifdef _DEBUG

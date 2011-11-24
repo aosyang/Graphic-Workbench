@@ -71,10 +71,10 @@ void GameStageEditor::Render()
 					}
 					else
 					{
-						vec_min.x = min(vec_min.x, floorf(m_PopupMenuPos.x) + xBias);
-						vec_min.y = min(vec_min.y, floorf(m_PopupMenuPos.y) + yBias);
-						vec_max.x = max(vec_max.x, ceilf(m_PopupMenuPos.x)  + xBias);
-						vec_max.y = max(vec_max.y, ceilf(m_PopupMenuPos.y) + yBias);
+						vec_min.x = GW_MATH_MIN(vec_min.x, floorf(m_PopupMenuPos.x) + xBias);
+						vec_min.y = GW_MATH_MIN(vec_min.y, floorf(m_PopupMenuPos.y) + yBias);
+						vec_max.x = GW_MATH_MAX(vec_max.x, ceilf(m_PopupMenuPos.x)  + xBias);
+						vec_max.y = GW_MATH_MAX(vec_max.y, ceilf(m_PopupMenuPos.y) + yBias);
 					}
 				}
 
@@ -167,10 +167,10 @@ void GameStageEditor::Render()
 
 			if (m_ToolState == TOOL_STATE_DRAWING)
 			{
-				Vector2 vMin(min( m_SelectedArea.xMin, floorf(tile_pos.x) ),
-							 min( m_SelectedArea.yMin, floorf(tile_pos.y) ) );
-				Vector2 vMax(max( m_SelectedArea.xMax, ceilf(tile_pos.x) ),
-							 max( m_SelectedArea.yMax, ceilf(tile_pos.y) ) );
+				Vector2 vMin(GW_MATH_MIN( m_SelectedArea.xMin, floorf(tile_pos.x) ),
+							 GW_MATH_MIN( m_SelectedArea.yMin, floorf(tile_pos.y) ) );
+				Vector2 vMax(GW_MATH_MAX( m_SelectedArea.xMax, ceilf(tile_pos.x) ),
+							 GW_MATH_MAX( m_SelectedArea.yMax, ceilf(tile_pos.y) ) );
 
 				RenderSystem::DrawWireframeRect(vMin, vMax, color);
 			}
@@ -465,10 +465,10 @@ void GameStageEditor::EndPainting()
 			if (!m_SelectedAreaTrigger)
 			{
 				// Update selected area
-				m_SelectedArea.xMin = min( m_SelectedArea.xMin, floorf(tile_pos.x) );
-				m_SelectedArea.xMax = max( m_SelectedArea.xMax, ceilf(tile_pos.x) );
-				m_SelectedArea.yMin = min( m_SelectedArea.yMin, floorf(tile_pos.y) );
-				m_SelectedArea.yMax = max( m_SelectedArea.yMax, ceilf(tile_pos.y) );
+				m_SelectedArea.xMin = GW_MATH_MIN( m_SelectedArea.xMin, floorf(tile_pos.x) );
+				m_SelectedArea.xMax = GW_MATH_MAX( m_SelectedArea.xMax, ceilf(tile_pos.x) );
+				m_SelectedArea.yMin = GW_MATH_MIN( m_SelectedArea.yMin, floorf(tile_pos.y) );
+				m_SelectedArea.yMax = GW_MATH_MAX( m_SelectedArea.yMax, ceilf(tile_pos.y) );
 			}
 		}
 

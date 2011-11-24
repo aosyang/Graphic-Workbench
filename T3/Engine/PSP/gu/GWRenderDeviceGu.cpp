@@ -165,21 +165,36 @@ void RenderSystem::DestroyTexture( TEXTURE_INFO* texture )
 	// We won't release static buffers
 }
 
-void RenderSystem::SetupCamera( const Vector2& cam_pos, GWAngle fovy )
+void RenderSystem::SetPerspectiveProjMatrix( GWAngle fovy, float aspect, float znear, float zfar )
 {
 	sceGumMatrixMode(GU_PROJECTION);
 	sceGumLoadIdentity();
 	// Gu uses degrees for fovy
-	sceGumPerspective( fovy * 180.0f / GW_MATH_PI, 16.0f/9.0f, 1.0f, 100.0f );
+	sceGumPerspective( fovy * 180.0f / GW_MATH_PI, aspect, znear, zfar );
+}
 
-	ScePspFVector3 eye = { cam_pos.x, cam_pos.y, -KLEIN_CAMERA_ZPOS };
-	ScePspFVector3 look_at = { cam_pos.x, cam_pos.y, 0.0f };
-	ScePspFVector3 up = { 0.0f, 1.0f, 0.0f };
+void RenderSystem::SetOrthoProjMatrix( float width, float height, float znear, float zfar )
+{
+	sceGumMatrixMode(GU_PROJECTION);
+	sceGumLoadIdentity();
+
+	sceGumOrtho( -width * 0.5f, width * 0.5f, -height * 0.5f, height * 0.5f, znear, zfar );
+}
+
+void RenderSystem::SetViewMatrix( const Vector3& eye, const Vector3& look_at, const Vector3& up )
+{
+	// flip z member of each Vector3
+	ScePspFVector3 _eye = { eye.x, eye.y, -eye.z };
+	ScePspFVector3 _look_at = { look_at.x, look_at.y, -look_at.z };
+	ScePspFVector3 _up = { up.x, up.y, -up.z };
 
 	sceGumMatrixMode(GU_VIEW);
 	sceGumLoadIdentity();
-	sceGumLookAt(&eye, &look_at, &up);
+	sceGumLookAt(&_eye, &_look_at, &_up);
+}
 
+void RenderSystem::LoadIdentityModelMatrix()
+{
 	sceGumMatrixMode(GU_MODEL);
 	sceGumLoadIdentity();
 }
