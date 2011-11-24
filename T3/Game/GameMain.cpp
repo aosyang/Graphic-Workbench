@@ -152,8 +152,7 @@ void GameMain::Startup()
 
 	// Game initializations
 	RenderSystem::Initialize( m_RenderWindow );
-	//RenderSystem::ToggleFog(true);
-	//RenderSystem::SetFogParameters(20.0f, 28.0f, GWIntegerColor(141, 153, 191));
+	RenderSystem::ToggleFog(true);
 
 	m_GameStage = new GameStage;
 	m_GameStage->LoadFromFile("Stage.lua");
@@ -267,6 +266,7 @@ void GameMain::Render()
 
 	RenderSystem::LoadIdentityModelMatrix();
 	T3Camera_SetupViewWithCamera(&m_Camera);
+	RenderSystem::SetFogParameters(m_Camera.znear + 20.f, m_Camera.zfar, GWIntegerColor(141, 153, 191));
 
 	RenderSystem::Clear(GWIntegerColor(141, 153, 191, 0));
 
@@ -472,8 +472,7 @@ void GameMain::DrawDebugText()
 #if !defined GW_PLATFORM_PSP
 			"Mouse: %d %d %d\n"
 #endif
-			"geom count: %d\n"
-			"t: %d\n"
+			"znear: %f zfar: %f\n"
 			"%s",
 			char_pos.x, char_pos.y,
 			(int)floor(char_pos.x), (int)ceil(char_pos.x),
@@ -482,8 +481,7 @@ void GameMain::DrawDebugText()
 #if !defined GW_PLATFORM_PSP
 			m_RenderWindow->mouse_x, m_RenderWindow->mouse_y, GWInput_GetMouseWheelValue(),
 #endif
-			GetStageGeomCount(),
-			m_SysTime,
+			m_Camera.znear, m_Camera.zfar,
 			m_GameStageEditor->IsMapUnsaved() ? "*Map unsaved*" : "");
 
 	RenderSystem::RenderText(debug_text, 0, 0, GWColor::YELLOW);

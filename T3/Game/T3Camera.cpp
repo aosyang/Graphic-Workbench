@@ -10,12 +10,22 @@
 #include "GameMain.h"
 #include "Renderer/GWRenderDevice.h"
 
+static const Vector3 tilt_offset[] =
+{
+	Vector3(0.f, 0.f, 1.f),
+	Vector3(1.f, 0.f, 1.f),
+	Vector3(-1.f, 0.f, 1.f),
+	Vector3(0.f, -1.f, 1.f),
+	Vector3(0.f, 1.f, 1.f),
+};
+
 void T3Camera_Init( T3_CAMERA* camera )
 {
 	memset(camera, 0, sizeof(T3_CAMERA));
 
-	camera->proj_type = T3_CAMERA_PROJ_PERSPECTIVE;
+	camera->proj_type = T3_CAMERA_PROJ_ORTHO;
 	camera->animating = false;
+	camera->tilt = T3_CAMERA_TILT_NONE;
 }
 
 static void UpdateCameraView( T3_CAMERA* camera )
@@ -31,16 +41,17 @@ static void UpdateCameraView( T3_CAMERA* camera )
 		float z_dist_scale = T3_CAMERA_ORTHO_HEIGHT * .5f / tanf(camera->fovy * .5f);
 		z_dist_scale -= sqrtf(sqred_len);
 
-		view_vec = view_vec * z_dist_scale + Vector3(camera->position, KLEIN_CAMERA_ZPOS);
+		view_vec = view_vec * z_dist_scale + Vector3(0.f, 0.f, KLEIN_CAMERA_ZPOS);
 	}
 
 	// Adjust z near and z far
-	//camera->zfar = sqrtf(view_vec.SqrdLen()) + 1.0f;
-	//camera->znear = sqrtf(view_vec.SqrdLen()) - 2.0f;
-	camera->zfar = 1000.f;
-	camera->znear = 1.f;
+	camera->znear = sqrtf(view_vec.SqrdLen()) - abs(KLEIN_CAMERA_ZPOS) + 0.1f;
+	camera->zfar = camera->znear + 30.f;
 
-	camera->world_position = view_vec;
+	//camera->znear = 0.1f;
+	//camera->zfar = 1000.0f;
+
+	camera->zdist = view_vec.z;
 }
 
 void T3Camera_Update( T3_CAMERA* camera )
@@ -52,10 +63,10 @@ void T3Camera_Update( T3_CAMERA* camera )
 		if (tick < camera->anim_end_time)
 		{
 			float p = GW_MATH_CLAMP((float)(camera->anim_end_time - tick) / T3_CAMERA_ANIM_TIME, 0.f, 1.f);
+			if (camera->inverse_anim)
+				p = 1.f - p;
 
-			if (camera->inverse_anim) p = 1.f - p;
-
-			camera->fovy = DEGREE(p * 44.5f + 0.5f);
+			camera->fovy = p * (T3_CAMERA_FOVY - T3_CAMERA_FOVY_TOLERANCE) + T3_CAMERA_FOVY_TOLERANCE;
 		}
 		else
 		{
@@ -76,6 +87,15 @@ void T3Camera_Update( T3_CAMERA* camera )
 	UpdateCameraView(camera);
 }
 
+// Get world position of a T3Camera according to the tilt
+static Vector3 T3Camera_GetWorldPosition( T3_CAMERA* camera )
+{
+	//Vector3 offset = tilt_offset[camera->tilt];
+	Vector3 offset = tilt_offset[T3_CAMERA_TILT_UP];
+	offset.Normalize();
+	return Vector3(camera->position, 0.f) + offset * camera->zdist;
+}
+
 void T3Camera_SetupViewWithCamera( T3_CAMERA* camera )
 {
 	if (camera->proj_type==T3_CAMERA_PROJ_PERSPECTIVE)
@@ -87,7 +107,7 @@ void T3Camera_SetupViewWithCamera( T3_CAMERA* camera )
 		RenderSystem::SetOrthoProjMatrix(T3_CAMERA_ORTHO_WIDTH, T3_CAMERA_ORTHO_HEIGHT, camera->znear, camera->zfar);
 	}
 
-	RenderSystem::SetViewMatrix(Vector3(camera->position, camera->world_position.z),
+	RenderSystem::SetViewMatrix(T3Camera_GetWorldPosition(camera),
 								Vector3(camera->position, 0.f));
 
 }
