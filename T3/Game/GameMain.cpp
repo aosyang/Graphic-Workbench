@@ -58,6 +58,9 @@ GWControlMap KleinControlMap[] =
 
 	{ GameMain::Con_PlayerJump,			GW_INPUT_DEVICE_PSP,			GW_PSPBTN_CROSS,	GW_KEY_STATE_ON_PRESSED },
 	{ GameMain::Con_SwitchPerspec,		GW_INPUT_DEVICE_PSP,			GW_PSPBTN_TRIANGLE,	GW_KEY_STATE_ON_PRESSED },
+
+	{ GameMain::Con_ActivePerspectiveView,		GW_INPUT_DEVICE_PSP,		GW_PSPBTN_SQUARE,			GW_KEY_STATE_ON_PRESSED },
+	{ GameMain::Con_DeactivePerspectiveView,	GW_INPUT_DEVICE_PSP,		GW_PSPBTN_SQUARE,			GW_KEY_STATE_ON_RELEASED },
 #endif	// #if defined GW_PLATFORM_PSP
 
 	/************************************************************************/

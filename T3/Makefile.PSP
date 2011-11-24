@@ -1,4 +1,4 @@
-TARGET = klein
+TARGET = T3Demo
 OBJS = Game/Actor.o\
        Game/AppMain.o\
        Game/AreaTrigger.o\
@@ -6,6 +6,7 @@ OBJS = Game/Actor.o\
        Game/GameMain.o\
        Game/GameStage.o\
        Game/GameStageEditor.o\
+       Game/T3Camera.o\
        Engine/BoundBox.o\
        Engine/GWColor.o\
        Engine/GWInputControl.o\
@@ -28,7 +29,7 @@ LDFLAGS =
 LIBS = -lstdc++ -llua -lpspgum -lpspgu -lm
 
 EXTRA_TARGETS = EBOOT.PBP
-PSP_EBOOT_TITLE = Klein PSP Port Test
+PSP_EBOOT_TITLE = T3 Demo PSP
 
 BUILD_PRX = 1
 PSP_FW_VERSION = 371

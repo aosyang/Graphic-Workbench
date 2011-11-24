@@ -249,30 +249,86 @@ void RenderSystem::SetFogParameters( float fog_near, float fog_far, const GWColo
 	sceGuSync(0,0);
 }
 
-struct GuTexturedVertex
+struct GuUVVertex
 {
 	float u, v;
 	float x, y, z;
 };
 
-#define _GUTV_DEF(_i, _x, _y, _z)\
-			{ draw_list[_i].u = _x;\
-			  draw_list[_i].v = _y;\
-			  draw_list[_i].x = _x;\
-			  draw_list[_i].y = _y;\
-			  draw_list[_i].z = _z; }
+#define _GUTV_SIMPLE_DEF(_i, _x, _y, _z)\
+				{ draw_list[_i].u = _x;\
+				  draw_list[_i].v = _y;\
+				  draw_list[_i].x = _x;\
+				  draw_list[_i].y = _y;\
+				  draw_list[_i].z = _z; }
+
+//#define _GUTV_DEF(_i, _x, _y, _z, _u, _v)\
+//			{ draw_list[_i].u = _u;\
+//			  draw_list[_i].v = _v;\
+//			  draw_list[_i].x = _x;\
+//			  draw_list[_i].y = _y;\
+//			  draw_list[_i].z = _z; }
+
+void RenderSystem::DrawCube( const Vector2& vMin, const Vector2& vMax, const TEXTURE_INFO* tex /*= NULL*/, float depth /*= 0.0f*/ )
+{
+	GuUVVertex* draw_list = (GuUVVertex*)sceGuGetMemory(8 * sizeof(GuUVVertex));
+
+	_GUTV_SIMPLE_DEF(0, vMin.x, vMin.y, -depth)
+	_GUTV_SIMPLE_DEF(1, vMin.x, vMax.y, -depth)
+	_GUTV_SIMPLE_DEF(2, vMax.x, vMax.y, -depth)
+	_GUTV_SIMPLE_DEF(3, vMax.x, vMin.y, -depth)
+
+	_GUTV_SIMPLE_DEF(4, vMin.x, vMin.y, -depth - 1.f)
+	_GUTV_SIMPLE_DEF(5, vMin.x, vMax.y, -depth - 1.f)
+	_GUTV_SIMPLE_DEF(6, vMax.x, vMax.y, -depth - 1.f)
+	_GUTV_SIMPLE_DEF(7, vMax.x, vMin.y, -depth - 1.f)
+
+	static GW_UINT8 cube_index[] =
+	{
+		0, 1, 2, 2, 3, 0,
+		7, 6, 5, 5, 4, 7,
+		3, 2, 6, 3, 6, 7,
+		4, 5, 1, 4, 1, 0,
+		1, 5, 6, 1, 6, 2,
+		4, 0, 3, 4, 3, 7,
+	};
+
+	GW_UINT8* index_list = (GW_UINT8*)sceGuGetMemory(36 * sizeof(GW_UINT8));
+	memcpy(index_list, cube_index, sizeof(cube_index));
+
+
+	if (tex)
+	{
+		sceGuEnable(GU_TEXTURE_2D);
+
+		sceGuTexMode(GU_PSM_8888, 0, 0, 0);
+		sceGuTexImage(0, tex->width, tex->height, tex->width, tex->gu_tex);
+		sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
+		sceGuTexFilter(GU_LINEAR,GU_LINEAR);
+		sceGuTexScale(1.0f,1.0f);
+		sceGuTexOffset(0.0f,0.0f);
+		sceGuAmbientColor(0xffffffff);
+	}
+	else
+	{
+		sceGuDisable(GU_TEXTURE_2D);
+	}
+	sceGumDrawArray(GU_TRIANGLES, GU_TEXTURE_32BITF|GU_VERTEX_32BITF|GU_INDEX_8BIT|GU_TRANSFORM_3D,
+					36, index_list, draw_list);
+}
+
 
 void RenderSystem::DrawSprite( const Vector2& vMin, const Vector2& vMax, const TEXTURE_INFO* tex /*= NULL*/, float depth /*= 0.0f*/ )
 {
-	GuTexturedVertex* draw_list = (GuTexturedVertex*)sceGuGetMemory(6 * sizeof(GuTexturedVertex));
+	GuUVVertex* draw_list = (GuUVVertex*)sceGuGetMemory(6 * sizeof(GuUVVertex));
 
-	_GUTV_DEF(0, vMin.x, vMin.y, -depth)
-	_GUTV_DEF(1, vMin.x, vMax.y, -depth)
-	_GUTV_DEF(2, vMax.x, vMax.y, -depth)
+	_GUTV_SIMPLE_DEF(0, vMin.x, vMin.y, -depth)
+	_GUTV_SIMPLE_DEF(1, vMin.x, vMax.y, -depth)
+	_GUTV_SIMPLE_DEF(2, vMax.x, vMax.y, -depth)
 
-	_GUTV_DEF(3, vMax.x, vMax.y, -depth)
-	_GUTV_DEF(4, vMax.x, vMin.y, -depth)
-	_GUTV_DEF(5, vMin.x, vMin.y, -depth)
+	_GUTV_SIMPLE_DEF(3, vMax.x, vMax.y, -depth)
+	_GUTV_SIMPLE_DEF(4, vMax.x, vMin.y, -depth)
+	_GUTV_SIMPLE_DEF(5, vMin.x, vMin.y, -depth)
 
 	if (tex)
 	{
