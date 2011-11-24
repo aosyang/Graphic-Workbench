@@ -44,6 +44,9 @@ GWControlMap KleinControlMap[] =
 	{ GameMain::Con_WorldPerspec0,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_9,			GW_KEY_STATE_ON_PRESSED },
 	{ GameMain::Con_WorldPerspec1,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_0,			GW_KEY_STATE_ON_PRESSED },
 
+	{ GameMain::Con_ActivePerspectiveView,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_H,			GW_KEY_STATE_ON_PRESSED },
+	{ GameMain::Con_DeactivePerspectiveView,	GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_H,			GW_KEY_STATE_ON_RELEASED },
+
 	/************************************************************************/
 	/* PSP Key Controls
 	/************************************************************************/
@@ -103,9 +106,8 @@ GameMain::GameMain()
   m_ProtoFeatureBits(0),
   m_ActiveWorld((GameWorldviewEnum)0)
 {
-	memset(&m_Camera, 0, sizeof(m_Camera));
-	m_Camera.fovy = KLEIN_CAMERA_FOVY;
 	T3Camera_Init(&m_Camera);
+	m_Camera.fovy = KLEIN_CAMERA_FOVY;
 
 	m_IsEditorMode = false;
 }
@@ -327,6 +329,17 @@ void GameMain::SetWorldview( int world_id )
 	}
 }
 
+void GameMain::ActivePerspectiveView()
+{
+	T3Camera_ActiveProjectionAnimation(&m_Camera);
+}
+
+void GameMain::DeactivePerspectiveView()
+{
+	T3Camera_DeactiveProjectionAnimation(&m_Camera);
+}
+
+
 GWAngle GameMain::GetFovy() const
 {
 	return m_IsEditorMode ? m_GameStageEditor->GetFovy() : KLEIN_CAMERA_FOVY;
@@ -348,9 +361,6 @@ void GameMain::OnKeyPressed( int key_code )
 		break;
 	case GW_KEY_C:
 		ProtoFeatureFlipBit(PROTO_FEATURE_CIRCLE_OF_TRUE_VIEW);
-		break;
-	case GW_KEY_H:
-		T3Camera_ActiveProjectionAnimation(&m_Camera);
 		break;
 	case GW_KEY_P:
 		if (m_IsEditorMode)
@@ -666,3 +676,12 @@ void GameMain::Con_PlayerClimb( float val )
 	}
 }
 
+void GameMain::Con_ActivePerspectiveView()
+{
+	KleinGame()->ActivePerspectiveView();
+}
+
+void GameMain::Con_DeactivePerspectiveView()
+{
+	KleinGame()->DeactivePerspectiveView();
+}

@@ -30,6 +30,8 @@
 #define GW_MATH_MIN(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 
+#define GW_MATH_CLAMP(v,_min,_max)	GW_MATH_MAX(GW_MATH_MIN(v,_max),_min)
+
 #ifdef _DEBUG
 #define GW_BREAKPOINT				{ while(0) {} }
 #else

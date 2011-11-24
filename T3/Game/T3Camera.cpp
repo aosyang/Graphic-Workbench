@@ -12,6 +12,8 @@
 
 void T3Camera_Init( T3_CAMERA* camera )
 {
+	memset(camera, 0, sizeof(T3_CAMERA));
+
 	camera->proj_type = T3_CAMERA_PROJ_PERSPECTIVE;
 	camera->animating = false;
 }
@@ -49,14 +51,25 @@ void T3Camera_Update( T3_CAMERA* camera )
 	{
 		if (tick < camera->anim_end_time)
 		{
-			float p = (float)(camera->anim_end_time - tick) / T3_CAMERA_ANIM_TIME;
+			float p = GW_MATH_CLAMP((float)(camera->anim_end_time - tick) / T3_CAMERA_ANIM_TIME, 0.f, 1.f);
+
+			if (camera->inverse_anim) p = 1.f - p;
+
 			camera->fovy = DEGREE(p * 44.5f + 0.5f);
 		}
 		else
 		{
 			// End of animation playing
-			camera->animating = false;
-			camera->proj_type = T3_CAMERA_PROJ_ORTHO;
+			if (camera->inverse_anim)
+			{
+				camera->animating = false;
+				camera->proj_type = T3_CAMERA_PROJ_PERSPECTIVE;
+			}
+			else
+			{
+				camera->animating = false;
+				camera->proj_type = T3_CAMERA_PROJ_ORTHO;
+			}
 		}
 	}
 
@@ -68,7 +81,6 @@ void T3Camera_SetupViewWithCamera( T3_CAMERA* camera )
 	if (camera->proj_type==T3_CAMERA_PROJ_PERSPECTIVE)
 	{
 		RenderSystem::SetPerspectiveProjMatrix(camera->fovy, KLEIN_SCREEN_ASPECT, camera->znear, camera->zfar);
-		//RenderSystem::SetPerspectiveProjMatrix(camera->fovy, KLEIN_SCREEN_ASPECT, .1f, 100.f);
 	}
 	else
 	{
@@ -86,4 +98,13 @@ void T3Camera_ActiveProjectionAnimation( T3_CAMERA* camera )
 	camera->animating = true;
 	camera->anim_end_time = KleinGame()->GetSysTickCount() + T3_CAMERA_ANIM_TIME;
 	camera->proj_type = T3_CAMERA_PROJ_PERSPECTIVE;
+	camera->inverse_anim = true;
+}
+
+void T3Camera_DeactiveProjectionAnimation( T3_CAMERA* camera )
+{
+	camera->animating = true;
+	camera->anim_end_time = KleinGame()->GetSysTickCount() + T3_CAMERA_ANIM_TIME;
+	camera->proj_type = T3_CAMERA_PROJ_PERSPECTIVE;
+	camera->inverse_anim = false;
 }

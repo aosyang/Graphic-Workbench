@@ -64,6 +64,9 @@ public:
 	void SetWorldview(int world_id);
 	GameWorldviewEnum GetWorldview() const { return m_ActiveWorld; }
 
+	void ActivePerspectiveView();
+	void DeactivePerspectiveView();
+
 	GWAngle GetFovy() const;
 
 	GW_UINT32 GetSysTickCount() const { return m_SysTime; }
@@ -89,6 +92,8 @@ public:
 	static void Con_WorldPerspec1();
 
 	static void Con_SwitchPerspec();
+	static void Con_ActivePerspectiveView();
+	static void Con_DeactivePerspectiveView();
 
 private:
 	void OnKeyPressed(int key_code);
