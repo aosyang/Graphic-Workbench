@@ -66,6 +66,19 @@ enum GWKeyCode
 	GW_KEY_Y				= 89,
 	GW_KEY_Z				= 90,
 
+	GW_KEY_F1				= 112,
+	GW_KEY_F2				= 113,
+	GW_KEY_F3				= 114,
+	GW_KEY_F4				= 115,
+	GW_KEY_F5				= 116,
+	GW_KEY_F6				= 117,
+	GW_KEY_F7				= 118,
+	GW_KEY_F8				= 119,
+	GW_KEY_F9				= 120,
+	GW_KEY_F10				= 121,
+	GW_KEY_F11				= 122,
+	GW_KEY_F12				= 123,
+
 };
 
 enum GWMouseButton

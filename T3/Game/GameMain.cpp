@@ -39,7 +39,7 @@ GWControlMap KleinControlMap[] =
 	{ GameMain::Con_MoveUp,				GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_UP,			GW_KEY_STATE_DOWN },
 	{ GameMain::Con_MoveDown,			GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_DOWN,		GW_KEY_STATE_DOWN },
 
-	{ GameMain::Con_PlayerJump,			GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_Z,			GW_KEY_STATE_ON_PRESSED },
+	{ GameMain::Con_PlayerJump,			GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_SPACE,		GW_KEY_STATE_ON_PRESSED },
 
 	{ GameMain::Con_WorldPerspec0,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_9,			GW_KEY_STATE_ON_PRESSED },
 	{ GameMain::Con_WorldPerspec1,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_0,			GW_KEY_STATE_ON_PRESSED },
@@ -352,7 +352,7 @@ void GameMain::OnKeyPressed( int key_code )
 {
 	switch (key_code)
 	{
-	case GW_KEY_SPACE:
+	case GW_KEY_F1:
 		// Toggle editor mode
 		m_IsEditorMode = !m_IsEditorMode;
 		break;
