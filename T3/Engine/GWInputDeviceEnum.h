@@ -21,12 +21,28 @@ enum GWKeyCode
 
 	GW_KEY_ENTER			= 13,
 
+	GW_KEY_LSHIFT			= 16,
+	GW_KEY_LCTRL			= 17,
+	GW_KEY_LALT				= 18,
+	GW_KEY_PAUSE			= 19,
+	GW_KEY_CAPSLOCK			= 20,
+
+	GW_KEY_ESC				= 27,
+
 	GW_KEY_SPACE			= 32,
+
+	GW_KEY_PAGEUP			= 33,
+	GW_KEY_PAGEDOWN			= 34,
+	GW_KEY_END				= 35,
+	GW_KEY_HOME				= 36,
 
 	GW_KEY_LEFT				= 37,
 	GW_KEY_UP				= 38,
 	GW_KEY_RIGHT			= 39,
 	GW_KEY_DOWN				= 40,
+
+	GW_KEY_INSERT			= 45,
+	GW_KEY_DELETE			= 46,
 
 	GW_KEY_0				= 48,
 	GW_KEY_1				= 49,
@@ -66,6 +82,23 @@ enum GWKeyCode
 	GW_KEY_Y				= 89,
 	GW_KEY_Z				= 90,
 
+	GW_KEY_NUMPAD0			= 96,
+	GW_KEY_NUMPAD1			= 97,
+	GW_KEY_NUMPAD2			= 98,
+	GW_KEY_NUMPAD3			= 99,
+	GW_KEY_NUMPAD4			= 100,
+	GW_KEY_NUMPAD5			= 101,
+	GW_KEY_NUMPAD6			= 102,
+	GW_KEY_NUMPAD7			= 103,
+	GW_KEY_NUMPAD8			= 104,
+	GW_KEY_NUMPAD9			= 105,
+	GW_KEY_NUMPAD_STAR		= 106,
+	GW_KEY_NUMPAD_PLUS		= 107,
+
+	GW_KEY_NUMPAD_MINUS		= 109,
+	GW_KEY_NUMPAD_DECIMAL	= 110,
+	GW_KEY_NUMPAD_SLASH		= 111,
+
 	GW_KEY_F1				= 112,
 	GW_KEY_F2				= 113,
 	GW_KEY_F3				= 114,
@@ -79,6 +112,8 @@ enum GWKeyCode
 	GW_KEY_F11				= 122,
 	GW_KEY_F12				= 123,
 
+	GW_KEY_NUMLOCK			= 144,
+	GW_KEY_SCROLL			= 145,
 };
 
 enum GWMouseButton
