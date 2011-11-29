@@ -196,15 +196,15 @@ void RenderSystem::DrawCube( const Vector2& vMin, const Vector2& vMax, const TEX
 {
 	UVVertex v[] =
 	{
-		{ vMin.x, vMin.y, depth, vMin.x, vMax.y },
-		{ vMin.x, vMax.y, depth, vMin.x, vMin.y },
-		{ vMax.x, vMax.y, depth, vMax.x, vMin.y },
-		{ vMax.x, vMin.y, depth, vMax.x, vMax.y },
+		{ vMin.x, vMin.y, depth, 0.0f, 1.0f },
+		{ vMin.x, vMax.y, depth, 0.0f, 0.0f },
+		{ vMax.x, vMax.y, depth, 1.0f, 0.0f },
+		{ vMax.x, vMin.y, depth, 1.0f, 1.0f },
 
-		{ vMin.x, vMin.y, depth + 1.0f, vMin.x, vMax.y },
-		{ vMin.x, vMax.y, depth + 1.0f, vMin.x, vMin.y },
-		{ vMax.x, vMax.y, depth + 1.0f, vMax.x, vMin.y },
-		{ vMax.x, vMin.y, depth + 1.0f, vMax.x, vMax.y },
+		{ vMin.x, vMin.y, depth + 1.0f, - 1.0f, 1.0f },
+		{ vMin.x, vMax.y, depth + 1.0f, - 1.0f, 0.0f },
+		{ vMax.x, vMax.y, depth + 1.0f, 2.0f, 0.0f },
+		{ vMax.x, vMin.y, depth + 1.0f, 2.0f, 1.0f },
 	};
 
 	int i[] =
