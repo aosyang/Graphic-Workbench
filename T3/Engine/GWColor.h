@@ -37,7 +37,7 @@ public:
 	static GWColor YELLOW;
 };
 
-GW_INLINE const GWColor GWIntegerColor(GW_UINT8 r, GW_UINT8 g, GW_UINT8 b, GW_UINT8 a=1.0f)
+GW_INLINE const GWColor GWIntegerColor(GW_UINT8 r, GW_UINT8 g, GW_UINT8 b, GW_UINT8 a=255)
 {
 	return GWColor((float)r/255.f, (float)g/255.f, (float)b/255.f, (float)a/255.f);
 }
