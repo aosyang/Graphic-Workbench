@@ -265,7 +265,16 @@ void GameMain::Render()
 	Vector2 cam_pos = GetCameraPos();
 
 	RenderSystem::LoadIdentityModelMatrix();
-	T3Camera_SetupViewWithCamera(&m_Camera);
+	if (m_IsEditorMode)
+	{
+		RenderSystem::SetPerspectiveProjMatrix(GetFovy(), KLEIN_SCREEN_ASPECT, m_Camera.znear, m_Camera.zfar);
+		RenderSystem::SetViewMatrix( Vector3(cam_pos.x, cam_pos.y, KLEIN_CAMERA_ZPOS),
+									 Vector3(cam_pos.x, cam_pos.y, 0.f) );
+	}
+	else
+	{
+		T3Camera_SetupViewWithCamera(&m_Camera);
+	}
 	RenderSystem::SetFogParameters(m_Camera.znear + 20.f, m_Camera.zfar, GWIntegerColor(141, 153, 191));
 
 	RenderSystem::Clear(GWIntegerColor(141, 153, 191, 0));
@@ -495,6 +504,7 @@ void GameMain::DrawDebugText()
 			"Mouse: %d %d %d\n"
 #endif
 			"znear: %f zfar: %f\n"
+			"CAM_TILT: %s\n"
 			"%s",
 			char_pos.x, char_pos.y,
 			(int)floor(char_pos.x), (int)ceil(char_pos.x),
@@ -504,6 +514,7 @@ void GameMain::DrawDebugText()
 			m_RenderWindow->mouse_x, m_RenderWindow->mouse_y, GWInput_GetMouseWheelValue(),
 #endif
 			m_Camera.znear, m_Camera.zfar,
+			T3Camera_GetTiltTypeName(m_Camera.tilt),
 			m_GameStageEditor->IsMapUnsaved() ? "*Map unsaved*" : "");
 
 	RenderSystem::RenderText(debug_text, 0, 0, GWColor::YELLOW);

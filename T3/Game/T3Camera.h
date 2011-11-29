@@ -29,7 +29,9 @@ enum T3CameraTilt
 	T3_CAMERA_TILT_DOWN,
 };
 
-static const float T3_CAMERA_ORTHO_HEIGHT	= 16.5685f;
+const char* T3Camera_GetTiltTypeName(T3CameraTilt tile);
+
+static const float T3_CAMERA_ORTHO_HEIGHT	= 16.5685f;		// tanf( DEGREE(22.5f) ) * abs( KLEIN_CAMERA_ZPOS ) * 2
 static const float T3_CAMERA_ORTHO_WIDTH	= T3_CAMERA_ORTHO_HEIGHT * KLEIN_SCREEN_ASPECT;
 
 // Camera projection animation time duration

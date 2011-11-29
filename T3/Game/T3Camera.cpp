@@ -10,6 +10,20 @@
 #include "GameMain.h"
 #include "Renderer/GWRenderDevice.h"
 
+static const char* T3CameraTiltString[] =
+{
+	"T3_CAMERA_TILT_NONE",
+	"T3_CAMERA_TILT_LEFT",
+	"T3_CAMERA_TILT_RIGHT",
+	"T3_CAMERA_TILT_UP",
+	"T3_CAMERA_TILT_DOWN",
+};
+
+const char* T3Camera_GetTiltTypeName( T3CameraTilt tile )
+{
+	return T3CameraTiltString[tile];
+}
+
 static const Vector3 tilt_offset[] =
 {
 	Vector3(0.f, 0.f, 1.f),
