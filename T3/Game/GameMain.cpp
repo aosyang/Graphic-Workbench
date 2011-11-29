@@ -564,7 +564,7 @@ void GameMain::UpdateCamera()
 	// Update camera position
 	if (m_CameraDestActor)
 	{
-		rel = m_CameraDestActor->GetPosition() - m_Camera.position;
+		rel = m_CameraDestActor->GetPosition() - m_Camera.position + Vector2 (0.0f, 4.5f);
 	}
 	else
 	{
