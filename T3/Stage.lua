@@ -3681,7 +3681,7 @@ Stage =
 		{
 			"StoneWall",
 			"SOLID",
-			"Data/Fieldstone.tga",
+			"Data/FieldBrick.tga",
 		},
 		
 		{
