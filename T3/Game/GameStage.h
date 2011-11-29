@@ -17,12 +17,6 @@
 #include <map>
 #include <string>
 
-
-namespace LuaPlus
-{
-	class LuaObject;
-}
-
 struct lua_State;
 
 enum TileUsageEnum
@@ -105,9 +99,10 @@ private:
 	void ScriptLoadTriggers(lua_State* state);
 
 #if !defined KLEIN_NO_STAGE_SAVE
-	void ScriptSaveGeometries( LuaPlus::LuaObject* script );
-	void ScriptSaveTileTypes( LuaPlus::LuaObject* script );
-	void ScriptSaveTriggers( LuaPlus::LuaObject* script );
+	void ScriptSaveGeometries( FILE* fp );
+	void ScriptSaveTileTypes( FILE* fp );
+	void ScriptSaveTriggers( FILE* fp );
+
 #endif
 
 	void RenderStageGeom(STAGE_GEOM* geom, int world_id, float depth=0.0f);

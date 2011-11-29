@@ -14,11 +14,6 @@
 #include <string>
 #include <vector>
 
-#if !defined KLEIN_NO_STAGE_SAVE
-#include "../LuaPlus/LuaPlus.h"
-using namespace LuaPlus;
-#endif
-
 #if defined GW_PLATFORM_PSP
 #include <lua.hpp>
 #else
@@ -176,15 +171,23 @@ bool GameStage::LoadFromFile( const char* filename )
 #if !defined KLEIN_NO_STAGE_SAVE
 bool GameStage::SaveToFile( const char* filename )
 {
-	LuaStateOwner state;
+	FILE* fp = fopen( filename, "w" );
 
-	LuaObject stage_script = state->GetGlobals().CreateTable("Stage");
+	if ( !fp )
+		return false;
 
-	ScriptSaveTileTypes(&stage_script);
-	ScriptSaveGeometries(&stage_script);
-	ScriptSaveTriggers(&stage_script);
+	fprintf( fp, "Stage =\n" );
+	fprintf( fp, "{\n" );
 
-	return state->DumpGlobals(filename);
+	ScriptSaveGeometries( fp );
+	ScriptSaveTileTypes( fp );
+	ScriptSaveTriggers( fp );
+
+	fprintf( fp, "}\n" );
+
+	fclose( fp );
+
+	return true;
 }
 #endif
 
@@ -585,36 +588,11 @@ void GameStage::ScriptLoadTriggers( lua_State* state )
 }
 
 #if !defined KLEIN_NO_STAGE_SAVE
-void GameStage::ScriptSaveTileTypes( LuaPlus::LuaObject* state )
+void GameStage::ScriptSaveGeometries( FILE* fp )
 {
-	//LuaObject world_script = stage_script.CreateTable(GameWorldviewKeyWord[0]);
-	LuaObject tile_type_script = state->CreateTable("TileTypes");
+	fprintf( fp, "\tGeometries =\n");
+	fprintf( fp, "\t{\n");
 
-	// Write tile types
-	int i = 1;
-	std::map<std::string, int>::iterator iter;
-	for (iter=m_TileName2Id.begin(); iter!=m_TileName2Id.end(); iter++)
-	{
-		LuaObject tile_type_obj = tile_type_script.CreateTable(i);
-		int tile_id = iter->second;
-		int tex_id = m_TileId2TypeInfo[tile_id].tex_id;
-
-		tile_type_obj.SetString(1, iter->first.c_str());
-		tile_type_obj.SetString(2, TileUsageToString(m_TileId2TypeInfo[tile_id].usage));
-		tile_type_obj.SetString(3, TextureManager::Instance().GetTextureName(tex_id));
-
-		i++;
-	}
-}
-
-void GameStage::ScriptSaveGeometries( LuaPlus::LuaObject* state )
-{
-	LuaObject geom_group_script = state->CreateTable("Geometries");
-
-	int i = 1;
-	std::map<std::string, int>::iterator iter;
-
-	// Write geometries
 	STAGE_GEOM* geom;
 	for (geom = GetFirstStageGeom(); geom!=NULL; geom = GetNextStageGeom(geom))
 	{
@@ -631,13 +609,14 @@ void GameStage::ScriptSaveGeometries( LuaPlus::LuaObject* state )
 
 		if (ignore_geom) continue;
 
-		LuaObject geom_script = geom_group_script.CreateTable(i);
+		fprintf( fp, "\t\t{ %d, %d, %d, %d, %d",
+				 0,
+				 (int)geom->bound.xMin,
+				 (int)geom->bound.xMax,
+				 (int)geom->bound.yMin,
+				 (int)geom->bound.yMax);
 
-		geom_script.SetInteger(1, 0);
-		geom_script.SetNumber(2, geom->bound.xMin);
-		geom_script.SetNumber(3, geom->bound.xMax);
-		geom_script.SetNumber(4, geom->bound.yMin);
-		geom_script.SetNumber(5, geom->bound.yMax);
+		std::map<std::string, int>::iterator iter;
 
 		for (int j=0; j<GAME_WORLD_COUNT; j++)
 		{
@@ -645,43 +624,64 @@ void GameStage::ScriptSaveGeometries( LuaPlus::LuaObject* state )
 			{
 				if (iter->second == geom->tile_type_id[j])
 				{
-					geom_script.SetString(6 + j, iter->first.c_str());
+					fprintf( fp, ", \"%s\"", iter->first.c_str() );
 					break;
 				}
 			}
 
 			if (iter==m_TileName2Id.end())
 			{
-				geom_script.SetString(6 + j, "");
+				fprintf( fp, ", \"\"" );
 			}
 		}
-
-		i++;
+		fprintf( fp, " },\n" );
 	}
+
+	fprintf( fp, "\t},\n" );
+}		
+
+void GameStage::ScriptSaveTileTypes( FILE* fp )
+{
+	fprintf( fp, "\tTileTypes =\n" );
+	fprintf( fp, "\t{\n");
+
+	std::map<std::string, int>::iterator iter;
+	for (iter=m_TileName2Id.begin(); iter!=m_TileName2Id.end(); iter++)
+	{
+		int tile_id = iter->second;
+		int tex_id = m_TileId2TypeInfo[tile_id].tex_id;
+
+		fprintf( fp, "\t\t{ \"%s\", \"%s\", \"%s\" },\n",
+				 iter->first.c_str(),
+				 TileUsageToString(m_TileId2TypeInfo[tile_id].usage),
+				 TextureManager::Instance().GetTextureName(tex_id) );
+	}
+
+	fprintf( fp, "\t},\n" );
 }
 
-void GameStage::ScriptSaveTriggers( LuaPlus::LuaObject* state )
+void GameStage::ScriptSaveTriggers( FILE* fp )
 {
-	LuaObject trig_group_script = state->CreateTable("AreaTriggers");
-
-	int i = 1;
+	fprintf( fp, "\tAreaTriggers =\n" );
+	fprintf( fp, "\t{\n");
 
 	AREA_TRIGGER* trigger = GetFirstAreaTrigger();
 	while (trigger)
 	{
-		LuaObject trig_script = trig_group_script.CreateTable(i);
-
-		trig_script.SetNumber(1, trigger->bound.xMin);
-		trig_script.SetNumber(2, trigger->bound.xMax);
-		trig_script.SetNumber(3, trigger->bound.yMin);
-		trig_script.SetNumber(4, trigger->bound.yMax);
-		trig_script.SetNumber(5, trigger->world_id);
-		trig_script.SetString(6, TriggerFuncToString(trigger->callback));
+		fprintf( fp, "\t\t{ %d, %d, %d, %d, %d, \"%s\" },\n",
+				 (int)trigger->bound.xMin,
+				 (int)trigger->bound.xMax,
+				 (int)trigger->bound.yMin,
+				 (int)trigger->bound.yMax,
+				 trigger->world_id,
+				 TriggerFuncToString(trigger->callback)	);
 
 		trigger = GetNextAreaTrigger(trigger);
-		i++;
 	}
+
+	fprintf( fp, "\t},\n" );
 }
+
 #endif
 
 void GameStage::RenderStageGeom( STAGE_GEOM* geom, int world_id, float depth/*=0.0f*/ )

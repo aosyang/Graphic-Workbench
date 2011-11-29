@@ -174,18 +174,6 @@
 	</References>
 	<Files>
 		<Filter
-			Name="LuaPlus"
-			>
-			<File
-				RelativePath=".\LuaPlus\LuaPlus.h"
-				>
-			</File>
-			<File
-				RelativePath=".\LuaPlus\luaplus51-1201.lib"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="Engine"
 			>
 			<File
