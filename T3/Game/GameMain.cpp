@@ -47,6 +47,16 @@ GWControlMap KleinControlMap[] =
 	{ GameMain::Con_ActivePerspectiveView,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_H,			GW_KEY_STATE_ON_PRESSED },
 	{ GameMain::Con_DeactivePerspectiveView,	GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_H,			GW_KEY_STATE_ON_RELEASED },
 
+	{ GameMain::Con_CameraTiltLeft,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_J,			GW_KEY_STATE_ON_PRESSED },
+	{ GameMain::Con_CameraTiltRight,	GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_L,			GW_KEY_STATE_ON_PRESSED },
+	{ GameMain::Con_CameraTiltUp,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_I,			GW_KEY_STATE_ON_PRESSED },
+	{ GameMain::Con_CameraTiltDown,		GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_K,			GW_KEY_STATE_ON_PRESSED },
+
+	{ GameMain::Con_CameraTiltCenter,	GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_J,			GW_KEY_STATE_ON_RELEASED },
+	{ GameMain::Con_CameraTiltCenter,	GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_L,			GW_KEY_STATE_ON_RELEASED },
+	{ GameMain::Con_CameraTiltCenter,	GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_I,			GW_KEY_STATE_ON_RELEASED },
+	{ GameMain::Con_CameraTiltCenter,	GW_INPUT_DEVICE_KEYBOARD,		GW_KEY_K,			GW_KEY_STATE_ON_RELEASED },
+
 	/************************************************************************/
 	/* PSP Key Controls
 	/************************************************************************/
@@ -260,14 +270,12 @@ void GameMain::Render()
 {
 	RenderSystem::BeginRender();
 
-	//RenderSystem::SetupCamera(GetCameraPos(), GetFovy());
-
 	Vector2 cam_pos = GetCameraPos();
 
 	RenderSystem::LoadIdentityModelMatrix();
 	if (m_IsEditorMode)
 	{
-		RenderSystem::SetPerspectiveProjMatrix(GetFovy(), KLEIN_SCREEN_ASPECT, m_Camera.znear, m_Camera.zfar);
+		RenderSystem::SetPerspectiveProjMatrix(m_GameStageEditor->GetFovy(), KLEIN_SCREEN_ASPECT, m_Camera.znear, m_Camera.zfar);
 		RenderSystem::SetViewMatrix( Vector3(cam_pos.x, cam_pos.y, KLEIN_CAMERA_ZPOS),
 									 Vector3(cam_pos.x, cam_pos.y, 0.f) );
 	}
@@ -351,12 +359,6 @@ void GameMain::DeactivePerspectiveView()
 	T3Camera_DeactiveProjectionAnimation(&m_Camera);
 }
 
-
-GWAngle GameMain::GetFovy() const
-{
-	return m_IsEditorMode ? m_GameStageEditor->GetFovy() : KLEIN_CAMERA_FOVY;
-}
-
 void GameMain::OnKeyPressed( int key_code )
 {
 	switch (key_code)
@@ -374,18 +376,6 @@ void GameMain::OnKeyPressed( int key_code )
 	case GW_KEY_C:
 		ProtoFeatureFlipBit(PROTO_FEATURE_CIRCLE_OF_TRUE_VIEW);
 		break;
-	case GW_KEY_J:
-		T3Camera_DoTilt(&m_Camera, T3_CAMERA_TILT_LEFT);
-		break;
-	case GW_KEY_K:
-		T3Camera_DoTilt(&m_Camera, T3_CAMERA_TILT_DOWN);
-		break;
-	case GW_KEY_L:
-		T3Camera_DoTilt(&m_Camera, T3_CAMERA_TILT_RIGHT);
-		break;
-	case GW_KEY_I:
-		T3Camera_DoTilt(&m_Camera, T3_CAMERA_TILT_UP);
-		break;
 	case GW_KEY_P:
 		if (m_IsEditorMode)
 		{
@@ -402,17 +392,6 @@ void GameMain::OnKeyPressed( int key_code )
 
 void GameMain::OnKeyReleased( int key_code )
 {
-	switch (key_code)
-	{
-	case GW_KEY_J:
-	case GW_KEY_K:
-	case GW_KEY_L:
-	case GW_KEY_I:
-		T3Camera_DoTilt(&m_Camera, T3_CAMERA_TILT_NONE);
-		break;
-	default:
-		break;
-	}
 }
 
 void GameMain::OnMouseBtnPressed( GWMouseButton mbtn_code )
@@ -449,19 +428,19 @@ void GameMain::UpdateInputDevice()
 	{
 		if (GWInput_GetKeyState(i) == GW_KEY_STATE_ON_PRESSED)
 			OnKeyPressed(i);
-		if (GWInput_GetKeyState(i) == GW_KEY_STATE_ON_RELEASED)
-			OnKeyReleased(i);
+		//if (GWInput_GetKeyState(i) == GW_KEY_STATE_ON_RELEASED)
+		//	OnKeyReleased(i);
 	}	
 
+#if !defined GW_PLATFORM_PSP
 	for (int i=0; i<MBTN_COUNT; i++)
 	{
 		if (GWInput_GetMouseBtnState(i) == GW_KEY_STATE_ON_PRESSED)
 			OnMouseBtnPressed((GWMouseButton)i);
-#if !defined GW_PLATFORM_PSP
 		if (GWInput_GetMouseBtnState(i) == GW_KEY_STATE_ON_RELEASED)
 			OnMouseBtnReleased((GWMouseButton)i);
-#endif
 	}
+#endif
 
 }
 
@@ -718,4 +697,29 @@ void GameMain::Con_ActivePerspectiveView()
 void GameMain::Con_DeactivePerspectiveView()
 {
 	KleinGame()->DeactivePerspectiveView();
+}
+
+void GameMain::Con_CameraTiltLeft()
+{
+	KleinGame()->DoCameraTilt(T3_CAMERA_TILT_LEFT);
+}
+
+void GameMain::Con_CameraTiltRight()
+{
+	KleinGame()->DoCameraTilt(T3_CAMERA_TILT_RIGHT);
+}
+
+void GameMain::Con_CameraTiltUp()
+{
+	KleinGame()->DoCameraTilt(T3_CAMERA_TILT_UP);
+}
+
+void GameMain::Con_CameraTiltDown()
+{
+	KleinGame()->DoCameraTilt(T3_CAMERA_TILT_DOWN);
+}
+
+void GameMain::Con_CameraTiltCenter()
+{
+	KleinGame()->DoCameraTilt(T3_CAMERA_TILT_NONE);
 }

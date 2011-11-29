@@ -411,7 +411,7 @@ Vector2 GameStageEditor::CursorToTilePos( int x_pos, int y_pos )
 	Vector2 cam_pos = KleinGame()->GetCameraPos();
 
 	// Render tile position at cursor
-	float height = tanf(KleinGame()->GetFovy() / 2.0f) * abs(KLEIN_CAMERA_ZPOS);
+	float height = tanf(GetFovy() / 2.0f) * abs(KLEIN_CAMERA_ZPOS);
 	float width = height * KLEIN_SCREEN_ASPECT;
 
 	float step_x = (float)KLEIN_SCREEN_WIDTH / (width * 2);

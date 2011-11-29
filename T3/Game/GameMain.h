@@ -67,9 +67,9 @@ public:
 	void ActivePerspectiveView();
 	void DeactivePerspectiveView();
 
-	GWAngle GetFovy() const;
-
 	GW_UINT32 GetSysTickCount() const { return m_SysTime; }
+
+	GW_INLINE void DoCameraTilt(T3CameraTilt tilt) { T3Camera_DoTilt(&m_Camera, tilt); }
 public:
 	/************************************************************************/
 	/* Game Control methods
@@ -94,6 +94,12 @@ public:
 	static void Con_SwitchPerspec();
 	static void Con_ActivePerspectiveView();
 	static void Con_DeactivePerspectiveView();
+
+	static void Con_CameraTiltLeft();
+	static void Con_CameraTiltRight();
+	static void Con_CameraTiltUp();
+	static void Con_CameraTiltDown();
+	static void Con_CameraTiltCenter();
 
 private:
 	void OnKeyPressed(int key_code);
