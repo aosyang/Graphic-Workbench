@@ -146,21 +146,13 @@ void T3Camera_SetupViewWithCamera( T3_CAMERA* camera )
 
 }
 
-void T3Camera_ActiveProjectionAnimation( T3_CAMERA* camera )
+void T3Camera_ActiveProjectionAnimation( T3_CAMERA* camera, T3CameraProjAnim anim )
 {
 	// Start animation
 	camera->animating = true;
 	camera->anim_end_time = KleinGame()->GetSysTickCount() + T3_CAMERA_ANIM_TIME;
 	camera->proj_type = T3_CAMERA_PROJ_PERSPECTIVE;
-	camera->reverse_anim = true;
-}
-
-void T3Camera_DeactiveProjectionAnimation( T3_CAMERA* camera )
-{
-	camera->animating = true;
-	camera->anim_end_time = KleinGame()->GetSysTickCount() + T3_CAMERA_ANIM_TIME;
-	camera->proj_type = T3_CAMERA_PROJ_PERSPECTIVE;
-	camera->reverse_anim = false;
+	camera->reverse_anim = (anim == T3_CAMERA_PROJ_ANIM_TO_PERSPECTIVE);
 }
 
 void T3Camera_DoTilt( T3_CAMERA* camera, T3CameraTilt tilt )

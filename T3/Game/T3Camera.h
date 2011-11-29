@@ -29,6 +29,12 @@ enum T3CameraTilt
 	T3_CAMERA_TILT_DOWN,
 };
 
+enum T3CameraProjAnim
+{
+	T3_CAMERA_PROJ_ANIM_TO_PERSPECTIVE,
+	T3_CAMERA_PROJ_ANIM_TO_ORTHO,
+};
+
 const char* T3Camera_GetTiltTypeName(T3CameraTilt tile);
 
 static const float T3_CAMERA_ORTHO_HEIGHT	= 16.5685f;		// tanf( DEGREE(22.5f) ) * abs( KLEIN_CAMERA_ZPOS ) * 2
@@ -65,8 +71,7 @@ void T3Camera_Update(T3_CAMERA* camera);
 
 void T3Camera_SetupViewWithCamera(T3_CAMERA* camera);
 
-void T3Camera_ActiveProjectionAnimation(T3_CAMERA* camera);
-void T3Camera_DeactiveProjectionAnimation(T3_CAMERA* camera);
+void T3Camera_ActiveProjectionAnimation(T3_CAMERA* camera, T3CameraProjAnim anim);
 
 void T3Camera_DoTilt(T3_CAMERA* camera, T3CameraTilt tilt);
 

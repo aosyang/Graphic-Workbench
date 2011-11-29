@@ -255,6 +255,19 @@ void GameMain::Update()
 			m_MovingVector *= 0.1f;
 		}
 
+		// Adjust moving vector by camera tilt
+		switch ( GetCameraTilt() )
+		{
+		case T3_CAMERA_TILT_LEFT:
+		case T3_CAMERA_TILT_RIGHT:
+			m_MovingVector *= Vector2( sinf( DEGREE(45.f) ) * 2, 1.f );
+			break;
+		case T3_CAMERA_TILT_UP:
+		case T3_CAMERA_TILT_DOWN:
+			m_MovingVector *= Vector2( 1.f, sinf( DEGREE(45.f) ) * 2 );
+			break;
+		}
+
 		m_Player->MoveController() = m_MovingVector;
 
 		HandlePlayerTriggerInteractivities();
@@ -351,12 +364,12 @@ void GameMain::SetWorldview( int world_id )
 
 void GameMain::ActivePerspectiveView()
 {
-	T3Camera_ActiveProjectionAnimation(&m_Camera);
+	T3Camera_ActiveProjectionAnimation(&m_Camera, T3_CAMERA_PROJ_ANIM_TO_PERSPECTIVE);
 }
 
 void GameMain::DeactivePerspectiveView()
 {
-	T3Camera_DeactiveProjectionAnimation(&m_Camera);
+	T3Camera_ActiveProjectionAnimation(&m_Camera, T3_CAMERA_PROJ_ANIM_TO_ORTHO);
 }
 
 void GameMain::OnKeyPressed( int key_code )

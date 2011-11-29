@@ -70,6 +70,7 @@ public:
 	GW_UINT32 GetSysTickCount() const { return m_SysTime; }
 
 	GW_INLINE void DoCameraTilt(T3CameraTilt tilt) { T3Camera_DoTilt(&m_Camera, tilt); }
+	GW_INLINE T3CameraTilt GetCameraTilt() { return m_Camera.tilt; }
 public:
 	/************************************************************************/
 	/* Game Control methods

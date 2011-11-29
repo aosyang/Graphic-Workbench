@@ -205,7 +205,7 @@ void GameStage::RenderStage()
 		// Render other world
 		for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 		{
-			RenderStageGeom(geom, 1 - world_id, 5.0f);
+			RenderStageGeom(geom, 1 - world_id, GAME_STAGE_LAYER_DIST);
 		}
 
 		// Render current world
@@ -218,30 +218,30 @@ void GameStage::RenderStage()
 	else if (remain_time > TIME_WORLD_SWAP_ANIM / 2)
 	{
 		// depth: 2.5f ~ 0.0f
-		depth = 2.5f * (float)(remain_time - TIME_WORLD_SWAP_ANIM / 2) / (float)(TIME_WORLD_SWAP_ANIM / 2);
+		depth = (GAME_STAGE_LAYER_DIST / 2.f) * (float)(remain_time - TIME_WORLD_SWAP_ANIM / 2) / (float)(TIME_WORLD_SWAP_ANIM / 2);
 
 		// Render current world
 		for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 		{
-			RenderStageGeom(geom, world_id, 2.5f + depth);
+			RenderStageGeom(geom, world_id, (GAME_STAGE_LAYER_DIST / 2.f) + depth);
 		}
 
 		// Render other world
 		for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 		{
-			RenderStageGeom(geom, 1 - world_id, 2.5f - depth);
+			RenderStageGeom(geom, 1 - world_id, (GAME_STAGE_LAYER_DIST / 2.f) - depth);
 		}
 
 	}
 	else
 	{
 		// depth: 2.5f ~ 0.0f
-		depth = 2.5f * (float)(remain_time) / (float)(TIME_WORLD_SWAP_ANIM / 2);
+		depth = (GAME_STAGE_LAYER_DIST / 2.f) * (float)(remain_time) / (float)(TIME_WORLD_SWAP_ANIM / 2);
 
 		// Render other world
 		for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 		{
-			RenderStageGeom(geom, 1 - world_id, 5.0f - depth);
+			RenderStageGeom(geom, 1 - world_id, GAME_STAGE_LAYER_DIST - depth);
 		}
 
 		// Render current world
@@ -284,11 +284,14 @@ void GameStage::TestCollision( Actor* actor )
 	// Collect collision objects
 	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 	{
-		if ( GetTileUsageById(geom->tile_type_id[KleinGame()->GetWorldview()]) != TILE_USAGE_SOLID )
-			continue;
+		for (int i=0; i<GAME_WORLD_COUNT; i++)
+		{
+			if ( GetTileUsageById(geom->tile_type_id[i]) != TILE_USAGE_SOLID )
+				continue;
 
-		if (actor->TestCollision(geom->bound, rel))
-			col_group.push_back(geom);
+			if (actor->TestCollision(geom->bound, rel))
+				col_group.push_back(geom);
+		}
 	}
 
 	if (!col_group.empty())

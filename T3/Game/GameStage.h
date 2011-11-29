@@ -19,6 +19,8 @@
 
 struct lua_State;
 
+static const float GAME_STAGE_LAYER_DIST = 5.0f;
+
 enum TileUsageEnum
 {
 	TILE_USAGE_VOID = -1,
