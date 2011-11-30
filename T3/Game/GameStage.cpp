@@ -272,6 +272,31 @@ void GameStage::Reset()
 	m_TileId2TypeInfo.clear();
 }
 
+static BoundBox GetPostProjectedBound(const BoundBox& box)
+{
+	BoundBox output = box;
+
+	switch (KleinGame()->GetCameraTilt())
+	{
+	case T3_CAMERA_TILT_LEFT:
+		output.xMin -= 1.f;
+		break;
+	case T3_CAMERA_TILT_RIGHT:
+		output.xMax += 1.f;
+		break;
+	case T3_CAMERA_TILT_UP:
+		output.yMax += 1.f;
+		break;
+	case T3_CAMERA_TILT_DOWN:
+		output.yMin -= 1.f;
+		break;
+	default:
+		break;
+	}
+
+	return output;
+}
+
 void GameStage::TestCollision( Actor* actor )
 {
 	bool result = false;
@@ -284,14 +309,18 @@ void GameStage::TestCollision( Actor* actor )
 	// Collect collision objects
 	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 	{
+		bool collide = false;
 		for (int i=0; i<GAME_WORLD_COUNT; i++)
 		{
 			if ( GetTileUsageById(geom->tile_type_id[i]) != TILE_USAGE_SOLID )
 				continue;
 
-			if (actor->TestCollision(geom->bound, rel))
-				col_group.push_back(geom);
+			if ( actor->TestCollision( GetPostProjectedBound( geom->bound ), rel ) )
+				collide = true;
 		}
+
+		if (collide)
+			col_group.push_back(geom);
 	}
 
 	if (!col_group.empty())
@@ -307,14 +336,16 @@ void GameStage::TestCollision( Actor* actor )
 		// Test collision move in x dir and y dir separately
 		for ( iter = col_group.begin(); iter != col_group.end(); iter++ )
 		{
-			result |= actor->DoCollisionMove((*iter)->bound, rel_y, &rel_y);
+			BoundBox post_proj_bound = GetPostProjectedBound((*iter)->bound);
+			result |= actor->DoCollisionMove( post_proj_bound, rel_y, &rel_y );
 		}
 
 		rel = rel_x + rel_y;
 
 		for ( iter = col_group.begin(); iter != col_group.end(); iter++ )
 		{
-			result |= actor->DoCollisionMove((*iter)->bound, rel, &rel);
+			BoundBox post_proj_bound = GetPostProjectedBound((*iter)->bound);
+			result |= actor->DoCollisionMove( post_proj_bound, rel, &rel );
 		}
 	}
 
