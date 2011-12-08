@@ -2,8 +2,8 @@ Stage =
 {
 	Geometries =
 	{
-		{ 0, -5, -4, 1, 2, "StoneWall", "" },
-		{ 0, -4, -3, 1, 2, "StoneWall", "" },
+		{ 3, -5, -4, 1, 2, "StoneWall", "StoneWall" },
+		{ 0, -4, -3, 1, 2, "StoneWall", "StoneWall" },
 		{ 0, -3, -2, 1, 2, "StoneWall", "" },
 		{ 0, -2, -1, 1, 2, "StoneWall", "" },
 		{ 0, -1, 0, 1, 2, "StoneWall", "" },

@@ -395,7 +395,7 @@ STAGE_GEOM* GameStage::AddStageGeom( int layer_id, const BoundBox& bound, const 
 {
 	STAGE_GEOM* geom = CreateStageGeom();
 
-	float geom_depth = (float)layer_id;
+	geom->depth = (float)layer_id;
 
 	// Find texture id by name
 	for (int i=0; i<GAME_WORLD_COUNT; i++)
@@ -738,7 +738,7 @@ void GameStage::RenderStageGeom( STAGE_GEOM* geom, int world_id, float depth/*=0
 
 		RenderSystem::DrawCube(  Vector2(geom->bound.xMin, geom->bound.yMin),
 								 Vector2(geom->bound.xMax, geom->bound.yMax),
-								 tex, depth);
+								 tex, geom->depth + depth);
 	}
 }
 
