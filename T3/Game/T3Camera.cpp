@@ -109,8 +109,7 @@ static Vector3 T3Camera_GetWorldPosition( T3_CAMERA* camera )
 {
 	GW_UINT32 tick = KleinGame()->GetSysTickCount();
 
-	Vector3 offset = tilt_offset[camera->tilt];
-	offset.Normalize();
+	Vector3 offset;
 
 	if (tick < camera->tilt_anim_end_time)
 	{
@@ -118,13 +117,36 @@ static Vector3 T3Camera_GetWorldPosition( T3_CAMERA* camera )
 		if (camera->reverse_tile_anim)
 			p = 1.f - p;
 
-		offset = (tilt_offset[T3_CAMERA_TILT_NONE] - offset) * p + offset;
+		GWAngle angle = (1.f - p) * DEGREE(45.f);
+		switch (camera->tilt)
+		{
+		case T3_CAMERA_TILT_LEFT:
+			offset = Vector3(sinf(angle), 0.0f, cosf(angle));
+			break;
+		case T3_CAMERA_TILT_RIGHT:
+			offset = Vector3(-sinf(angle), 0.0f, cosf(angle));
+			break;
+		case T3_CAMERA_TILT_UP:
+			offset = Vector3(0.0f, -sinf(angle), cosf(angle));
+			break;
+		case T3_CAMERA_TILT_DOWN:
+			offset = Vector3(0.0f, sinf(angle), cosf(angle));
+			break;
+		default:
+			offset = Vector3(0.f, 0.f, 1.f);
+			break;
+		}
 	}
-	else if (camera->reverse_tile_anim)	// End of animation
+	else 	// End of animation
 	{
-		camera->reverse_tile_anim = false;
-		camera->tilt = T3_CAMERA_TILT_NONE;
-		offset = tilt_offset[T3_CAMERA_TILT_NONE];
+		if (camera->reverse_tile_anim)
+		{
+			camera->reverse_tile_anim = false;
+			camera->tilt = T3_CAMERA_TILT_NONE;
+		}
+
+		offset = tilt_offset[camera->tilt];
+		offset.Normalize();
 	}
 
 	return Vector3(camera->position, 0.f) + offset * camera->zdist;

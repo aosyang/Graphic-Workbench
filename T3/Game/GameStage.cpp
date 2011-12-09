@@ -272,7 +272,7 @@ void GameStage::Reset()
 	m_TileId2TypeInfo.clear();
 }
 
-static BoundBox GetPostProjectedBound(const BoundBox& box)
+static BoundBox GetPostProjectionBound(const BoundBox& box)
 {
 	BoundBox output = box;
 
@@ -315,7 +315,7 @@ void GameStage::TestCollision( Actor* actor )
 			if ( GetTileUsageById(geom->tile_type_id[i]) != TILE_USAGE_SOLID )
 				continue;
 
-			if ( actor->TestCollision( GetPostProjectedBound( geom->bound ), rel ) )
+			if ( actor->TestCollision( GetPostProjectionBound( geom->bound ), rel ) )
 				collide = true;
 		}
 
@@ -336,7 +336,7 @@ void GameStage::TestCollision( Actor* actor )
 		// Test collision move in x dir and y dir separately
 		for ( iter = col_group.begin(); iter != col_group.end(); iter++ )
 		{
-			BoundBox post_proj_bound = GetPostProjectedBound((*iter)->bound);
+			BoundBox post_proj_bound = GetPostProjectionBound((*iter)->bound);
 			result |= actor->DoCollisionMove( post_proj_bound, rel_y, &rel_y );
 		}
 
@@ -344,7 +344,7 @@ void GameStage::TestCollision( Actor* actor )
 
 		for ( iter = col_group.begin(); iter != col_group.end(); iter++ )
 		{
-			BoundBox post_proj_bound = GetPostProjectedBound((*iter)->bound);
+			BoundBox post_proj_bound = GetPostProjectionBound((*iter)->bound);
 			result |= actor->DoCollisionMove( post_proj_bound, rel, &rel );
 		}
 	}
