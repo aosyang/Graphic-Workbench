@@ -497,6 +497,7 @@ void GameMain::DrawDebugText()
 #endif
 			"znear: %f zfar: %f\n"
 			"CAM_TILT: %s\n"
+			"CAM_ANIM_PRGS: %f\n"
 			"%s",
 			char_pos.x, char_pos.y,
 			(int)floor(char_pos.x), (int)ceil(char_pos.x),
@@ -507,6 +508,7 @@ void GameMain::DrawDebugText()
 #endif
 			m_Camera.znear, m_Camera.zfar,
 			T3Camera_GetTiltTypeName(m_Camera.tilt),
+			T3Camera_GetAnimationProgress(&m_Camera),
 			m_GameStageEditor->IsMapUnsaved() ? "*Map unsaved*" : "");
 
 	RenderSystem::RenderText(debug_text, 0, 0, GWColor::YELLOW);
@@ -567,7 +569,9 @@ void GameMain::UpdateCamera()
 	// Update camera position
 	if (m_CameraDestActor)
 	{
-		rel = m_CameraDestActor->GetPosition() - m_Camera.position + Vector2 (0.0f, 4.5f);
+		rel = m_CameraDestActor->GetPosition() - m_Camera.position;
+		if (!m_IsEditorMode)
+			rel += Vector2 (0.0f, 4.5f);
 	}
 	else
 	{

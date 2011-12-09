@@ -49,6 +49,8 @@ typedef struct TileTypeInfo
 typedef struct StageGeom
 {
 	BoundBox					bound;
+	BoundBox					post_proj_bound;
+	BoundBox					post_proj_bound_last_frame;					// For morph collision test
 	int							tile_type_id[GAME_WORLD_COUNT];
 
 	float						depth;

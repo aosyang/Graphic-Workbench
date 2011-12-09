@@ -275,20 +275,23 @@ void GameStage::Reset()
 static BoundBox GetPostProjectionBound(const BoundBox& box)
 {
 	BoundBox output = box;
+	T3Camera* camera = KleinGame()->GetCamera();
+	float p = T3Camera_GetAnimationProgress( camera );
+	T3CameraTilt tilt = camera->tilt;
 
-	switch (KleinGame()->GetCameraTilt())
+	switch (tilt)
 	{
 	case T3_CAMERA_TILT_LEFT:
-		output.xMin -= 1.f;
+		output.xMin -= p;
 		break;
 	case T3_CAMERA_TILT_RIGHT:
-		output.xMax += 1.f;
+		output.xMax += p;
 		break;
 	case T3_CAMERA_TILT_UP:
-		output.yMax += 1.f;
+		output.yMax += p;
 		break;
 	case T3_CAMERA_TILT_DOWN:
-		output.yMin -= 1.f;
+		output.yMin -= p;
 		break;
 	default:
 		break;
@@ -309,13 +312,17 @@ void GameStage::TestCollision( Actor* actor )
 	// Collect collision objects
 	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
 	{
+		// Update post-projection bound box
+		geom->post_proj_bound = GetPostProjectionBound( geom->bound );
+
 		bool collide = false;
 		for (int i=0; i<GAME_WORLD_COUNT; i++)
 		{
+
 			if ( GetTileUsageById(geom->tile_type_id[i]) != TILE_USAGE_SOLID )
 				continue;
 
-			if ( actor->TestCollision( GetPostProjectionBound( geom->bound ), rel ) )
+			if ( actor->TestCollision( geom->post_proj_bound, rel ) )
 				collide = true;
 		}
 
@@ -336,20 +343,24 @@ void GameStage::TestCollision( Actor* actor )
 		// Test collision move in x dir and y dir separately
 		for ( iter = col_group.begin(); iter != col_group.end(); iter++ )
 		{
-			BoundBox post_proj_bound = GetPostProjectionBound((*iter)->bound);
-			result |= actor->DoCollisionMove( post_proj_bound, rel_y, &rel_y );
+			result |= actor->DoCollisionMove( (*iter), rel_y, &rel_y );
 		}
 
 		rel = rel_x + rel_y;
 
 		for ( iter = col_group.begin(); iter != col_group.end(); iter++ )
 		{
-			BoundBox post_proj_bound = GetPostProjectionBound((*iter)->bound);
-			result |= actor->DoCollisionMove( post_proj_bound, rel, &rel );
+			result |= actor->DoCollisionMove( (*iter), rel, &rel );
 		}
 	}
 
 	actor->Translate(rel);
+
+	// Update morph for stage geom
+	for (geom = GetFirstStageGeom(); geom != NULL; geom = GetNextStageGeom(geom))
+	{
+		geom->post_proj_bound_last_frame = geom->post_proj_bound;
+	}
 }
 
 STAGE_GEOM* GameStage::GetTileAtPoint( const Vector2& point )
@@ -410,7 +421,9 @@ STAGE_GEOM* GameStage::AddStageGeom( int layer_id, const BoundBox& bound, const 
 	}
 
 	geom->bound = bound;
-
+	geom->post_proj_bound = bound;
+	geom->post_proj_bound_last_frame = bound;
+	
 	return geom;
 }
 

@@ -152,6 +152,30 @@ static Vector3 T3Camera_GetWorldPosition( T3_CAMERA* camera )
 	return Vector3(camera->position, 0.f) + offset * camera->zdist;
 }
 
+float T3Camera_GetAnimationProgress( T3_CAMERA* camera )
+{
+	if (camera->tilt == T3_CAMERA_TILT_NONE)
+		return 0.f;
+
+	GW_UINT32 tick = KleinGame()->GetSysTickCount();
+
+	Vector3 offset;
+
+	if (tick < camera->tilt_anim_end_time)
+	{
+		float p = GW_MATH_CLAMP((float)(camera->tilt_anim_end_time - tick) / T3_CAMERA_TILT_TIME, 0.f, 1.f);
+		if (!camera->reverse_tile_anim)
+			p = 1.f - p;
+
+		return p;
+	}
+
+	if (camera->reverse_tile_anim)
+		return 0.f;
+
+	return 1.f;
+}
+
 void T3Camera_SetupViewWithCamera( T3_CAMERA* camera )
 {
 	if (camera->proj_type==T3_CAMERA_PROJ_PERSPECTIVE)

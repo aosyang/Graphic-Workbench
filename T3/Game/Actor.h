@@ -32,7 +32,7 @@ public:
 	bool TestCollision( const BoundBox& bound, const Vector2& new_pos_rel = Vector2::ZERO) const;
 
 	// Test if actor can move in this direction, if not, give an available movement
-	bool DoCollisionMove(const BoundBox& other, const Vector2& input, Vector2* output);
+	bool DoCollisionMove(STAGE_GEOM* geom, const Vector2& input, Vector2* output);
 	virtual void Update();
 
 	// Move actor in local direction

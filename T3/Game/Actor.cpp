@@ -95,12 +95,15 @@ bool Actor::TestCollision( const BoundBox& bound, const Vector2& new_pos_rel /*=
 	return bb.TestBoxCollision(bound);
 }
 
-bool Actor::DoCollisionMove( const BoundBox& other, const Vector2& input, Vector2* output )
+bool Actor::DoCollisionMove( STAGE_GEOM* geom, const Vector2& input, Vector2* output )
 {
 	Vector2 newPos = m_Position + input;
 
-	BoundBox worldBox = m_Bound.Translate(m_Position);
-	BoundBox box = m_Bound.Translate(newPos);
+	BoundBox geom_bound = geom->post_proj_bound;
+	BoundBox geom_bound_last_frame = geom->post_proj_bound_last_frame;
+
+	BoundBox bound_last_frame = m_Bound.Translate(m_Position);
+	BoundBox bound_this_frame = m_Bound.Translate(newPos);
 
 	int x_col = 0,		// x collision type -1: to the left 0: collision 1: to the right
 		y_col = 0;		// y collision type -1: to the bottom 0: collision 1: to the top
@@ -108,39 +111,39 @@ bool Actor::DoCollisionMove( const BoundBox& other, const Vector2& input, Vector
 		last_y_col = 0;
 
 	// Calculate collision type for last frame
-	if (worldBox.xMax <= other.xMin)
+	if (bound_last_frame.xMax <= geom_bound_last_frame.xMin)
 	{
 		last_x_col = -1;
 	}
-	else if (worldBox.xMin >= other.xMax)
+	else if (bound_last_frame.xMin >= geom_bound_last_frame.xMax)
 	{
 		last_x_col = 1;
 	}
 
-	if (worldBox.yMax <= other.yMin)
+	if (bound_last_frame.yMax <= geom_bound_last_frame.yMin)
 	{
 		last_y_col = -1;
 	}
-	else if (worldBox.yMin >= other.yMax)
+	else if (bound_last_frame.yMin >= geom_bound_last_frame.yMax)
 	{
 		last_y_col = 1;
 	}
 
 	// Calculate collision type for this frame
-	if (box.xMax <= other.xMin)
+	if (bound_this_frame.xMax <= geom_bound.xMin)
 	{
 		x_col = -1;
 	}
-	else if (box.xMin >= other.xMax)
+	else if (bound_this_frame.xMin >= geom_bound.xMax)
 	{
 		x_col = 1;
 	}
 
-	if (box.yMax <= other.yMin)
+	if (bound_this_frame.yMax <= geom_bound.yMin)
 	{
 		y_col = -1;
 	}
-	else if (box.yMin >= other.yMax)
+	else if (bound_this_frame.yMin >= geom_bound.yMax)
 	{
 		y_col = 1;
 	}
@@ -157,20 +160,20 @@ bool Actor::DoCollisionMove( const BoundBox& other, const Vector2& input, Vector
 		// check last frame with collision type
 		if (last_x_col==-1)
 		{
-			output->x -= box.xMax - other.xMin + KLEIN_COLLISION_TOLERANCE;
+			output->x -= bound_this_frame.xMax - geom_bound.xMin + KLEIN_COLLISION_TOLERANCE;
 		}
 		else if (last_x_col==1)
 		{
-			output->x += other.xMax - box.xMin + KLEIN_COLLISION_TOLERANCE;
+			output->x += geom_bound.xMax - bound_this_frame.xMin + KLEIN_COLLISION_TOLERANCE;
 		}
 		else if (last_y_col==-1)
 		{
-			output->y -= box.yMax - other.yMin + KLEIN_COLLISION_TOLERANCE;
+			output->y -= bound_this_frame.yMax - geom_bound.yMin + KLEIN_COLLISION_TOLERANCE;
 			OnHitTop();
 		}
 		else if (last_y_col==1)
 		{
-			output->y += other.yMax - box.yMin + KLEIN_COLLISION_TOLERANCE;
+			output->y += geom_bound.yMax - bound_this_frame.yMin + KLEIN_COLLISION_TOLERANCE;
 			OnHitGround();
 		}
 	}

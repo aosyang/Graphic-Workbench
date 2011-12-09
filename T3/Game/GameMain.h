@@ -71,6 +71,7 @@ public:
 
 	GW_INLINE void DoCameraTilt(T3CameraTilt tilt) { T3Camera_DoTilt(&m_Camera, tilt); }
 	GW_INLINE T3CameraTilt GetCameraTilt() { return m_Camera.tilt; }
+	GW_INLINE T3_CAMERA* GetCamera() { return &m_Camera; }
 public:
 	/************************************************************************/
 	/* Game Control methods

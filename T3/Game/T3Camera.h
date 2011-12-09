@@ -69,6 +69,8 @@ void T3Camera_Init(T3_CAMERA* camera);
 
 void T3Camera_Update(T3_CAMERA* camera);
 
+float T3Camera_GetAnimationProgress(T3_CAMERA* camera);
+
 void T3Camera_SetupViewWithCamera(T3_CAMERA* camera);
 
 void T3Camera_ActiveProjectionAnimation(T3_CAMERA* camera, T3CameraProjAnim anim);
