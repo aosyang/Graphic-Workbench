@@ -139,8 +139,8 @@ GW_RENDER_WINDOW* GWWnd_CreateRenderWindow( int width, int height, const char* t
 								title_str,
 								title_str,
 								dwStyle | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-								(GetSystemMetrics(SM_CXSCREEN) - rect.right) / 2,
-								(GetSystemMetrics(SM_CYSCREEN) - rect.bottom) / 2,
+								(GetSystemMetrics(SM_CXSCREEN) - (rect.right - rect.left)) / 2,
+								(GetSystemMetrics(SM_CYSCREEN) - (rect.bottom - rect.top)) / 2,
 								rect.right - rect.left,
 								rect.bottom - rect.top,
 								NULL, NULL, hInstance, NULL);
